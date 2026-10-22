@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { makeTeam, write, commitAndPush, type Team } from './helpers';
 import { git } from '../src/git/exec';
-import { installAgent, uninstallAgent, isAgentInstalled, plistPath, windowsTaskName, type AgentPaths, type Runner } from '../src/background/agent';
+import { installAgent, uninstallAgent, isAgentInstalled, isBackgroundSupported, plistPath, windowsTaskName, type AgentPaths, type Runner } from '../src/background/agent';
 import { SharedStore, type WorkerConfig } from '../src/core/storage';
 
 function fakeRunner() {
@@ -172,7 +172,9 @@ describe('background worker', () => {
     rmSync(join(extensionsDir, 'pushpal.pushpal-1.0.0'), { recursive: true });
     runWorker();
     assert.equal(events('selfDestruct').length, 1);
-    assert.ok(events('exec').some((e) => e.file === 'launchctl' || e.file === 'schtasks.exe'));
+    if (isBackgroundSupported(process.platform)) {
+      assert.ok(events('exec').some((e) => e.file === 'launchctl' || e.file === 'schtasks.exe'));
+    }
     assert.equal(existsSync(join(storage, 'worker.js')), false);
     assert.equal(existsSync(join(storage, 'config.json')), false);
   });
