@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- New mascot: Pal is a flat-style pug head whose expressions follow what's going on — asleep when you're up
+  to date, sniffing while checking, startled and barking when a teammate pushes, tugging a two-colour rope
+  while merging, jump-spinning on success, puzzled at conflicts, teary when GitHub Actions fail, winking when
+  they pass, heart-eyed when clicked. Random idle life (blinks, ear twitches, glances, little smiles).
+  Animated with GSAP; respects reduced motion
+- New extension icon and Activity Bar icon (pug head)
 - Check frequency modes: ⚡ Fastest (10 s), ⚖️ Balanced (30 s, new default), 🔋 Battery saver (60 s) and 🛠 Custom,
   in the setup wizard (new step) and the settings page, each with checks/hour and data/hour estimates from measured fetch sizes
 - Automatic battery saving: idle, low battery (not plugged in), Low Power Mode / Battery Saver, plugged in = normal;

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pal the pug — expression sheet</title>
+<style>
+  :root { --bg: #ffffff; --ink: #3b2230; --muted: #8a7680; --card: #faf7f8; --line: #eee6ea; }
+  body.dark { --bg: #15191d; --ink: #e9e2e6; --muted: #9aa3ab; --card: #1c2126; --line: #2b333b; }
+  body { margin: 0; padding: 28px 36px 36px; background: var(--bg); color: var(--ink); font: 14px/1.5 -apple-system, "Segoe UI", sans-serif; }
+  h1 { margin: 0 0 2px; font-size: 24px; }
+  h2 { margin: 24px 0 10px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  p.sub { margin: 0; color: var(--muted); }
+  .row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; }
+  .cell { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 10px 10px 8px; text-align: center; min-width: 150px; }
+  .cell b { display: block; font-size: 13px; }
+  .cell span { display: block; font-size: 12px; color: var(--muted); }
+  .cell svg { display: block; margin: 0 auto; overflow: visible; }
+  .pal { display: flex; gap: 10px; }
+  .sw { width: 56px; text-align: center; font-size: 10px; color: var(--muted); }
+  .sw i { display: block; height: 36px; border-radius: 10px; border: 1px solid var(--line); margin-bottom: 4px; }
+</style>
+<script src="../../media/vendor/gsap.min.js"></script>
+<script src="../../media/vendor/MorphSVGPlugin.min.js"></script>
+<script src="../../media/mascot.js"></script>
+</head>
+<body>
+<h1>Pal — the PushPal pug</h1>
+<p class="sub">Flat graphic style: one ink colour and stroke weight, two flat tones per material. Only the head — expressions carry the story.</p>
+<h2>Expressions</h2>
+<div class="row" id="faces"></div>
+<h2>Icon head (small sizes)</h2>
+<div class="row" id="small"></div>
+<h2>Palette</h2>
+<div class="pal" id="pal"></div>
+<script>
+(function () {
+  var M = window.PushPalMascot;
+  var NOTES = { sit: 'idle', sleep: 'up to date · โค้ดล่าสุดแล้ว', check: 'checking · กำลังเช็ก', alert: 'teammate pushed · เพื่อน push มา', merge: 'pulling · กำลังรวมโค้ด',
+    success: 'merged · รวมเสร็จ', conflict: 'conflict · เจอจุดชน', fail: 'tests failed · เทสต์ไม่ผ่าน', pass: 'tests passed · เทสต์ผ่าน', welcome: 'welcome · ต้อนรับ', love: 'clicked · ถูกคลิก' };
+  var faces = document.getElementById('faces');
+  M.poses.forEach(function (p) {
+    var d = document.createElement('div');
+    d.className = 'cell';
+    d.innerHTML = M.svg({ pose: p, size: 140 }) + '<b>' + p + '</b><span>' + NOTES[p] + '</span>';
+    faces.appendChild(d);
+  });
+  var small = document.getElementById('small');
+  [128, 64, 32, 16].forEach(function (s) {
+    var d = document.createElement('div');
+    d.className = 'cell';
+    d.style.minWidth = '0';
+    d.innerHTML = window.PushPalIconHead(s) + '<span>' + s + 'px</span>';
+    small.appendChild(d);
+  });
+  var pal = document.getElementById('pal');
+  ['fur', 'furShade', 'furLight', 'dark', 'darkShade', 'ink', 'patch', 'blush', 'teal', 'coral'].forEach(function (k) {
+    var d = document.createElement('div');
+    d.className = 'sw';
+    d.innerHTML = '<i></i>' + k + '<br>' + M.colors[k];
+    d.firstChild.style.background = M.colors[k];
+    pal.appendChild(d);
+  });
+  if (location.hash === '#dark') document.body.classList.add('dark');
+})();
+</script>
+</body>
+</html>

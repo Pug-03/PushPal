@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/icon-512.png" width="112" alt="PushPal mascot">
+  <img src="docs/mascot/success.gif" width="200" alt="Pal the pug jumping for joy">
 </p>
 
 <h1 align="center">PushPal</h1>
@@ -47,8 +47,9 @@
 - **เตือนแม้ปิด VS Code** (เลือกเปิดเอง) — ใช้ LaunchAgent / Task Scheduler ทำแค่ `git fetch` ไม่แก้ไฟล์
 - **หน้า “ตั้งค่า PushPal”** สวยแบบเดียวกับหน้าตั้งค่าครั้งแรก แบ่งหมวด การแจ้งเตือน / ความถี่และแบตเตอรี่ / ภาษาและธีม / GitHub
   เปลี่ยนแล้วมีผลทันที ซิงก์กับ Settings ของ VS Code สองทาง และมีปุ่มคืนค่าเริ่มต้น
-- **หน้า “ทีมของฉัน”** ไทม์ไลน์ commit ของเพื่อน พร้อม Pal มาสคอตหน้ากลมที่เปลี่ยนสีหน้าตามสถานะ (คิ้ว ตา ปาก แก้ม)
-  กดจิ้มเล่นได้ — ยุบ เด้ง หัวเราะ และถ้าจิ้มรัวๆ จะตาลาย
+- **หน้า “ทีมของฉัน”** ไทม์ไลน์ commit ของเพื่อน พร้อม Pal หมาปั๊กที่บอกสถานะด้วยสีหน้า: หลับตอนโค้ดล่าสุด, ดมฟุดฟิดตอนเช็ก,
+  สะดุ้งแล้วเห่าเมื่อเพื่อน push, คาบเชือกผูกปมตอนรวมโค้ด, กระโดดหมุนตัวเมื่อรวมสำเร็จ, เอียงหัวงงตอนชนกัน,
+  น้ำตาซึมเมื่อเทสต์ไม่ผ่าน และขยิบตาเมื่อเทสต์ผ่าน กดที่ Pal = ตาเป็นหัวใจ
 - **ภาษาไทย / English** และ **ธีมสว่าง / มืด / ตามเครื่อง**
 - หลาย repo ใน workspace เดียว, repo ที่ยังไม่มี upstream ก็รองรับ
 - **ไม่มี telemetry** ไม่ส่งข้อมูลออกนอกเครื่องนอกจาก `git fetch` / `git pull` ปกติ
@@ -68,6 +69,12 @@
 | ![](docs/screenshots/team-behind-light.png) | ![](docs/screenshots/team-pulling-dark.png) | ![](docs/screenshots/team-success-light.png) | ![](docs/screenshots/team-conflictMerge-dark.png) |
 
 ภาพทั้งหมด (โหมดมืดและสว่าง) อยู่ใน [`docs/screenshots/`](docs/screenshots)
+
+| นอนรอ | เพื่อน push มา | รวมโค้ด | เจอจุดชน | เทสต์ผ่าน |
+|---|---|---|---|---|
+| ![](docs/mascot/sleep.gif) | ![](docs/mascot/alert.gif) | ![](docs/mascot/merge.gif) | ![](docs/mascot/conflict.gif) | ![](docs/mascot/pass.gif) |
+
+สีหน้าทั้งหมดของ Pal อยู่ใน [`docs/mascot/`](docs/mascot) (`sheet.png` และ GIF ทุกท่า)
 
 ### ติดตั้ง
 
@@ -181,8 +188,9 @@ and when you finally push — conflicts everywhere. **PushPal tells you the mome
 - Desktop notifications: macOS (alerter with buttons, osascript fallback), Windows (toast with buttons, nothing to install),
   Linux (notify-send). If VS Code is focused you only get the VS Code pop-up, never both.
 - Optional checks while VS Code is closed: LaunchAgent (macOS) / Task Scheduler (Windows), `git fetch` only
-- “My Team” view: teammates' commit timeline with Pal, a round-faced mascot whose brows, eyes, mouth and cheeks
-  change with the state. Poke it: it squishes, bounces, giggles, and gets dizzy if you poke too fast
+- “My Team” view: teammates' commit timeline with Pal the pug, whose face tells you what's going on: asleep when
+  you're up to date, sniffing while checking, startled and barking when a teammate pushes, tugging a rope while
+  merging, jump-spinning on success, puzzled at conflicts, teary or winking at GitHub Actions results. Click it
 - Thai / English, Light / Dark / Match VS Code themes, multi-repo workspaces, branches without upstream
 - No telemetry. Nothing leaves your machine except your normal `git fetch` / `git pull`
 
@@ -218,6 +226,8 @@ npm run smoke       # runs the extension in your local VS Code with an isolated 
 npm run screenshots # renders every screen into docs/screenshots/
 npm run package     # builds pushpal-<version>.vsix
 npm run icon        # re-renders media/icon.png from the mascot
+node scripts/mascot-render.mjs sheet   # docs/mascot/sheet.png (expression sheet)
+node scripts/mascot-render.mjs gifs    # docs/mascot/<pose>.gif, frame-exact
 node scripts/measure-fetch.mjs . 5   # re-measures the bytes of one check (used by the estimates)
 ```
 

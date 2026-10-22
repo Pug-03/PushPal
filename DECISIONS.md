@@ -167,8 +167,8 @@ Newest sections are appended at the bottom of each topic.
   No web fonts are bundled (keeps the .vsix small; every target OS has a good Thai face).
   Line-height is raised to 1.65 for Thai because of stacked vowels and tone marks.
 - Spacing scale 4/8/12/16/24/32/48, radii 8/12/18/pill.
-- **Mascot "Pal"**: hand-written SVG (`media/mascot.js`) — round teal buddy whose antenna is a coral git
-  commit node. Parts (arms, eyes, antenna, whole body) are separate groups, animated only with CSS
+- **Mascot "Pal"**: replaced by a pug in section 13. (Originally a round teal buddy whose antenna is a coral git
+  commit node.) Parts (arms, eyes, antenna, whole body) are separate groups, animated only with CSS
   `transform` / `opacity`. Poses: idle, wave, point, cheer, worry, chill, busy. The 128×128 icon
   (`media/icon.png`) is rendered from the same SVG with headless Chrome (`npm run icon`). The Activity Bar
   icon is a single-colour silhouette with cut-out eyes, as VS Code requires.
@@ -314,4 +314,82 @@ Newest sections are appended at the bottom of each topic.
   `test/background.test.ts` (due / not due, new config applied on the next run, outside hours, battery rules through
   `PUSHPAL_TEST_POWER`). The smoke test also switches modes in a real VS Code and checks the sync, the clamping,
   `config.json` and the settings page.
+
+## 13. Pal becomes a pug (2026-10-22)
+
+- **Name**: the request calls the product "PushPug". I kept the extension name **PushPal** (id, publisher,
+  URI handler, LaunchAgent label, settings keys all depend on it) and made the mascot a pug called Pal.
+  Renaming the product is a separate, breaking change and wasn't asked for explicitly.
+- **Drawing** (`media/mascot.js`): every shape is a bezier `path`; a small `blob()` helper draws organic,
+  slightly uneven ovals so there is no `circle`/`ellipse`/`rect` anywhere (a unit test checks this).
+  Chibi proportions: head 26–137 of a 22–192 figure (≈ 65 %). Pug traits: flat face, short nose with a
+  nose roll, droopy "w" mouth, forehead wrinkles that follow the skull, folded rose ears, big wide-set
+  eyes, curled tail, stubby legs.
+- **Line and colour**: outline is warm dark brown `#3a2820`, never black. Variable weight comes from an
+  ink copy of each shape 1.8 units lower: thick along the bottom where the weight is, thin on top.
+  Cel shading = one flat shade band + one flat highlight per part, clipped to the part (no gradients).
+  Palette: cream fur `#f3ddb6` / shade `#e0bf8e` / light `#fcf1dd`, mask `#655149`, blush `#f39a92`,
+  collar `#1f9e89` and arrow-tag `#ff7a59` (PushPal's teal and coral). Checked on light and dark.
+- **Eyes**: dark eye, warm iris crescent, light lower-lid crescent, two highlights (big + small); the
+  eyelid is a separate layer scaled from the top, so blinks, sleepy and sad eyes are the same part.
+- **Layers and pivots**: root, spin, body, head, ears (from the ear root), eyes + lids, brows,
+  wrinkles, muzzle, mouth (morphs), open mouth, tongue, cheeks, tail (from the tail root), four legs
+  (from the shoulder/hip), collar, tag (from the ring) and props (z's, bark lines, "?", rope + knot,
+  stars, dust). Pivots are set with GSAP `svgOrigin` in viewBox coordinates.
+- **Static first**: the markup without any script is already the resting "sit" face (lids pre-scaled
+  open, mouth closed). That's what `npm run icon`, previews and reduced motion fall back to.
+- **Small sizes**: the full body isn't readable at 32/16 px, so there's a separate simplified head
+  (`PushPalIconHead`): ears, mask, eyes, nose; mouth/wrinkle/blush only above 20 px; thicker ink. Used for
+  the extension icon and the wizard's top bar. The Activity Bar icon is a one-colour pug-head
+  silhouette with cut-out eyes, nose and a wrinkle, as VS Code requires.
+- **GSAP**: version 3.15.0 (April 2026, older than two weeks), bundled as files in `media/vendor/`
+  (`gsap.min.js`, `MorphSVGPlugin.min.js`) and loaded with the page's CSP nonce — no CDN. Licence: GSAP
+  and all its former bonus plugins (MorphSVG included) are free for everyone, commercial use included,
+  under GreenSock's Standard "No Charge" License; this is stated in the package README and in each
+  file's header ("Subject to the terms at https://gsap.com/standard-license"). The licence page itself
+  could not be loaded on 2026-10-22 (gsap.com redirected every page to a forums-outage notice), so this
+  relies on the package's own text. As I understand the licence, its main restriction is not using GSAP
+  in a product that competes with Webflow (visual site/animation builders) — a git helper in VS Code
+  isn't one. Re-check https://gsap.com/standard-license before publishing. If it ever can't be used,
+  `media/mascot.js` still draws every pose correctly without GSAP (static).
+- **Animation**: each pose = a held position + an entrance + a loop. Switching poses tweens every layer
+  from where it is to the new held position (0.42 s, power2.inOut), so any pose follows any other without
+  a jump. Principles used: squash & stretch (jump, landing, bark), anticipation (crouch before the jump,
+  flinch before the alert), follow-through (ears, cheeks, tag on elastic eases after the body stops),
+  secondary action (tag swings, tail lags), easing everywhere (no linear tweens), timing (held poses,
+  quick transitions). Idle life is random: blink every 3–6 s (sometimes double), and every 7–16 s an ear
+  twitch, a look around, a yawn or a scratch, so the loop never visibly repeats.
+- Only `transform` and `opacity` are animated (plus the mouth's path morph). The SVG is ~110 nodes.
+- **Poses → app states**: up to date = sleep; checking = check (sniff, look left/right); teammates pushed =
+  alert (startle, ears up, two barks, fast tail); pulling = merge (two-colour rope tied into a knot);
+  merged = success (crouch, jump-spin, land, stars); conflict = conflict (slow head tilt, frown, "?");
+  error = fail; conflicts fixed = pass; GitHub Actions finished: pass (nod + paw up) or fail (ears droop,
+  sad eyes, sits lower, tail stops); no repo / wizard welcome = welcome (runs in, brakes with dust, sits,
+  waves). Click = belly-up for a rub, legs kicking, then back to what it was doing.
+- **Reduced motion**: no movement at all; a pose change is a 0.35 s cross-fade to the held picture.
+- **Tooling**: `docs/mascot/sheet.html` (turnaround, poses, small sizes, palette) and
+  `docs/mascot/playground.html` (every pose, dark/light, 0.25× speed). `scripts/mascot-render.mjs` renders
+  them with Playwright (`playwright-core` 1.64.0 driving the installed Chrome; no browser download) and
+  records frame-exact GIFs with ffmpeg. Design rounds are in `docs/mascot/ITERATIONS.md`.
+
+## 14. Pal, round two: a flat graphic head (2026-10-22)
+
+- The user found the section-13 drawing unnatural and asked for a more graphic look, then for **only the
+  face**, with expressions instead of body poses. Section 13's GSAP, licence, tooling and reduced-motion
+  decisions still apply; the drawing and the pose list changed.
+- **Reference images** the user found online were used only to agree on a style. They aren't licensed
+  for use as a mascot (one carries a stock-site watermark), so nothing was traced or copied; Pal is an
+  original drawing.
+- **Style**: one ink colour `#3b2230`, one stroke width (3.6 in a 200-unit viewBox) everywhere, two flat
+  tones per material (fur, eye patch, muzzle), no gradients. Blush is clipped inside the head outline.
+- **Expressions** (`FACES` in `media/mascot.js`): sit, sleep, check, alert, merge, success, conflict,
+  fail, pass, welcome, love. Old names (idle, chill, wave, point, cheer, worry, busy, belly) map onto them.
+  Clicking Pal shows "love" (heart eyes, hearts) for 2.4 s, then returns to what it was doing.
+- **Switching**: ears, brows and the mouth line morph (MorphSVG; all variants share one command
+  structure so the morphs are clean); eyes and open mouths cross-fade with a small scale pop; the head
+  settles back to rest in 0.3 s before the new pose's entrance, so any pose can follow any other.
+- **Brows**: line brows made Pal look human (user feedback). Replaced with dog-style brow spots (small dark
+  ovals above the eyes, like tan points); they move up, together or apart with the mood. Chosen by the user
+  over a no-brow, forehead-wrinkle version.
+- **Icon**: `PushPalIconHead` draws the same head with brows, blush and mouth dropped at ≤ 20 px.
 
