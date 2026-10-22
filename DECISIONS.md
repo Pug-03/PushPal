@@ -187,7 +187,7 @@ Newest sections are appended at the bottom of each topic.
   so closing it half-way doesn't nag on every start). "PushPal: ตั้งค่าใหม่ · Run Setup Again" reopens it.
 - One `WebviewPanel` in the editor area, `retainContextWhenHidden` so switching tabs doesn't lose the step.
   The current step is also kept with `vscode.setState`.
-- All six steps live in the same CSS grid cell, so the page height never jumps; the active step slides
+- All seven steps (a "how often" step was added in section 12) live in the same CSS grid cell, so the page height never jumps; the active step slides
   (48 px translate + fade, 380 ms ease-out), direction-aware for Back. The progress bar is a `scaleX` transform.
 - Language and theme are saved to Settings the moment they're picked (the whole wizard re-renders in the
   new language without a round-trip, and the status bar follows). Notification toggles are saved immediately
@@ -237,11 +237,81 @@ Newest sections are appended at the bottom of each topic.
 - `publisher` is a placeholder (`pushpal`) and the repo URL assumes `github.com/Pug-03/pushpal` (from the
   local git user name). PUBLISHING.md says to replace both before publishing.
 - CI: tests + typecheck + build on Ubuntu, macOS and Windows (Node 22) on every push; on a `v*` tag it packages
-  the .vsix and attaches it to a GitHub Release (`softprops/action-gh-release`). Automatic Marketplace /
-  Open VSX publishing is documented as an optional extra step, not enabled, because it needs secrets.
+  the .vsix and attaches it to a GitHub Release (`softprops/action-gh-release`), then publishes to the Marketplace /
+  Open VSX when the `VSCE_PAT` / `OVSX_PAT` secrets exist (skipped otherwise, so CI never fails for lack of them).
+  `npm run release` bumps the patch version, tags and pushes.
 - `.vscodeignore` is an allow-list: only `dist/*.js` (no source maps), `media/`, `l10n/`, manifest files,
   README, CHANGELOG and LICENSE go into the .vsix.
 - The package is built with `--production` (minified, no source maps) by `vscode:prepublish`.
 - `npm run smoke` runs the built extension inside the locally installed VS Code with an isolated
   `--user-data-dir` / `--extensions-dir` under `.vscode-test/` (git-ignored): activation, commands, the
   first-run wizard, the team view and a real pull with uncommitted work are all checked.
+
+## 12. Check frequency, battery saving and GitHub Actions (2026-10-22)
+
+- **One source of truth: the individual settings.** `pushpal.mode` is a label for a set of values. Picking a preset
+  (wizard, settings page, quick pick or the Settings UI) writes the preset's values into the individual settings;
+  editing any value by hand while a preset is active switches the mode to `custom`. Logic lives in
+  `src/core/frequency.ts` (`reconcileMode`, pure + tested) and `src/ext/modes.ts` (applies it to VS Code settings,
+  ignoring the configuration events caused by its own writes). Everything is written to User settings.
+- **Migration from 1.0.0**: `checkIntervalSeconds` defaults to 30 now. A user who had set e.g. 60 explicitly keeps 60 and
+  the mode becomes Custom on first start, instead of their value being overwritten by the Balanced preset.
+- **Presets** (active hours are not part of a preset, so switching mode never changes them):
+
+  | | normal | background | Actions | idle | low battery | low power |
+  |---|---|---|---|---|---|---|
+  | Fastest | 10 s | 60 s | 10 s | 10 min → 60 s | < 20% → 60 s | 60 s |
+  | Balanced | 30 s | 120 s | 20 s | 10 min → 60 s | < 20% → 60 s | 60 s |
+  | Battery saver | 60 s | 300 s | 30 s | 5 min → 180 s | < 30% → 180 s | 300 s |
+- **Ranges**: normal 10–300 s and Actions 10–120 s (as asked); background **60–3600 s**, because Windows Task Scheduler
+  can't repeat more often than once a minute and the LaunchAgent stays at a fixed 60 s tick (see below).
+  Out-of-range values (settings.json, the page, anything) are rounded, clamped, written back, and a warning names the
+  field, the bad value, the range and the value used. Malformed times fall back to 08:00 / 23:00.
+- **Battery rules only slow down.** When several apply the slowest wins, and a rule faster than the normal interval is
+  ignored. "Plugged in → normal" overrides every rule (it says "always"). A rule whose input is unknown
+  (no battery, probe failed) doesn't apply — PushPal never guesses "on battery".
+- **Reading the power state** (`src/core/power.ts`, no `vscode`, shared with the worker):
+  macOS `pmset -g batt`, `pmset -g` (lowpowermode), `ioreg` HIDIdleTime; Windows one PowerShell call reading WinRT
+  `PowerManager` (charge, supply, battery status, Energy Saver) and `GetLastInputInfo`; Linux `/sys/class/power_supply`,
+  `powerprofilesctl get`, `xprintidle` (each optional). The probe runs at most once a minute and only when a rule is on
+  (≈ 30 ms on macOS; a PowerShell start on Windows, hence the cache).
+- **Idle** = min(OS idle time, time since the last VS Code activity: typing, selection, editor/terminal switch, window
+  focus). VS Code activity is instant, so coming back to the keyboard re-evaluates immediately instead of after the
+  next probe. Where the OS idle time isn't available (Linux without xprintidle) only VS Code activity counts.
+- **Scheduler** (`src/ext/scheduler.ts`) replaces the fixed `setInterval`: the next check is due at
+  *last check + effective interval*, and the effective interval is recomputed on settings change, power probe and user
+  activity, so a change takes effect without waiting out the old interval. Focus-triggered checks still happen, except
+  outside the checking hours. "Check now" always works.
+- **Checking hours** work across midnight (22:00–06:00); start == end means all day. Outside them nothing is fetched
+  (VS Code or background); the status bar tooltip says when checks resume.
+- **Background job**: the OS schedule stays a fixed 1-minute tick; the worker decides whether a check is due from
+  `config.json` (`frequency`) and `worker-state.json` (`lastCheckAt`), with 10 s slack for launchd/Task Scheduler jitter.
+  The extension rewrites `config.json` within 300 ms of any PushPal setting change, so the very next tick uses the new
+  values — no re-registration of the LaunchAgent / task. The battery is probed only when the normal interval has
+  already passed (rules can only make it later). Configs written by 1.0.0 have no `frequency` and keep running every tick.
+- **Status bar**: the existing item's tooltip gains "why" (e.g. "Checking every 1 min right now because the battery is
+  at 15%") and the mode with "Switch mode" / "Settings" command links. **Right-click isn't possible**: VS Code's API has
+  no context-menu contribution point for an extension's status bar item, so quick switching is the
+  "PushPal: Switch Check Mode" command plus the tooltip link.
+- **Estimates are measured, not guessed.** `scripts/measure-fetch.mjs` sends PushPal's exact fetch command through a
+  local CONNECT proxy that counts every byte both ways (TLS included). Against github.com: 5,457 B for a 1-ref remote;
+  `ls-refs` grows ≈ 58 B per branch/tag (28,030 B at 372 refs, 120,019 B at 2,032 refs). So one check ≈
+  5,400 + 58 × refs bytes, with refs counted from the repo's own remote-tracking refs + tags. One Actions API call
+  ≈ 7,300 B (gzip), a 304 ≈ 5,200 B. SSH wasn't measured (no key on the test machine); the HTTPS figure is used for all.
+- **GitHub Actions** (`src/core/ciRuns.ts`, `src/ext/ciWatcher.ts`): when a repo's upstream sha changes (anyone's push,
+  including your own), PushPal asks once for runs of that commit, keeps asking for up to 3 minutes until runs appear,
+  then polls only while a run is queued / in progress, and announces pass/fail (only for runs it saw running, so old
+  results aren't announced on startup). Auth uses VS Code's built-in GitHub sign-in silently (`repo` scope); without it
+  public repos still work, but polling is held to ≥ 60 s because GitHub allows 60 unauthenticated requests per hour.
+  ETags are sent so unchanged results come back as 304. Not done in the background worker (no token there).
+- **Settings page** (`src/ext/settingsPage.ts`, `media/settings.*`): rendered once, then patched in place on every
+  update, so a slider drag, a focused input or the mode-card animation is never interrupted by the echo of its own
+  change. Sliders post on release; numbers on change/Enter. Toggles and option cards share `media/controls.css`
+  with the wizard (moved out of `wizard.css`). Restore defaults is a two-step button (no `confirm()` in webviews).
+  Clamped fields flash and the notice says what changed.
+- Tests: `test/frequency.test.ts` (modes, clamping, each battery rule, plugged in, slowest wins, checking hours across
+  midnight, estimates, power-output parsers, Actions parsing/fetch with a fake `fetch`) and new worker cases in
+  `test/background.test.ts` (due / not due, new config applied on the next run, outside hours, battery rules through
+  `PUSHPAL_TEST_POWER`). The smoke test also switches modes in a real VS Code and checks the sync, the clamping,
+  `config.json` and the settings page.
+

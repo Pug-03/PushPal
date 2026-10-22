@@ -29,7 +29,13 @@
 
 ### ฟีเจอร์
 
-- **เช็กให้อัตโนมัติ** ทุก 60 วินาที (ตั้งได้) และทุกครั้งที่สลับกลับมา VS Code
+- **เช็กให้อัตโนมัติ** และทุกครั้งที่สลับกลับมา VS Code เลือกความถี่ได้ 4 โหมด:
+  ⚡ เร็วสุด (ทุก 10 วิ) · ⚖️ สมดุล (ทุก 30 วิ ค่าเริ่มต้น) · 🔋 ประหยัดแบต (ทุก 60 วิ) · 🛠 กำหนดเอง
+  แต่ละโหมดบอกค่าประมาณให้เห็นภาพ เช่น “เช็ก 120 ครั้ง/ชม. · ใช้เน็ตประมาณ 655 KB/ชม.” (คิดจากขนาด `git fetch` ที่วัดจริง)
+- **ประหยัดแบตอัตโนมัติ** ปรับ/ปิดได้ทีละข้อ: ไม่ได้แตะคอมนาน, แบตต่ำและไม่ได้เสียบสาย, เปิด Low Power Mode / Battery Saver
+  และ “เสียบสายอยู่ = ความถี่ปกติเสมอ” แถบสถานะบอกเหตุผลเวลาลดความถี่ เช่น “ตอนนี้เช็กทุก 1 นาที เพราะแบตเหลือ 15%”
+- **ช่วงเวลาที่เช็ก** เช่น 08:00–23:00 นอกช่วงหยุดเช็ก (รวมงานเบื้องหลัง)
+- **ติดตามผลเทสต์ GitHub Actions** หลังมีคน push: โชว์สถานะที่แถบสถานะ และบอกเมื่อผ่าน/ไม่ผ่าน
 - **แจ้งเตือนครั้งเดียวต่อ commit ใหม่** บอกว่าใคร push, กี่ commit, ข้อความล่าสุด, เมื่อไหร่
 - **เตือนพิเศษเมื่อเพื่อนแก้ไฟล์เดียวกับคุณ** (ทั้งที่ยังไม่ commit, commit แล้วยังไม่ push และไฟล์ใหม่)
 - **ปุ่ม “ดึงโค้ดมารวม”** — ใช้ `git pull --no-rebase --autostash --no-edit` งานที่ยังไม่ commit ถูกพักไว้แล้วคืนให้เอง
@@ -39,6 +45,8 @@
 - **แถบสถานะ 4 แบบ**: โค้ดล่าสุดแล้ว / เพื่อน push มาใหม่ N (เหลือง คลิกเพื่อดึง) / มีจุดชนรอแก้ (แดง) / เช็กไม่ได้
 - **แจ้งเตือนบนหน้าจอเครื่อง** — macOS (alerter มีปุ่ม), Windows (toast มีปุ่ม ไม่ต้องลงอะไร), Linux (notify-send)
 - **เตือนแม้ปิด VS Code** (เลือกเปิดเอง) — ใช้ LaunchAgent / Task Scheduler ทำแค่ `git fetch` ไม่แก้ไฟล์
+- **หน้า “ตั้งค่า PushPal”** สวยแบบเดียวกับหน้าตั้งค่าครั้งแรก แบ่งหมวด การแจ้งเตือน / ความถี่และแบตเตอรี่ / ภาษาและธีม / GitHub
+  เปลี่ยนแล้วมีผลทันที ซิงก์กับ Settings ของ VS Code สองทาง และมีปุ่มคืนค่าเริ่มต้น
 - **หน้า “ทีมของฉัน”** ไทม์ไลน์ commit ของเพื่อน พร้อม Pal มาสคอตหน้ากลมที่เปลี่ยนสีหน้าตามสถานะ (คิ้ว ตา ปาก แก้ม)
   กดจิ้มเล่นได้ — ยุบ เด้ง หัวเราะ และถ้าจิ้มรัวๆ จะตาลาย
 - **ภาษาไทย / English** และ **ธีมสว่าง / มืด / ตามเครื่อง**
@@ -47,9 +55,13 @@
 
 ### ภาพหน้าจอ
 
-| ตั้งค่าครั้งแรก | เลือกธีม (พรีวิวสด) | วิธีเตือน |
+| ตั้งค่าครั้งแรก | เลือกธีม (พรีวิวสด) | เลือกความถี่ |
 |---|---|---|
-| ![](docs/screenshots/wizard-1-welcome-light.png) | ![](docs/screenshots/wizard-3-theme-dark.png) | ![](docs/screenshots/wizard-4-notify-light.png) |
+| ![](docs/screenshots/wizard-1-welcome-light.png) | ![](docs/screenshots/wizard-3-theme-dark.png) | ![](docs/screenshots/wizard-5-frequency-light.png) |
+
+| หน้าตั้งค่า: ความถี่และแบตเตอรี่ | หน้าตั้งค่า: การแจ้งเตือน |
+|---|---|
+| ![](docs/screenshots/settings-frequency-light.png) | ![](docs/screenshots/settings-notify-dark.png) |
 
 | เพื่อน push มาใหม่ | กำลังดึง | รวมเรียบร้อย | เจอจุดชน |
 |---|---|---|---|
@@ -66,7 +78,7 @@
 ติดตั้งจาก Marketplace แล้ว **อัปเดตเองอัตโนมัติ** ไม่ต้องทำอะไร (ถ้าปิด auto-update ไว้ จะมีปุ่ม **Update** ในแถบ Extensions)
 ส่วนแบบ .vsix ต้องดาวน์โหลดไฟล์ใหม่มาติดตั้งทับเอง
 
-ติดตั้งเสร็จ หน้าตั้งค่าจะเปิดขึ้นมาเอง 6 ขั้นสั้นๆ (เปิดซ้ำได้ด้วยคำสั่ง **PushPal: ตั้งค่าใหม่**)
+ติดตั้งเสร็จ หน้าตั้งค่าจะเปิดขึ้นมาเอง 7 ขั้นสั้นๆ (เปิดซ้ำได้ด้วยคำสั่ง **PushPal: ตั้งค่าใหม่**)
 
 ### วิธีใช้
 
@@ -74,6 +86,8 @@
 2. ดูแถบสถานะมุมซ้ายล่าง ถ้าเป็นสีเหลือง = เพื่อน push มาใหม่ → คลิกเพื่อดึงโค้ดมารวม
 3. กดรูป Pal บนแถบซ้ายเพื่อเปิดหน้า **ทีมของฉัน**
 4. ถ้าชนกัน: แก้ทีละไฟล์ใน Merge Editor → เซฟ → กด **รวมเสร็จแล้ว** (หรือ stage ไฟล์ ถ้าเป็นงานที่ยังไม่ commit)
+5. เปลี่ยนโหมดเร็วๆ: คำสั่ง **PushPal: เปลี่ยนโหมด** หรือชี้ที่แถบสถานะแล้วกด “เปลี่ยนโหมด” ใน tooltip
+   ปรับละเอียด: คำสั่ง **PushPal: เปิดการตั้งค่า** หรือปุ่มเฟืองบนหน้าทีมของฉัน
 
 ### การตั้งค่า
 
@@ -81,7 +95,16 @@
 |---|---|---|
 | `pushpal.language` | `auto` | `auto` / `th` / `en` |
 | `pushpal.theme` | `system` | `system` (ตามธีม VS Code) / `light` / `dark` |
-| `pushpal.checkIntervalSeconds` | `60` | เช็กทุกกี่วินาที (15–3600) |
+| `pushpal.mode` | `balanced` | `fast` / `balanced` / `batterySaver` / `custom` — เลือกโหมดแล้วค่าด้านล่างเปลี่ยนตาม แก้ค่าเองเมื่อไหร่ = `custom` |
+| `pushpal.checkIntervalSeconds` | `30` | เช็กทุกกี่วินาทีตอนเปิด VS Code (10–300) |
+| `pushpal.background.intervalSeconds` | `120` | เช็กทุกกี่วินาทีตอนปิด VS Code (60–3600) |
+| `pushpal.battery.idle.*` | เปิด, 10 นาที → 60 วิ | ไม่ได้แตะคอมเกิน N นาที → เช็กห่างขึ้น |
+| `pushpal.battery.lowBattery.*` | เปิด, 20% → 60 วิ | แบตต่ำกว่า N% และไม่ได้เสียบสาย → เช็กห่างขึ้น |
+| `pushpal.battery.lowPowerMode.*` | เปิด, 60 วิ | Low Power Mode / Battery Saver → เช็กห่างขึ้น |
+| `pushpal.battery.pluggedInUsesNormal` | `true` | เสียบสายอยู่ = ใช้ความถี่ปกติเสมอ |
+| `pushpal.activeHours.enabled` / `.start` / `.end` | ปิด, `08:00`–`23:00` | เช็กเฉพาะช่วงเวลานี้ |
+| `pushpal.actions.enabled` | `true` | ติดตามผลเทสต์ GitHub Actions |
+| `pushpal.actions.intervalSeconds` | `20` | เช็กผลเทสต์ทุกกี่วินาทีตอนกำลังรัน (10–120) |
 | `pushpal.notify.inVSCode` | `true` | เด้งใน VS Code |
 | `pushpal.notify.desktop` | `true` | แจ้งเตือนบนหน้าจอเมื่อไม่ได้อยู่ใน VS Code |
 | `pushpal.notify.background` | `false` | เช็กแม้ปิด VS Code (macOS / Windows) |
@@ -92,6 +115,15 @@
 **งานที่ยังไม่ commit จะหายไหม?**
 ไม่หาย PushPal ใช้ `--autostash` git จะพักงานไว้ก่อน แล้วคืนให้หลังรวมเสร็จ ถ้าคืนแล้วชนกัน
 งานคุณยังมีสำรองอยู่ใน stash จนกว่าคุณจะแก้และ stage ครบ แล้ว PushPal ค่อยลบตัวสำรองให้
+
+**กินแบต/เน็ตแค่ไหน?**
+ทุกการเช็กคือ `git fetch` ที่ไม่มีอะไรใหม่ วัดจริงกับ GitHub ได้ประมาณ 5.5 KB ต่อครั้ง (+58 ไบต์ต่อ branch/tag บน remote)
+โหมดสมดุลกับ 1 โปรเจกต์ = 120 ครั้ง/ชม. ≈ 655 KB/ชม. ใช้แบตอยู่? เลือกโหมดประหยัดแบต หรือปรับกฎประหยัดแบตในหน้าตั้งค่า
+ค่าที่หน้าตั้งค่าแสดงคิดจากจำนวนโปรเจกต์และจำนวน branch/tag ที่คุณเปิดอยู่จริง
+
+**ผลเทสต์ GitHub Actions ต้องล็อกอินไหม?**
+repo สาธารณะใช้ได้เลย แต่ GitHub ให้ถามได้ 60 ครั้ง/ชม. PushPal เลยเช็กไม่ถี่กว่านาทีละครั้ง
+กด **เชื่อมบัญชี GitHub** ในหน้าตั้งค่า (ใช้บัญชี GitHub ของ VS Code) เพื่อใช้กับ repo ส่วนตัวและเช็กได้ถี่ตามที่ตั้ง
 
 **PushPal จะ pull เองโดยไม่ถามไหม?**
 ไม่ PushPal ดึงโค้ดเฉพาะตอนคุณกดปุ่มเท่านั้น งานเบื้องหลังทำแค่ `git fetch` เพื่อดูว่ามีอะไรใหม่
@@ -128,7 +160,16 @@ and when you finally push — conflicts everywhere. **PushPal tells you the mome
 
 ### Features
 
-- Checks the remote every 60 s (configurable) and every time you switch back to VS Code (`git fetch`, then `HEAD..@{u}`)
+- Checks the remote on a schedule and every time you switch back to VS Code (`git fetch`, then `HEAD..@{u}`).
+  Four modes: ⚡ Fastest (10 s) · ⚖️ Balanced (30 s, default) · 🔋 Battery saver (60 s) · 🛠 Custom.
+  Each mode shows what it costs, e.g. “120 checks/hour · ≈ 655 KB/hour”, computed from measured `git fetch` sizes
+- Automatic battery saving, each rule adjustable or off: idle for N minutes, battery below N% on battery power,
+  Low Power Mode / Battery Saver, and “plugged in = always the normal interval”. The status bar tooltip says why
+  it's slower right now (“Checking every 1 min right now because the battery is at 15%”)
+- Checking hours (e.g. 08:00–23:00); PushPal pauses outside them, background job included
+- GitHub Actions: after a push, the test run shows in the status bar and you're told when it passes or fails
+- A “PushPal Settings” page (Notifications / Frequency & battery / Language & theme / GitHub): changes apply instantly,
+  stay in sync with VS Code's Settings both ways, with a Restore defaults button. **PushPal: Switch Check Mode** for a quick switch
 - One notification per new commit: who pushed, how many commits, the latest message, and when
 - Extra warning when a teammate changed a file you're also changing (uncommitted, committed-but-unpushed, or new)
 - **Pull in changes**: `git pull --no-rebase --autostash --no-edit` — uncommitted work is set aside and restored
@@ -161,6 +202,10 @@ The setup wizard opens after the first install. Run **PushPal: ตั้งค�
   stash until you've resolved and staged every file.
 - **Does PushPal ever pull on its own?** No. Only when you press the button. The background job only fetches.
 - **No buttons on macOS notifications?** `brew install vjeantet/tap/alerter`, then set the alert style to *Persistent*.
+- **How much battery / data?** Each check is an up-to-date `git fetch`: ≈ 5.5 KB to GitHub (+58 bytes per remote branch/tag),
+  measured with `scripts/measure-fetch.mjs`. Balanced with one project = 120 checks/hour ≈ 655 KB/hour.
+- **GitHub Actions without signing in?** Public repos work, but GitHub allows 60 requests/hour, so PushPal polls once a minute
+  at most. Sign in (Settings page → GitHub) for private repos and the interval you picked.
 - **Uninstalling** removes the background job (uninstall hook + the job removes itself if the extension is gone).
 
 ## Development
@@ -173,6 +218,7 @@ npm run smoke       # runs the extension in your local VS Code with an isolated 
 npm run screenshots # renders every screen into docs/screenshots/
 npm run package     # builds pushpal-<version>.vsix
 npm run icon        # re-renders media/icon.png from the mascot
+node scripts/measure-fetch.mjs . 5   # re-measures the bytes of one check (used by the estimates)
 ```
 
 ### Releasing
