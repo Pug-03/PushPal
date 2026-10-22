@@ -252,6 +252,40 @@ body {
   background: currentColor;
 }
 
+/* quiet hours + GitHub step */
+.wz-quiet {
+  margin-top: var(--pp-s3);
+  padding: var(--pp-s3) var(--pp-s4);
+  border-radius: var(--pp-r-md);
+  background: var(--pp-surface-2);
+  animation: wz-rise var(--pp-mid) var(--pp-ease-out);
+}
+.wz-quiet input[type='time'] {
+  margin: 0 4px;
+  padding: 3px 6px;
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-r-sm);
+  background: var(--pp-surface);
+  color: var(--pp-text);
+  font: inherit;
+  color-scheme: light dark;
+}
+.wz-gh-sign {
+  display: grid;
+  justify-items: center;
+  gap: var(--pp-s2);
+  margin-bottom: var(--pp-s4);
+}
+.wz-gh-opts {
+  margin-top: var(--pp-s3);
+}
+.wz-fine {
+  margin: var(--pp-s3) 0 0;
+  color: var(--pp-text-muted);
+  font-size: 0.85em;
+  text-align: center;
+}
+
 /* frequency step */
 .wz-more {
   display: flex;

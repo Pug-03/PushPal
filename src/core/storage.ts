@@ -11,6 +11,7 @@ import { dirname, join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import type { Lang } from '../i18n';
 import type { FrequencyConfig } from './frequency';
+import type { QuietConfig } from './quiet';
 
 export const HEARTBEAT_INTERVAL_MS = 30_000;
 /** A window counts as "open" if it wrote a heartbeat within this window. */
@@ -38,6 +39,10 @@ export interface WorkerConfig {
   enabled: boolean;
   /** Background interval, battery rules and active hours. Missing in configs written by 1.0.0 (= every run). */
   frequency?: FrequencyConfig;
+  /** Do-not-disturb hours (no desktop notifications). */
+  quiet?: QuietConfig;
+  /** Ask GitHub for checks with the `gh` CLI (installed and signed in) when VS Code is closed. */
+  checksViaGh?: boolean;
 }
 
 export function repoKey(root: string): string {
@@ -81,6 +86,19 @@ export class SharedStore {
   get workerFile() {
     return join(this.dir, 'worker.js');
   }
+  get snoozeFile() {
+    return join(this.dir, 'snooze.json');
+  }
+
+  /** "Mute for an hour": shared by every window and the background worker. */
+  snoozeUntil(): number {
+    return readJson<{ until: number }>(this.snoozeFile, { until: 0 }).until;
+  }
+
+  setSnooze(until: number): void {
+    writeJsonAtomic(this.snoozeFile, { until });
+  }
+
   get stateFile() {
     return join(this.dir, 'worker-state.json');
   }

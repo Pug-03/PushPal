@@ -315,6 +315,23 @@ code,
   background: hsl(var(--hue) 70% 84%);
   box-shadow: 0 0 0 2px var(--pp-surface);
 }
+.avatar.has-img {
+  position: relative;
+  overflow: hidden;
+}
+.avatar-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--pp-mid) var(--pp-ease-out);
+}
+.avatar-img.loaded {
+  opacity: 1;
+}
 .theme-dark .avatar,
 .theme-system body.vscode-dark .avatar {
   color: hsl(var(--hue) 70% 88%);

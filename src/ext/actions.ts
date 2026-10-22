@@ -4,11 +4,23 @@ import { pull, finishMerge, type PullResult, type ErrorCode } from '../git/repo'
 import { listFiles } from '../core/messages';
 import type { RepoEntry, RepoManager } from './repoManager';
 import type { Alerts } from './alerts';
-import { t } from './l10n';
+import { t, currentLang } from './l10n';
+import { explainGitError } from '../core/gitErrors';
+import { captureBeforePull, finishUndoRecord, undoMerge, safePush, isRejected, UNDO_WINDOW_MS, type PushResult } from '../git/safety';
 
+/** Plain-language text for a git failure: the matching explanation + how to fix it. */
 export function errorText(code: ErrorCode, message: string): string {
+  const key = explainGitError(message);
+  if (key !== 'unknown') return `${t(`gerr.${key}.title` as 'gerr.rejected.title')} ${t(`gerr.${key}.fix` as 'gerr.rejected.fix')}`;
   if (code === 'other') return t('err.other', message.split('\n').filter(Boolean).slice(-1)[0] ?? '');
   return t(`err.${code}`);
+}
+
+/** Show a git error explained, with "Show full message" for the original text. */
+export async function showGitError(message: string, code: ErrorCode = 'other'): Promise<void> {
+  const full = t('btn.fullMessage');
+  const choice = await vscode.window.showErrorMessage(errorText(code, message), full);
+  if (choice === full) await vscode.window.showInformationMessage(t('gerr.fullTitle'), { modal: true, detail: message.trim() || '—' });
 }
 
 /** User-facing commands: pull, open conflicts, finish merge. */
@@ -40,14 +52,19 @@ export class Actions {
         );
     if (!entry || entry.phase === 'pulling') return undefined;
     const target = entry.root;
+    let undo: Awaited<ReturnType<typeof finishUndoRecord>> = null;
     const result = await this.repos.withLock(target, async () => {
       this.repos.setPhase(target, 'pulling');
       try {
-        return await pull(target);
+        const before = await captureBeforePull(target).catch(() => null);
+        const r = await pull(target);
+        if (r.kind === 'ok' && before) undo = await finishUndoRecord(target, before).catch(() => null);
+        return r;
       } finally {
         this.repos.setPhase(target, 'idle');
       }
     });
+    entry.undo = undo ?? undefined;
     this.log.appendLine(`[pull] ${entry.name}: ${result.kind}`);
     if (result.kind === 'autostashConflict') await this.repos.rememberAutostash(target, result.stashSha);
     this.repos.setLastResult(target, result);
@@ -60,9 +77,14 @@ export class Actions {
   private async report(entry: RepoEntry, result: PullResult): Promise<void> {
     const conflictButtons = [t('btn.openMergeEditor'), t('btn.howToFix')];
     switch (result.kind) {
-      case 'ok':
-        void vscode.window.showInformationMessage(result.autostashed ? t('pull.okLocal', result.pulled) : t('pull.ok', result.pulled));
+      case 'ok': {
+        // Not awaited: callers (e.g. "merge, then push") must not wait for the message to be dismissed.
+        const undo = t('btn.undoMerge');
+        void vscode.window.showInformationMessage(result.autostashed ? t('pull.okLocal', result.pulled) : t('pull.ok', result.pulled), ...(entry.undo ? [undo] : [])).then((choice) => {
+          if (choice === undo) void this.undo(entry.root);
+        });
         return;
+      }
       case 'upToDate':
         void vscode.window.showInformationMessage(t('pull.upToDate'));
         return;
@@ -96,11 +118,9 @@ export class Actions {
       case 'untrackedInTheWay':
         void vscode.window.showWarningMessage(t('pull.untracked', listFiles(result.files, 5)));
         return;
-      case 'error': {
-        const choice = await vscode.window.showErrorMessage(errorText(result.code, result.message), t('btn.details'));
-        if (choice) this.log.show(true);
+      case 'error':
+        await showGitError(result.message, result.code);
         return;
-      }
     }
   }
 
@@ -160,4 +180,106 @@ export class Actions {
       await this.report(entry, result);
     }
   }
+
+  /** "Undo the last merge": back to exactly how it was, uncommitted work included. */
+  async undo(root?: string): Promise<void> {
+    const entry = root ? this.repos.get(root) : this.repos.list().find((e) => e.undo && Date.now() - e.undo.at < UNDO_WINDOW_MS);
+    const rec = entry?.undo;
+    if (!entry || !rec) {
+      void vscode.window.showInformationMessage(t('undo.none'));
+      return;
+    }
+    const r = await this.repos.withLock(entry.root, () => undoMerge(rec));
+    this.log.appendLine(`[undo] ${entry.name}: ${r.kind}`);
+    if (r.kind === 'ok' || r.kind === 'expired' || r.kind === 'committed') entry.undo = undefined;
+    await this.repos.refresh(entry.root, { fetch: false });
+    switch (r.kind) {
+      case 'ok':
+        void vscode.window.showInformationMessage(t('undo.ok'));
+        return;
+      case 'expired':
+        void vscode.window.showInformationMessage(t('undo.expired'));
+        return;
+      case 'committed':
+        void vscode.window.showWarningMessage(t('undo.committed'));
+        return;
+      case 'changed':
+        void vscode.window.showWarningMessage(t('undo.changed'));
+        return;
+      case 'error':
+        await showGitError(r.message);
+        return;
+    }
+  }
+
+  /** Push, but check the remote first; offer "merge, then push" when teammates pushed. */
+  async push(root?: string): Promise<PushResult | undefined> {
+    const entry = root ? this.repos.get(root) : await this.pickRepo(() => true);
+    if (!entry) return undefined;
+    const r = await this.repos.withLock(entry.root, () => safePush(entry.root));
+    this.log.appendLine(`[push] ${entry.name}: ${r.kind}`);
+    await this.repos.refresh(entry.root, { fetch: false });
+    await this.reportPush(entry, r);
+    return r;
+  }
+
+  async reportPush(entry: RepoEntry, r: PushResult): Promise<void> {
+    switch (r.kind) {
+      case 'ok':
+        void vscode.window.showInformationMessage(t('push.ok', r.pushed));
+        return;
+      case 'nothing':
+        void vscode.window.showInformationMessage(t('push.nothing'));
+        return;
+      case 'behind':
+        await this.offerMergeThenPush(entry, t('push.behind', r.behind, [...new Set(r.incoming.map((c) => c.author))].join(', ')));
+        return;
+      case 'rejected':
+        await this.offerMergeThenPush(entry, t('push.rejected'), r.message);
+        return;
+      case 'noUpstream':
+        void vscode.window.showInformationMessage(t('pull.noUpstream'));
+        return;
+      case 'detached':
+        void vscode.window.showWarningMessage(t('pull.detached'));
+        return;
+      case 'error':
+        await showGitError(r.message);
+        return;
+    }
+  }
+
+  /** Teammates' commits are on the remote: merge them in, then push. */
+  async offerMergeThenPush(entry: RepoEntry, text: string, full?: string): Promise<boolean> {
+    const go = t('btn.mergeThenPush');
+    const buttons = full ? [go, t('btn.fullMessage')] : [go];
+    const choice = await vscode.window.showWarningMessage(text, ...buttons);
+    if (choice === t('btn.fullMessage') && full) {
+      await vscode.window.showInformationMessage(t('gerr.fullTitle'), { modal: true, detail: full });
+      return this.offerMergeThenPush(entry, text);
+    }
+    if (choice !== go) return false;
+    const pulled = await this.pull(entry.root);
+    if (pulled?.kind !== 'ok' && pulled?.kind !== 'upToDate') return false;
+    await this.push(entry.root);
+    return true;
+  }
+
+  /** For VS Code's own Push / Sync: explain a rejected push and offer to fix it. */
+  async handlePushError(root: string, stderr: string): Promise<boolean> {
+    if (!isRejected(stderr)) return false;
+    const entry = this.repos.get(root);
+    if (!entry) return false;
+    void this.offerMergeThenPush(entry, t('push.rejected'), stderr);
+    return true;
+  }
+
+  /** Seconds of undo left for a repo (for the team view). */
+  undoLeft(root: string): number {
+    const rec = this.repos.get(root)?.undo;
+    return rec ? Math.max(0, Math.round((rec.at + UNDO_WINDOW_MS - Date.now()) / 1000)) : 0;
+  }
 }
+
+export { currentLang };
+

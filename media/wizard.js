@@ -16,9 +16,11 @@
     testSent: false,
     finished: null
   };
-  var STEPS = ['welcome', 'lang', 'theme', 'notify', 'frequency', 'test', 'done'];
+  var STEPS = ['welcome', 'lang', 'theme', 'notify', 'frequency', 'github', 'test', 'done'];
   var Modes = window.PushPalModes;
   state.freq = init.freq;
+  state.quiet = init.quiet || { enabled: false, start: '22:00', end: '08:00' };
+  state.github = init.github || { signedIn: false, gh: false, onPass: true, for: 'all' };
   var app = document.getElementById('app');
 
   function s(key) {
@@ -89,7 +91,35 @@
         toggle('notifyInVSCode', I('code'), s('notify.vscode'), s('notify.vscodeHint'), state.notify.notifyInVSCode, false) +
         toggle('notifyDesktop', I('screen'), s('notify.desktop'), s('notify.desktopHint'), state.notify.notifyDesktop, false) +
         toggle('notifyBackground', I('clock'), s('notify.background'), s('notify.backgroundHint') + ' ' + bgHint, state.notify.notifyBackground && init.bgSupported, !init.bgSupported) +
-      '</div>'
+        toggle('quietEnabled', I('moon'), s('set.quiet'), s('set.quietHint'), state.quiet.enabled, false) +
+      '</div>' +
+      '<div class="wz-quiet"' + (state.quiet.enabled ? '' : ' hidden') + '>' + quietRange() + '</div>'
+    );
+  }
+  function quietRange() {
+    var a = '<input type="time" data-quiet="start" value="' + esc(state.quiet.start) + '" aria-label="start">';
+    var b = '<input type="time" data-quiet="end" value="' + esc(state.quiet.end) + '" aria-label="end">';
+    return s('set.quietRange', '\u0000', '\u0001').split(/(\u0000|\u0001)/).map(function (bit) {
+      return bit === '\u0000' ? a : bit === '\u0001' ? b : esc(bit);
+    }).join('');
+  }
+
+  function stepGithub() {
+    var g = state.github;
+    var account = g.signedIn
+      ? '<div class="wz-note ok">' + I('check') + '<span>' + esc(s('gh.signedIn')) + '</span></div>'
+      : '<div class="wz-gh-sign"><button class="btn btn-primary btn-lg" data-act="signIn">' + I('github') + esc(s('gh.signIn')) + '</button><p class="wz-fine">' + esc(s('gh.private')) + '</p></div>';
+    return (
+      header(s('gh.title'), s('gh.body')) +
+      account +
+      '<div class="wz-list wz-gh-opts">' + toggle('checksOnPass', I('check'), s('gh.onPass'), s('gh.onPassHint'), g.onPass, false) + '</div>' +
+      '<div class="wz-preview-label">' + esc(s('gh.for')) + '</div>' +
+      '<div class="wz-grid three" role="radiogroup">' +
+        option('checksFor', 'all', I('globe'), s('gh.for.all'), '', g.for === 'all') +
+        option('checksFor', 'mine', I('code'), s('gh.for.mine'), '', g.for === 'mine') +
+        option('checksFor', 'team', I('branch'), s('gh.for.team'), '', g.for === 'team') +
+      '</div>' +
+      '<p class="wz-fine">' + esc(s(g.gh ? 'gh.bgYes' : 'gh.bgNo')) + ' ' + esc(s('gh.githubOnly')) + '</p>'
     );
   }
 
@@ -178,7 +208,7 @@
     );
   }
 
-  var renderers = [stepWelcome, stepLang, stepTheme, stepNotify, stepFrequency, stepTest, stepDone];
+  var renderers = [stepWelcome, stepLang, stepTheme, stepNotify, stepFrequency, stepGithub, stepTest, stepDone];
 
   // ---------- Shell ----------
   function shell() {
@@ -291,6 +321,14 @@
         state.lang = value;
         post({ type: 'setLang', lang: value });
         fillAll();
+      } else if (group === 'checksFor') {
+        state.github.for = value;
+        post({ type: 'setSetting', key: 'checksFor', value: value });
+        opt.parentNode.querySelectorAll('.opt').forEach(function (o) {
+          var on = o === opt;
+          o.classList.toggle('is-on', on);
+          o.setAttribute('aria-checked', String(on));
+        });
       } else if (group === 'theme') {
         state.theme = value;
         post({ type: 'setTheme', theme: value });
@@ -309,10 +347,19 @@
     if (tg && !tg.disabled) {
       var key = tg.getAttribute('data-key');
       var on = !tg.classList.contains('is-on');
-      state.notify[key] = on;
       tg.classList.toggle('is-on', on);
       tg.setAttribute('aria-checked', String(on));
-      post({ type: 'setNotify', key: key, value: on });
+      if (key === 'quietEnabled') {
+        state.quiet.enabled = on;
+        document.querySelector('.wz-quiet').hidden = !on;
+        post({ type: 'setSetting', key: 'quietEnabled', value: on });
+      } else if (key === 'checksOnPass') {
+        state.github.onPass = on;
+        post({ type: 'setSetting', key: 'checksOnPass', value: on });
+      } else {
+        state.notify[key] = on;
+        post({ type: 'setNotify', key: key, value: on });
+      }
       return;
     }
     var act = e.target.closest('[data-act]');
@@ -321,6 +368,7 @@
       if (a === 'test') post({ type: 'test' });
       if (a === 'installAlerter') post({ type: 'installAlerter' });
       if (a === 'openSettings') post({ type: 'openSettings' });
+      if (a === 'signIn') post({ type: 'signIn' });
     }
   }
 
@@ -334,6 +382,9 @@
     if (m.type === 'theme') {
       state.theme = m.theme;
       applyTheme(m.theme);
+    } else if (m.type === 'signedIn') {
+      state.github.signedIn = !!m.ok;
+      fillStep(STEPS.indexOf('github'));
     } else if (m.type === 'testResult') {
       state.backend = m.backend;
       state.testSent = true;
@@ -358,6 +409,14 @@
         });
       }
     }
+  });
+
+  document.addEventListener('change', function (e) {
+    var t = e.target.closest && e.target.closest('input[data-quiet]');
+    if (!t || !/^\d\d:\d\d$/.test(t.value)) return;
+    var which = t.getAttribute('data-quiet');
+    state.quiet[which] = t.value;
+    post({ type: 'setSetting', key: which === 'start' ? 'quietStart' : 'quietEnd', value: t.value });
   });
 
   document.addEventListener('keydown', function (e) {

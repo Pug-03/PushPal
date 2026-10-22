@@ -12,6 +12,9 @@
   var app = document.getElementById('app');
 
   var seenShas = null; // shas already rendered (null = first render, no entrance animation)
+  var expanded = {}; // sha → checks panel open
+  var details = {}; // "sha|checkId" → failure detail (null while loading)
+  var undoUntil = 0; // when the "undo the last merge" offer ends (ms)
   var celebratedAt = (vscode.getState() || {}).celebratedAt || 0;
   var successUntil = 0;
   var currentMode = '';
@@ -55,10 +58,18 @@
     return (first + second).toUpperCase();
   }
   function avatar(c) {
-    return '<span class="avatar" data-hue="' + hue((c.email || c.author || '').toLowerCase()) + '" title="' + esc(c.author) + '">' + esc(initials(c.author)) + '</span>';
+    // Initials underneath; the profile picture covers them once it loads (and is dropped if it fails).
+    var img = c.avatar ? '<img class="avatar-img" src="' + esc(c.avatar) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '';
+    return '<span class="avatar' + (c.avatar ? ' has-img' : '') + '" data-hue="' + hue((c.email || c.author || '').toLowerCase()) + '" title="' + esc(c.author) + '">' + esc(initials(c.author)) + img + '</span>';
   }
   function applyHues(root) {
     root.querySelectorAll('[data-hue]').forEach(function (el) { el.style.setProperty('--hue', el.getAttribute('data-hue')); });
+    root.querySelectorAll('img.avatar-img:not([data-wired])').forEach(function (img) {
+      img.setAttribute('data-wired', '');
+      img.addEventListener('error', function () { img.remove(); });
+      img.addEventListener('load', function () { img.classList.add('loaded'); });
+      if (img.complete && img.naturalWidth) img.classList.add('loaded');
+    });
   }
   function uniqueAuthors(commits) {
     var seen = {}, out = [];
@@ -170,7 +181,7 @@
         break;
       case 'error':
         title = s('team.error.title'); sub = r.error ? r.error.text : '';
-        actions = btn('', 'refresh', s('team.retry'), 'check');
+        actions = btn('', 'refresh', s('team.retry'), 'check') + (r.error && r.error.raw ? btn('ghost', 'help', s('team.error.full'), 'fullError') : '');
         break;
       case 'noUpstream':
         title = s('team.noUpstream.title'); sub = s('team.noUpstream.body', r.branch || '');
@@ -246,8 +257,68 @@
           '<div class="tl-meta"><span class="tl-author">' + esc(c.author) + '</span><span class="sep">·</span><time>' + esc(ago(c.time)) + '</time><span class="sep">·</span><span class="mono">' + esc(c.sha.slice(0, 7)) + '</span></div>' +
         '</div>' +
         (c.isNew ? '<span class="tl-new"><i class="pulse"></i>' + esc(s('team.new')) + '</span>' : '') +
+        badgeHtml(c) +
+        (c.checks && expanded[c.sha] ? checksPanel(c) : '') +
       '</li>'
     );
+  }
+
+  // ---------- GitHub checks ----------
+  var CK_ICONS = {
+    pending: '<svg class="ck-ic ck-spin" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" class="ck-track"/><path d="M8 2a6 6 0 0 1 6 6" class="ck-arc"/></svg>',
+    success: '<svg class="ck-ic ck-draw" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" class="ck-disc"/><path d="M4.6 8.3 7 10.6l4.4-5" class="ck-tick"/></svg>',
+    failure: '<svg class="ck-ic ck-shake" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" class="ck-disc"/><path d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" class="ck-x"/></svg>',
+    skipped: '<svg class="ck-ic" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" class="ck-track"/><path d="M4.5 11.5l7-7" class="ck-slash"/></svg>'
+  };
+  CK_ICONS.cancelled = CK_ICONS.skipped;
+
+  function badgeHtml(c) {
+    if (!c.checks) return '';
+    var k = c.checks;
+    return '<button class="ck-badge ck-' + k.state + '" data-act="toggleChecks" data-arg="' + esc(c.sha) + '" aria-expanded="' + !!expanded[c.sha] + '" title="' + esc(s('team.checks.title')) + '">' +
+      CK_ICONS[k.state] + '<span>' + k.passed + '/' + k.total + '</span></button>';
+  }
+
+  function dur(sec) {
+    if (sec === undefined || sec === null) return '';
+    return sec < 60 ? s('unit.s', sec) : sec % 60 ? s('unit.minS', Math.floor(sec / 60), sec % 60) : s('unit.min', sec / 60);
+  }
+
+  function checksPanel(c) {
+    return '<div class="ck-panel"><ul class="ck-list">' + c.checks.items.map(function (i) {
+      var key = c.sha + '|' + i.id;
+      var open = Object.prototype.hasOwnProperty.call(details, key);
+      return '<li class="ck-item ck-' + i.state + '">' +
+        '<div class="ck-row">' + CK_ICONS[i.state] +
+          '<span class="ck-name">' + esc(i.name) + '</span>' +
+          '<span class="ck-state">' + esc(s('team.check.state.' + i.state)) + (i.duration !== undefined ? ' · ' + esc(dur(i.duration)) : '') + '</span>' +
+          (i.canExplain ? '<button class="ck-why" data-act="why" data-arg="' + esc(key) + '" aria-expanded="' + open + '">' + esc(s('team.check.why')) + '</button>' : '') +
+        '</div>' +
+        (open ? detailHtml(details[key], i) : '') +
+      '</li>';
+    }).join('') + '</ul></div>';
+  }
+
+  function detailHtml(d, item) {
+    if (d === null) return '<div class="ck-detail"><span class="ck-loading">' + CK_ICONS.pending + esc(s('team.check.loading')) + '</span></div>';
+    var parts = '';
+    if (d && d.step) parts += '<div class="ck-step">' + esc(s('team.check.step', d.step)) + '</div>';
+    if (d && d.kind) parts += '<p class="ck-explain">' + esc(s('team.check.kind.' + d.kind)) + '</p>';
+    parts += d && d.log && d.log.length ? '<pre class="ck-log">' + esc(d.log.join('\n')) + '</pre>' : '<p class="ck-explain muted">' + esc(s('team.check.noLog')) + '</p>';
+    var url = (d && d.url) || item.url;
+    if (url) parts += '<button class="btn btn-sm" data-act="openUrl" data-arg="' + esc(url) + '">' + I('cloud') + '<span>' + esc(s('team.check.open')) + '</span></button>';
+    return '<div class="ck-detail">' + parts + '</div>';
+  }
+
+  // ---------- undo the last merge ----------
+  function undoHtml(r) {
+    if (!r || !(undoUntil > Date.now())) return '';
+    return '<section class="undo-card"><div class="undo-text"><b>' + esc(s('team.undo')) + '</b><span id="undoLeft">' + esc(s('team.undoHint', mmss(undoUntil - Date.now()))) + '</span></div>' +
+      '<button class="btn btn-sm" data-act="undo">' + I('refresh') + '<span>' + esc(s('team.undoBtn')) + '</span></button></section>';
+  }
+  function mmss(ms) {
+    var t = Math.max(0, Math.round(ms / 1000));
+    return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
   }
 
   function timelineHtml(r, mode) {
@@ -277,7 +348,8 @@
   function footerHtml(r) {
     if (!r || !r.checkedAt) return '';
     return '<footer class="foot"><span>' + esc(s('team.checked', ago(r.checkedAt / 1000))) + '</span>' +
-      '<button class="icon-btn" data-act="check" title="' + esc(s('team.checkNow')) + '" aria-label="' + esc(s('team.checkNow')) + '">' + I('refresh') + '</button></footer>';
+      '<span class="foot-actions"><button class="icon-btn" data-act="push" title="' + esc(s('team.push')) + '" aria-label="' + esc(s('team.push')) + '">' + I('cloud') + '</button>' +
+      '<button class="icon-btn" data-act="check" title="' + esc(s('team.checkNow')) + '" aria-label="' + esc(s('team.checkNow')) + '">' + I('refresh') + '</button></span></footer>';
   }
 
   // ---------- Render ----------
@@ -329,7 +401,8 @@
       }
       if (mode === 'success') setTimeout(function () { M.confetti(hero, 40); }, 260);
     }
-    document.getElementById('alerts').innerHTML = sameFileHtml(r) + conflictHtml(r, mode);
+    if (r) undoUntil = r.undoLeft ? Date.now() + r.undoLeft * 1000 : 0;
+    document.getElementById('alerts').innerHTML = undoHtml(r) + sameFileHtml(r) + conflictHtml(r, mode);
     renderTimeline(r, mode);
     document.getElementById('foot').innerHTML = footerHtml(r);
     applyHues(app);
@@ -379,6 +452,26 @@
         post({ type: 'select', root: arg });
         break;
       case 'cmd': post({ type: 'command', id: arg }); break;
+      case 'toggleChecks':
+        expanded[arg] = !expanded[arg];
+        renderTimeline(r, currentMode);
+        applyHues(app);
+        break;
+      case 'why': {
+        if (Object.prototype.hasOwnProperty.call(details, arg)) delete details[arg];
+        else {
+          details[arg] = null;
+          var parts = arg.split('|');
+          post({ type: 'checkDetail', root: r.root, sha: parts[0], id: parts[1] });
+        }
+        renderTimeline(r, currentMode);
+        applyHues(app);
+        break;
+      }
+      case 'openUrl': post({ type: 'openUrl', url: arg }); break;
+      case 'undo': post({ type: 'undo', root: r.root }); break;
+      case 'push': post({ type: 'push', root: r.root }); break;
+      case 'fullError': if (r.error) post({ type: 'fullError', text: r.error.raw || r.error.text }); break;
     }
   }
 
@@ -387,11 +480,33 @@
     if (m.type === 'view') {
       view = m.view;
       update();
+    } else if (m.type === 'checkDetail') {
+      details[m.sha + '|' + m.id] = m.detail || {};
+      renderTimeline(repo(), currentMode);
+      applyHues(app);
+    } else if (m.type === 'expandChecks') {
+      expanded[m.sha] = true;
+      renderTimeline(repo(), currentMode);
+      applyHues(app);
+      var li = document.querySelector('.tl-item[data-sha="' + m.sha + '"]');
+      if (li) li.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else if (m.type === 'theme') {
       var root = document.documentElement;
       root.className = root.className.replace(/\btheme-[a-z]+\b/, 'theme-' + m.theme);
     }
   });
+
+  // Undo countdown.
+  setInterval(function () {
+    var el = document.getElementById('undoLeft');
+    if (!el) return;
+    if (undoUntil <= Date.now()) {
+      var card = el.closest('.undo-card');
+      if (card) card.remove();
+      return;
+    }
+    el.textContent = s('team.undoHint', mmss(undoUntil - Date.now()));
+  }, 1000);
 
   // Keep relative times fresh.
   setInterval(function () {
@@ -407,5 +522,7 @@
 
   shell();
   update();
-  post({ type: 'ready' });
+  // Tell the extension whether the animation library loaded (shown in the PushPal output).
+  post({ type: 'ready', diag: { gsap: !!window.gsap, morph: !!window.MorphSVGPlugin, errors: window.__ppErrors || [] } });
+  window.addEventListener('error', function (e) { post({ type: 'error', message: String(e.message) + ' @ ' + String(e.filename || '').split('/').pop() + ':' + e.lineno }); });
 })();

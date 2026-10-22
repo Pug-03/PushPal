@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { webviewStrings, type Lang } from '../i18n';
 import { renderPage } from './webview';
-import { readSettings, saveSettings, type ThemeSetting } from './settings';
+import { readSettings, saveSettings, type ThemeSetting, type Settings } from './settings';
 import { currentLang } from './l10n';
 import { isBackgroundSupported } from '../background/agent';
 import type { ExtensionDesktopChannel } from './desktopChannel';
@@ -16,6 +16,8 @@ type FromWizard =
   | { type: 'setTheme'; theme: ThemeSetting }
   | { type: 'setNotify'; key: 'notifyInVSCode' | 'notifyDesktop' | 'notifyBackground'; value: boolean }
   | { type: 'setMode'; mode: Mode }
+  | { type: 'setSetting'; key: 'quietEnabled' | 'quietStart' | 'quietEnd' | 'checksOnPass' | 'checksFor'; value: unknown }
+  | { type: 'signIn' }
   | { type: 'openSettings' }
   | { type: 'test' }
   | { type: 'installAlerter' }
@@ -91,6 +93,8 @@ export class SetupWizard {
         bgSupported: isBackgroundSupported(process.platform),
         notify: { notifyInVSCode: s.notifyInVSCode, notifyDesktop: s.notifyDesktop, notifyBackground: s.notifyBackground },
         freq: await frequencyModel(this.freq),
+        quiet: { enabled: s.quietEnabled, start: s.quietStart, end: s.quietEnd },
+        github: { signedIn: this.freq.ci.signedIn, gh: this.freq.ghFound?.() ?? false, onPass: s.checksOnPass, for: s.checksFor },
       },
     });
   }
@@ -112,6 +116,14 @@ export class SetupWizard {
       case 'setMode':
         await this.freq.modes.setMode(m.mode);
         return;
+      case 'setSetting':
+        await saveSettings({ [m.key]: m.value } as Partial<Settings>);
+        return;
+      case 'signIn': {
+        const ok = await this.freq.ci.signIn();
+        this.send({ type: 'signedIn', ok });
+        return;
+      }
       case 'openSettings':
         await vscode.commands.executeCommand('pushpal.openSettings', 'frequency');
         return;

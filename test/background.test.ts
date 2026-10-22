@@ -186,6 +186,27 @@ describe('background worker', () => {
     assert.equal(events('selfDestruct').length, 1);
   });
 
+  test('do-not-disturb hours and snooze: no notification, announced afterwards', async () => {
+    const store = new SharedStore(storage);
+    const h = new Date().getHours();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    store.writeConfig({ ...store.readConfig()!, quiet: { enabled: true, start: `${pad(h)}:00`, end: `${pad((h + 1) % 24)}:00` } });
+    write(t.alice, 'q.txt', 'q');
+    await commitAndPush(t.alice, 'During quiet hours');
+    runWorker();
+    assert.equal(events('notify').length, 0);
+    assert.equal(events('quiet').length, 1);
+
+    // Quiet hours over, but snoozed for an hour.
+    store.writeConfig({ ...store.readConfig()!, quiet: { enabled: false, start: '22:00', end: '08:00' } });
+    store.setSnooze(Date.now() + 60 * 60_000);
+    runWorker();
+    assert.equal(events('notify').length, 0);
+    store.setSnooze(0);
+    runWorker();
+    assert.equal(events('notify').length, 1, 'announced once it is no longer quiet');
+  });
+
   describe('schedule from config.json', () => {
     const setFrequency = (f: FrequencyConfig) => {
       const store = new SharedStore(storage);

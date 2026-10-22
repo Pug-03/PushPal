@@ -37,7 +37,8 @@ export function renderPage(webview: vscode.Webview, extensionUri: vscode.Uri, o:
   const media = (f: string) => webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', f)).toString();
   const csp = [
     "default-src 'none'",
-    `img-src ${webview.cspSource} data:`,
+    // Commit authors' profile pictures (GitHub avatars; see src/ext/avatars.ts).
+    `img-src ${webview.cspSource} data: https://avatars.githubusercontent.com https://github.com`,
     `style-src ${webview.cspSource}`,
     `font-src ${webview.cspSource}`,
     `script-src 'nonce-${nonce}'`,
@@ -52,6 +53,7 @@ export function renderPage(webview: vscode.Webview, extensionUri: vscode.Uri, o:
 ${['base.css', ...o.styles].map((s) => `<link rel="stylesheet" href="${media(s)}">`).join('\n')}
 </head>
 <body>
+<script nonce="${nonce}">window.__ppErrors=[];addEventListener('error',function(e){__ppErrors.push(String(e.message)+' @ '+String(e.filename||'').split('/').pop()+':'+e.lineno)});</script>
 <div id="app"></div>
 <script type="application/json" id="pp-init" nonce="${nonce}">${safeJson(o.init)}</script>
 ${['vendor/gsap.min.js', 'vendor/MorphSVGPlugin.min.js', 'mascot.js', 'icons.js', ...o.scripts].map((s) => `<script nonce="${nonce}" src="${media(s)}"></script>`).join('\n')}

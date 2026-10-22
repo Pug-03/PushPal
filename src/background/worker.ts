@@ -19,6 +19,11 @@ import { DesktopNotifier, type DesktopNote } from '../notify/desktop';
 import { uninstallAgent, realRunner, type Runner } from './agent';
 import { effectiveInterval, inActiveHours, needsPowerState, type FrequencyConfig, type PowerState } from '../core/frequency';
 import { probePower } from '../core/power';
+import { isQuiet } from '../core/quiet';
+import { fetchChecks } from '../core/checks';
+import { findSignedInGh, ghRequester } from '../core/ghCli';
+import { githubSlug } from '../core/ciRuns';
+import { upstreamRemoteUrl } from '../git/repo';
 
 const LOCK_STALE_MS = 5 * 60_000;
 /** launchd / Task Scheduler don't start us at exact 60 s marks. */
@@ -138,6 +143,22 @@ export async function isDue(f: FrequencyConfig | undefined, lastCheckAt: number,
   return { due: true, reason: e.reason };
 }
 
+/** "checks running / failed / passed" for the pushed commit, via the gh CLI. */
+async function checksLine(cfg: WorkerConfig, root: string, sha: string): Promise<string | undefined> {
+  if (TEST_LOG) return undefined;
+  const url = await upstreamRemoteUrl(root);
+  const slug = url ? githubSlug(url) : null;
+  const gh = slug ? await findSignedInGh() : null;
+  if (!slug || !gh) return undefined;
+  const r = await fetchChecks(ghRequester(gh), slug, sha);
+  if (r.kind !== 'ok') return undefined;
+  const sum = r.summary;
+  if (sum.state === 'pending') return translate(cfg.lang, 'checks.line.pending');
+  if (sum.state === 'failure') return translate(cfg.lang, 'checks.line.failed', sum.failed.length, sum.total);
+  if (sum.state === 'success') return translate(cfg.lang, 'checks.line.passed', sum.passed, sum.total);
+  return undefined;
+}
+
 export async function runOnce(storageDir: string): Promise<void> {
   const store = new SharedStore(storageDir);
   const cfg = store.readConfig();
@@ -165,8 +186,15 @@ export async function runOnce(storageDir: string): Promise<void> {
       const snap = await checkRepo(root, { fetch: true });
       if (snap.error) log(storageDir, `${root}: ${snap.error.code} ${snap.error.message.split('\n')[0]}`);
       if (snap.state !== 'behind' || !snap.upstreamSha) continue;
+      // Do-not-disturb / snooze: don't claim it, so it's announced once the quiet time is over.
+      if (isQuiet(cfg.quiet, store.snoozeUntil(), new Date())) {
+        testRecord({ type: 'quiet', root });
+        continue;
+      }
       if (!store.claimNotification(root, snap.upstreamSha)) continue;
       const s = summarizeIncoming(cfg.lang, root, snap.incoming, snap.behind, snap.overlap);
+      const checks = cfg.checksViaGh ? await checksLine(cfg, root, snap.upstreamSha) : undefined;
+      if (checks) s.body = `${s.body} · ${checks}`;
       log(storageDir, `${root}: ${snap.behind} new commit(s), notifying`);
       await notify(storageDir, cfg, root, {
         group: repoGroupId(root),

@@ -32,15 +32,16 @@ export class ExtensionDesktopChannel implements DesktopChannel {
     return `${vscode.env.uriScheme}://${this.context.extension.id}/${action}?repo=${encodeURIComponent(root)}`;
   }
 
-  show(n: { group: string; title: string; message: string; subtitle?: string; root: string }) {
+  show(n: { group: string; title: string; message: string; subtitle?: string; root: string; primary?: 'pull' | 'show' }) {
+    const primary = n.primary ?? 'pull';
     return this.notifier.show({
       group: n.group,
       title: n.title,
       subtitle: n.subtitle,
       message: n.message,
-      primaryLabel: t('btn.pull'),
+      primaryLabel: primary === 'pull' ? t('btn.pull') : t('checks.btn.see'),
       laterLabel: t('btn.later'),
-      primaryUri: this.uri('pull', n.root),
+      primaryUri: this.uri(primary, n.root),
       contentUri: this.uri('show', n.root),
     });
   }

@@ -40,6 +40,19 @@
   "cfg.hours.enabled": "Only check between `#pushpal.activeHours.start#` and `#pushpal.activeHours.end#`; pause outside (also the background task).",
   "cfg.hours.start": "Start of the checking hours (HH:MM, 24-hour).",
   "cfg.hours.end": "End of the checking hours (HH:MM, 24-hour). Can be earlier than the start for overnight hours.",
-  "cfg.actions.enabled": "Watch GitHub Actions for the latest commit after a push and tell you when the tests pass or fail.",
-  "cfg.actions.interval": "Seconds between GitHub Actions checks while a run is in progress (10–120). Without a GitHub sign-in, at most once a minute."
+  "cfg.actions.enabled": "Report GitHub checks (Actions and other checks) for each commit: after your pushes and your teammates', in the status bar and in My Team. Uses VS Code's GitHub sign-in.",
+  "cfg.actions.interval": "Seconds between GitHub Actions checks while a run is in progress (10–120). Without a GitHub sign-in, at most once a minute.",
+  "cfg.avatars": "Show commit authors' GitHub profile pictures in My Team. Pictures load from GitHub (`avatars.githubusercontent.com`); for authors without a GitHub noreply address PushPal asks the GitHub API once per new upstream commit.",
+  "cmd.push": "Push (Check First) · push แบบเช็กก่อน",
+  "cmd.undoMerge": "Undo Last Merge · ย้อนการรวมเมื่อกี้",
+  "cmd.snooze": "Mute Alerts for 1 Hour · ปิดเตือน 1 ชั่วโมง",
+  "cmd.unsnooze": "Unmute Alerts · เปิดเตือน",
+  "cfg.actions.onPass": "Also tell me when checks pass (failures are always reported).",
+  "cfg.actions.for": "Whose pushes to report checks for.",
+  "cfg.actions.for.all": "Everyone",
+  "cfg.actions.for.mine": "Only my pushes",
+  "cfg.actions.for.team": "Only teammates' pushes",
+  "cfg.quiet.enabled": "Do not disturb between `#pushpal.quiet.start#` and `#pushpal.quiet.end#`: no pop-ups or desktop notifications (the status bar keeps updating).",
+  "cfg.quiet.start": "Start of the quiet hours (HH:MM).",
+  "cfg.quiet.end": "End of the quiet hours (HH:MM). Can be earlier than the start for overnight."
 }

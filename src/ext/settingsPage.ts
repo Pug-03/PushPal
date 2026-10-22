@@ -10,7 +10,7 @@ import { describeAdjustments, type ModeController } from './modes';
 import { scheduleLine } from './statusBar';
 import type { RepoManager } from './repoManager';
 import type { Scheduler } from './scheduler';
-import type { CiWatcher } from './ciWatcher';
+import type { ChecksWatcher } from './checks';
 import type { ExtensionDesktopChannel } from './desktopChannel';
 import { sendTestNotification } from './desktopSetup';
 
@@ -18,7 +18,11 @@ export interface FrequencyDeps {
   modes: ModeController;
   repos: RepoManager;
   scheduler: Scheduler;
-  ci: CiWatcher;
+  ci: ChecksWatcher;
+  /** `gh` CLI installed and signed in (background alerts can include checks). */
+  ghFound?: () => boolean;
+  /** "Mute for an hour" end time (ms), 0 when not muted. */
+  snoozeUntil?: () => number;
 }
 
 /** Everything the mode cards and the custom panel need. Shared with the wizard. */
@@ -43,6 +47,8 @@ export async function frequencyModel(d: FrequencyDeps) {
     effective: d.scheduler.effective ?? null,
     nowText: scheduleLine({ mode: d.modes.mode, effective: d.scheduler.effective }).replace(/\$\([^)]+\)\s*/g, ''),
     signedIn: d.ci.signedIn,
+    ghFound: d.ghFound?.() ?? false,
+    snoozeUntil: d.snoozeUntil?.() ?? 0,
   };
 }
 
@@ -54,7 +60,9 @@ type FromPage =
   | { type: 'test' }
   | { type: 'signIn' }
   | { type: 'reset' }
-  | { type: 'openVsSettings' };
+  | { type: 'openVsSettings' }
+  | { type: 'snooze' }
+  | { type: 'unsnooze' };
 
 /** "ตั้งค่า PushPal / PushPal Settings": one page with every setting, live both ways. */
 export class SettingsPage {
@@ -70,6 +78,11 @@ export class SettingsPage {
       return;
     }
     SettingsPage.current = new SettingsPage(context, deps, desktop, section);
+  }
+
+  /** Re-send the page data (e.g. snooze changed). */
+  static refresh(): void {
+    SettingsPage.current?.schedulePost();
   }
 
   static postTheme(theme: ThemeSetting): void {
@@ -155,6 +168,12 @@ export class SettingsPage {
         await resetAllSettings();
         await this.deps.modes.init();
         return this.post({ notice: t('settings.resetDone') });
+      case 'snooze':
+        await vscode.commands.executeCommand('pushpal.snooze');
+        return this.post();
+      case 'unsnooze':
+        await vscode.commands.executeCommand('pushpal.unsnooze');
+        return this.post();
       case 'openVsSettings':
         await vscode.commands.executeCommand('workbench.action.openSettings', '@ext:' + this.context.extension.id);
         return;

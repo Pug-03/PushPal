@@ -40,6 +40,7 @@ try {
   console.error('VS Code exited with error', e.status);
 }
 if (!existsSync(result)) {
+  if (existsSync(result + '.err')) console.error(readFileSync(result + '.err', 'utf8'));
   console.error('SMOKE FAILED');
   process.exit(1);
 }

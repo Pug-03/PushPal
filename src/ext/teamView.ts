@@ -2,20 +2,35 @@ import * as vscode from 'vscode';
 import { webviewStrings } from '../i18n';
 import { renderPage } from './webview';
 import { readSettings } from './settings';
-import { currentLang } from './l10n';
+import { currentLang, t } from './l10n';
 import { errorText, type Actions } from './actions';
 import type { RepoEntry, RepoManager } from './repoManager';
 import { repoKey } from '../core/storage';
+import type { CheckBadge } from './checks';
+import type { FailureDetail } from '../core/checks';
+
+/** What the page reports about itself: animation library loaded, script errors. */
+export interface WebviewDiag {
+  gsap: boolean;
+  morph: boolean;
+  errors: string[];
+}
 
 type FromView =
-  | { type: 'ready' }
+  | { type: 'ready'; diag?: WebviewDiag }
+  | { type: 'error'; message: string }
   | { type: 'select'; root: string }
   | { type: 'pull'; root: string }
   | { type: 'check' }
   | { type: 'openFile'; root: string; file: string }
   | { type: 'mergeEditor'; root: string; file: string }
   | { type: 'finishMerge'; root: string }
-  | { type: 'command'; id: 'openFolder' | 'clone' | 'publish' | 'switchBranch' | 'setup' };
+  | { type: 'command'; id: 'openFolder' | 'clone' | 'publish' | 'switchBranch' | 'setup' }
+  | { type: 'checkDetail'; root: string; sha: string; id: string }
+  | { type: 'openUrl'; url: string }
+  | { type: 'undo'; root: string }
+  | { type: 'push'; root: string }
+  | { type: 'fullError'; text: string };
 
 const COMMANDS: Record<string, string> = {
   openFolder: 'workbench.action.files.openFolder',
@@ -31,6 +46,17 @@ export class TeamViewProvider implements vscode.WebviewViewProvider {
   private view: vscode.WebviewView | undefined;
   private selected: string | undefined;
   private pending: NodeJS.Timeout | undefined;
+  /** Last self-report from the page (used by the smoke test and the output log). */
+  diag: WebviewDiag | undefined;
+  log: ((line: string) => void) | undefined;
+  /** GitHub checks of a commit (timeline badge). */
+  checksFor: ((sha: string) => CheckBadge | undefined) | undefined;
+  /** Why a check failed (failed step, end of the log). */
+  checkDetail: ((root: string, sha: string, id: string) => Promise<FailureDetail | undefined>) | undefined;
+  /** Seconds left to undo the last merge. */
+  undoLeft: ((root: string) => number) | undefined;
+  /** Profile picture URL for a commit author's e-mail. */
+  avatarFor: ((email: string) => string | undefined) | undefined;
   /** GitHub Actions result per repo, so the pug can react to it. */
   ciState: ((root: string) => { state: 'running' | 'success' | 'failure' } | undefined) | undefined;
 
@@ -76,10 +102,12 @@ export class TeamViewProvider implements vscode.WebviewViewProvider {
     void this.view?.webview.postMessage({ type: 'theme', theme: readSettings().theme });
   }
 
-  reveal(root?: string): void {
+  reveal(root?: string, sha?: string): void {
     if (root) this.selected = root;
     void vscode.commands.executeCommand(`${TeamViewProvider.id}.focus`);
     this.post();
+    // Open that commit's checks once the page has the data.
+    if (sha) setTimeout(() => void this.view?.webview.postMessage({ type: 'expandChecks', sha }), 300);
   }
 
   /** Re-send the view data (e.g. GitHub Actions finished). */
@@ -104,13 +132,26 @@ export class TeamViewProvider implements vscode.WebviewViewProvider {
       const rank = (e: RepoEntry) => (e.snapshot?.state === 'conflict' ? 0 : e.snapshot?.state === 'behind' ? 1 : 2);
       selected = entries.reduce((best, e, i) => (rank(e) < rank(entries[best]) ? i : best), 0);
     }
-    return { repos: entries.map((e) => ({ ...serialize(e), ci: this.ciState?.(e.root) ?? null })), selected };
+    const decorate = <T extends { email: string; sha: string }>(c: T) => ({ ...c, avatar: this.avatarFor?.(c.email) ?? null, checks: this.checksFor?.(c.sha) ?? null });
+    return {
+      repos: entries.map((e) => {
+        const r = serialize(e);
+        return { ...r, recent: r.recent.map(decorate), incoming: r.incoming.map(decorate), ci: this.ciState?.(e.root) ?? null, undoLeft: this.undoLeft?.(e.root) ?? 0 };
+      }),
+      selected,
+    };
   }
 
   private async onMessage(m: FromView): Promise<void> {
     switch (m.type) {
       case 'ready':
+        this.diag = m.diag;
+        if (m.diag) this.log?.(`[team view] gsap=${m.diag.gsap} morph=${m.diag.morph}${m.diag.errors.length ? ' errors: ' + m.diag.errors.join(' | ') : ''}`);
         this.post();
+        return;
+      case 'error':
+        this.log?.(`[team view] ${m.message}`);
+        this.diag?.errors.push(m.message);
         return;
       case 'select':
         this.selected = m.root;
@@ -134,6 +175,23 @@ export class TeamViewProvider implements vscode.WebviewViewProvider {
         return;
       case 'command':
         if (COMMANDS[m.id]) await vscode.commands.executeCommand(COMMANDS[m.id]);
+        return;
+      case 'checkDetail': {
+        const detail = await this.checkDetail?.(m.root, m.sha, m.id).catch(() => undefined);
+        void this.view?.webview.postMessage({ type: 'checkDetail', sha: m.sha, id: m.id, detail: detail ?? null });
+        return;
+      }
+      case 'openUrl':
+        if (/^https:\/\//.test(m.url)) await vscode.env.openExternal(vscode.Uri.parse(m.url));
+        return;
+      case 'undo':
+        await this.actions.undo(m.root);
+        return;
+      case 'push':
+        await this.actions.push(m.root);
+        return;
+      case 'fullError':
+        await vscode.window.showInformationMessage(t('gerr.fullTitle'), { modal: true, detail: m.text });
         return;
     }
   }
@@ -160,7 +218,7 @@ function serialize(e: RepoEntry) {
     recent,
     overlap: s?.overlap ?? [],
     conflict: s?.conflict ? { kind: s.conflict.kind, files: s.conflict.files } : null,
-    error: s?.error ? { code: s.error.code, text: errorText(s.error.code, s.error.message) } : null,
+    error: s?.error ? { code: s.error.code, text: errorText(s.error.code, s.error.message), raw: s.error.message } : null,
     checkedAt: s?.checkedAt ?? 0,
     lastResult: r ? { kind: r.result.kind, pulled: r.result.kind === 'ok' ? r.result.pulled : 0, at: r.at } : null,
   };

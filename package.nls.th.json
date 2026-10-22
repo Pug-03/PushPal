@@ -40,6 +40,19 @@
   "cfg.hours.enabled": "เช็กเฉพาะช่วง `#pushpal.activeHours.start#` ถึง `#pushpal.activeHours.end#` นอกช่วงหยุดเช็ก (รวมงานเบื้องหลังด้วย)",
   "cfg.hours.start": "เวลาเริ่มเช็ก (HH:MM แบบ 24 ชม.)",
   "cfg.hours.end": "เวลาหยุดเช็ก (HH:MM แบบ 24 ชม.) ตั้งให้น้อยกว่าเวลาเริ่มได้ ถ้าต้องการข้ามคืน",
-  "cfg.actions.enabled": "ติดตามผลเทสต์ GitHub Actions ของ commit ล่าสุดหลังมีคน push แล้วบอกเมื่อผ่านหรือไม่ผ่าน",
-  "cfg.actions.interval": "เช็กผลเทสต์ทุกกี่วินาทีตอนที่เทสต์กำลังรัน (10–120) ถ้ายังไม่เชื่อมบัญชี GitHub จะเช็กได้ไม่ถี่กว่านาทีละครั้ง"
+  "cfg.actions.enabled": "แจ้งผลเช็กบน GitHub (Actions และเช็กอื่นๆ) ของแต่ละ commit ทั้งหลังคุณ push และเพื่อน push แสดงที่แถบสถานะและหน้าทีมของฉัน ใช้ระบบล็อกอิน GitHub ของ VS Code",
+  "cfg.actions.interval": "เช็กผลเทสต์ทุกกี่วินาทีตอนที่เทสต์กำลังรัน (10–120) ถ้ายังไม่เชื่อมบัญชี GitHub จะเช็กได้ไม่ถี่กว่านาทีละครั้ง",
+  "cfg.avatars": "แสดงรูปโปรไฟล์ GitHub ของคนที่ commit ในหน้าทีมของฉัน รูปโหลดจาก GitHub (`avatars.githubusercontent.com`) ถ้าอีเมลไม่ใช่แบบ noreply ของ GitHub จะถาม GitHub API หนึ่งครั้งต่อ commit ใหม่บน upstream",
+  "cmd.push": "push แบบเช็กก่อน",
+  "cmd.undoMerge": "ย้อนการรวมเมื่อกี้",
+  "cmd.snooze": "ปิดเตือน 1 ชั่วโมง",
+  "cmd.unsnooze": "เปิดเตือน",
+  "cfg.actions.onPass": "บอกตอนเช็กผ่านด้วย (ถ้าไม่ผ่านจะบอกเสมอ)",
+  "cfg.actions.for": "บอกผลเช็กของ push ของใครบ้าง",
+  "cfg.actions.for.all": "ทุกคน",
+  "cfg.actions.for.mine": "เฉพาะของฉัน",
+  "cfg.actions.for.team": "เฉพาะของเพื่อน",
+  "cfg.quiet.enabled": "ห้ามรบกวนช่วง `#pushpal.quiet.start#` ถึง `#pushpal.quiet.end#` ไม่เด้งแจ้งเตือน (แถบสถานะยังอัปเดตปกติ)",
+  "cfg.quiet.start": "เวลาเริ่มห้ามรบกวน (HH:MM)",
+  "cfg.quiet.end": "เวลาสิ้นสุดห้ามรบกวน (HH:MM) ตั้งให้น้อยกว่าเวลาเริ่มได้ถ้าข้ามคืน"
 }

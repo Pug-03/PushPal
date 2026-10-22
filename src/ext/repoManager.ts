@@ -15,6 +15,8 @@ export interface RepoEntry {
   recent: Commit[];
   lastResult?: { result: PullResult; at: number };
   lastFetchAt: number;
+  /** Set after a successful pull: lets the user undo it for 10 minutes. */
+  undo?: import('../git/safety').UndoRecord;
 }
 
 interface GitRepository {
@@ -26,6 +28,8 @@ interface GitAPI {
   onDidOpenRepository: vscode.Event<GitRepository>;
   onDidCloseRepository: vscode.Event<GitRepository>;
   git: { path: string };
+  /** VS Code 1.80+: lets an extension explain / fix a failed Push or Sync. */
+  registerPushErrorHandler?(handler: { handlePushError(repository: GitRepository, remote: unknown, refspec: string, error: Error & { stderr?: string; gitErrorCode?: string }): Promise<boolean> }): vscode.Disposable;
 }
 
 export type CheckListener = (entry: RepoEntry, previous: RepoSnapshot | null) => void | Promise<void>;
@@ -51,6 +55,9 @@ export class RepoManager implements vscode.Disposable {
   onDidCheck(listener: CheckListener): void {
     this.checkListeners.push(listener);
   }
+
+  /** Explain rejected pushes from VS Code's own Push / Sync buttons. */
+  onPushError: ((root: string, stderr: string) => Promise<boolean>) | undefined;
 
   get gitPath(): string | undefined {
     return this.gitApi?.git.path;
@@ -79,6 +86,11 @@ export class RepoManager implements vscode.Disposable {
       const exports = ext.isActive ? ext.exports : await ext.activate();
       this.gitApi = exports.getAPI(1);
       setDefaultGitPath(this.gitApi.git.path);
+      const reg = this.gitApi.registerPushErrorHandler?.({
+        handlePushError: async (repository, _remote, _refspec, error) =>
+          this.onPushError ? this.onPushError(repository.rootUri.fsPath, `${error.stderr ?? ''}\n${error.message ?? ''}`) : false,
+      });
+      if (reg) this.disposables.push(reg);
       this.disposables.push(
         this.gitApi.onDidOpenRepository(() => void this.discover()),
         this.gitApi.onDidCloseRepository(() => void this.discover()),

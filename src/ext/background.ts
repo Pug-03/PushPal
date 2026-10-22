@@ -11,6 +11,7 @@ import { currentLang } from './l10n';
 import { readSettings } from './settings';
 import type { RepoManager } from './repoManager';
 import type { ModeController } from './modes';
+import { findSignedInGh } from '../core/ghCli';
 
 /** Keeps config.json, worker.js and the OS background job in sync with settings. */
 export class Background {
@@ -32,7 +33,16 @@ export class Background {
     };
   }
 
+  /** `gh` installed and signed in (checked once per session). */
+  ghFound = false;
+
+  async detectGh(): Promise<boolean> {
+    this.ghFound = !!(await findSignedInGh());
+    return this.ghFound;
+  }
+
   private baseConfig(enabled: boolean): Omit<WorkerConfig, 'repos'> {
+    const s = readSettings();
     const extPath = this.context.extensionPath;
     const id = this.context.extension.id.toLowerCase();
     const folder = basename(extPath);
@@ -50,6 +60,8 @@ export class Background {
       macBundleId: productJson().darwinBundleIdentifier,
       enabled,
       frequency: this.modes.config,
+      quiet: { enabled: s.quietEnabled, start: s.quietStart, end: s.quietEnd },
+      checksViaGh: s.actionsEnabled && this.ghFound,
     };
   }
 

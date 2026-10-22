@@ -15,8 +15,9 @@ import { SetupWizard, SETUP_SHOWN_KEY } from './wizard';
 import { TeamViewProvider } from './teamView';
 import { ModeController } from './modes';
 import { Scheduler } from './scheduler';
-import { CiWatcher } from './ciWatcher';
+import { ChecksWatcher } from './checks';
 import { SettingsPage, type FrequencyDeps } from './settingsPage';
+import { Avatars } from './avatars';
 import { MODES, type Mode } from '../core/frequency';
 
 /** The setup wizard announces background changes itself. */
@@ -33,12 +34,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const actions = new Actions(repos, alerts, log);
   const modes = new ModeController(log);
   const scheduler = new Scheduler(repos, modes, log);
-  const ci = new CiWatcher(repos, scheduler, log);
+  const ci = new ChecksWatcher(context, repos, scheduler, alerts, log);
   const status = new StatusBar(repos, () => ({ mode: modes.mode, effective: scheduler.effective }));
   scheduler.onDidChange(() => status.update());
   modes.onDidChange(() => status.update());
   repos.canAutoFetch = () => !scheduler.paused;
-  const freqDeps: FrequencyDeps = { modes, repos, scheduler, ci };
+  const freqDeps: FrequencyDeps = { modes, repos, scheduler, ci, ghFound: () => background.ghFound, snoozeUntil: () => store.snoozeUntil() };
   context.subscriptions.push(log, repos, status, modes, scheduler, ci);
 
   const desktop = new ExtensionDesktopChannel(context);
@@ -47,13 +48,27 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   alerts.onPull = (root) => actions.pull(root);
   alerts.onFinishMerge = (root) => actions.finishMerge(root);
   alerts.onReveal = (root) => actions.revealTeam(root);
+  alerts.checksLine = (entry) => ci.quickLine(entry);
   repos.onDidCheck((entry, prev) => alerts.onCheck(entry, prev));
+  repos.onPushError = (root, stderr) => actions.handlePushError(root, stderr);
   repos.onAutostashDropped = () => void vscode.window.showInformationMessage(t('autostash.dropped'));
   const team = new TeamViewProvider(context, repos, actions);
   context.subscriptions.push(vscode.window.registerWebviewViewProvider(TeamViewProvider.id, team));
   actions.revealTeam = (root) => team.reveal(root);
   team.ciState = (root) => ci.stateFor(root);
+  team.log = (line) => log.appendLine(line);
+  const avatars = new Avatars(context, () => ci.githubToken(), log);
+  context.subscriptions.push(avatars);
+  team.avatarFor = (email) => avatars.urlFor(email);
+  repos.onDidCheck((entry) => avatars.refresh(entry));
+  avatars.onDidChange(() => team.refresh());
   ci.onDidChange(() => team.refresh());
+  ci.onPull = (root) => actions.pull(root);
+  ci.onReveal = (root, sha) => team.reveal(root, sha);
+  team.checksFor = (sha) => ci.badge(sha);
+  team.checkDetail = (root, sha, id) => ci.detail(root, sha, id);
+  team.undoLeft = (root) => actions.undoLeft(root);
+  alerts.onQuietChange = () => SettingsPage.refresh();
 
   repos.onDidChange(() => {
     const hasConflict = repos.list().some((e) => e.snapshot?.state === 'conflict');
@@ -66,7 +81,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   cmd('pushpal.showConflicts', () => actions.showConflicts());
   cmd('pushpal.finishMerge', () => actions.finishMerge());
   cmd('pushpal.showTeam', () => actions.revealTeam());
+  cmd('pushpal.push', (root?: string) => actions.push(typeof root === 'string' ? root : undefined));
+  cmd('pushpal.undoMerge', (root?: string) => actions.undo(typeof root === 'string' ? root : undefined));
+  cmd('pushpal.showChecks', (root?: string, sha?: string) => team.reveal(root, sha));
+  cmd('pushpal.snooze', () => alerts.snooze());
+  cmd('pushpal.unsnooze', () => alerts.unsnooze());
   cmd('pushpal.testNotification', () => sendTestNotification(desktop));
+  // Not in the Command Palette: lets the smoke test see what the team view reported.
+  cmd('pushpal._diag', () => team.diag);
   cmd('pushpal.openSettings', (section?: string) => SettingsPage.show(context, freqDeps, desktop, typeof section === 'string' ? section : undefined));
   cmd('pushpal.switchMode', async () => {
     const current = modes.mode;
@@ -129,6 +151,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         clearTimeout(bgTimer);
         bgTimer = setTimeout(() => void syncBackground(false), 300);
       }
+      if (e.affectsConfiguration('pushpal.avatars')) team.refresh();
       if (e.affectsConfiguration('pushpal.theme')) {
         SetupWizard.postTheme(readSettings().theme);
         SettingsPage.postTheme(readSettings().theme);
@@ -173,7 +196,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   await repos.init();
   scheduler.start();
   beat();
-  void syncBackground(false);
+  void background.detectGh().then(() => syncBackground(false));
   void uriHandler.consumePending();
 }
 

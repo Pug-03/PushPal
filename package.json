@@ -100,6 +100,30 @@
         "title": "%cmd.switchMode%",
         "category": "PushPal",
         "icon": "$(dashboard)"
+      },
+      {
+        "command": "pushpal.push",
+        "title": "%cmd.push%",
+        "category": "PushPal",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "pushpal.undoMerge",
+        "title": "%cmd.undoMerge%",
+        "category": "PushPal",
+        "icon": "$(discard)"
+      },
+      {
+        "command": "pushpal.snooze",
+        "title": "%cmd.snooze%",
+        "category": "PushPal",
+        "icon": "$(bell-slash)"
+      },
+      {
+        "command": "pushpal.unsnooze",
+        "title": "%cmd.unsnooze%",
+        "category": "PushPal",
+        "icon": "$(bell)"
       }
     ],
     "menus": {
@@ -124,6 +148,13 @@
         {
           "command": "pushpal.finishMerge",
           "when": "pushpal.hasConflict"
+        }
+      ],
+      "scm/title": [
+        {
+          "command": "pushpal.push",
+          "when": "scmProvider == git",
+          "group": "navigation@0"
         }
       ]
     },
@@ -339,6 +370,56 @@
           "maximum": 120,
           "markdownDescription": "%cfg.actions.interval%",
           "order": 23
+        },
+        "pushpal.avatars": {
+          "type": "boolean",
+          "default": true,
+          "order": 24,
+          "markdownDescription": "%cfg.avatars%"
+        },
+        "pushpal.actions.notifyOnPass": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "%cfg.actions.onPass%",
+          "order": 25
+        },
+        "pushpal.actions.notifyFor": {
+          "type": "string",
+          "enum": [
+            "all",
+            "mine",
+            "team"
+          ],
+          "enumDescriptions": [
+            "%cfg.actions.for.all%",
+            "%cfg.actions.for.mine%",
+            "%cfg.actions.for.team%"
+          ],
+          "default": "all",
+          "markdownDescription": "%cfg.actions.for%",
+          "order": 26
+        },
+        "pushpal.quiet.enabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "%cfg.quiet.enabled%",
+          "order": 27
+        },
+        "pushpal.quiet.start": {
+          "type": "string",
+          "default": "22:00",
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+          "patternErrorMessage": "HH:MM",
+          "markdownDescription": "%cfg.quiet.start%",
+          "order": 28
+        },
+        "pushpal.quiet.end": {
+          "type": "string",
+          "default": "08:00",
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+          "patternErrorMessage": "HH:MM",
+          "markdownDescription": "%cfg.quiet.end%",
+          "order": 29
         }
       }
     }

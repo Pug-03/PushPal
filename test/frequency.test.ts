@@ -16,7 +16,7 @@ import {
   type FrequencyConfig,
 } from '../src/core/frequency';
 import { parsePmsetBatt, parsePmsetLowPower, parseIoregIdle, parseWindows, readLinuxPowerSupply, probePower } from '../src/core/power';
-import { githubSlug, summarize, fetchRuns, type RunInfo } from '../src/core/ciRuns';
+import { githubSlug } from '../src/core/ciRuns';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -268,36 +268,5 @@ describe('GitHub Actions', () => {
     assert.equal(githubSlug('ssh://git@github.com/a/b.git'), 'a/b');
     assert.equal(githubSlug('https://gitlab.com/a/b.git'), null);
     assert.equal(githubSlug('/tmp/remote.git'), null);
-  });
-
-  const run = (status: string, conclusion: string | null, name = 'CI'): RunInfo => ({ id: 1, name, status, conclusion, url: `https://github.com/a/b/actions/runs/${name}` });
-
-  test('summary of runs', () => {
-    assert.equal(summarize([]).state, 'none');
-    assert.deepEqual(summarize([run('in_progress', null), run('completed', 'success', 'Lint')]).state, 'running');
-    const fail = summarize([run('completed', 'failure', 'Test'), run('completed', 'success', 'Lint')]);
-    assert.equal(fail.state, 'failure');
-    assert.equal(fail.url, 'https://github.com/a/b/actions/runs/Test');
-    assert.equal(summarize([run('completed', 'success'), run('completed', 'skipped', 'X')]).state, 'success');
-  });
-
-  test('fetchRuns sends the token and ETag, handles 304 and rate limits', async () => {
-    let seen: Record<string, string> = {};
-    const fake = (status: number, body: unknown, headers: Record<string, string> = {}) =>
-      (async (_url: string, init: { headers: Record<string, string> }) => {
-        seen = init.headers;
-        return new Response(status === 304 ? null : JSON.stringify(body), { status, headers });
-      }) as unknown as typeof fetch;
-    const ok = await fetchRuns('a/b', 'abc', {
-      token: 'T',
-      fetchImpl: fake(200, { workflow_runs: [{ id: 7, name: 'CI', status: 'queued', conclusion: null, html_url: 'u' }] }, { etag: 'W/"1"' }),
-    });
-    assert.equal(seen.Authorization, 'Bearer T');
-    assert.deepEqual(ok, { kind: 'ok', runs: [{ id: 7, name: 'CI', status: 'queued', conclusion: null, url: 'u' }], etag: 'W/"1"' });
-    assert.deepEqual(await fetchRuns('a/b', 'abc', { etag: 'W/"1"', fetchImpl: fake(304, null) }), { kind: 'notModified' });
-    assert.equal(seen['If-None-Match'], 'W/"1"');
-    const limited = await fetchRuns('a/b', 'abc', { fetchImpl: fake(403, {}, { 'x-ratelimit-remaining': '0', 'x-ratelimit-reset': '1800000000' }) });
-    assert.deepEqual(limited, { kind: 'rateLimited', resetAt: 1_800_000_000_000 });
-    assert.deepEqual(await fetchRuns('a/b', 'abc', { fetchImpl: fake(404, {}) }), { kind: 'error', status: 404 });
   });
 });

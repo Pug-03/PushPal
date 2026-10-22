@@ -9,12 +9,21 @@ function assert(cond, msg) { if (!cond) throw new Error('ASSERT: ' + msg); }
 
 exports.run = async function () {
   const log = [];
+  try {
+    await steps(log);
+  } catch (e) {
+    fs.writeFileSync(process.env.PUSHPAL_SMOKE_RESULT + '.err', String(e && e.stack) + '\nlog: ' + log.join(', '));
+    throw e;
+  }
+};
+
+async function steps(log) {
   const ext = vscode.extensions.all.find((e) => e.packageJSON.name === 'pushpal');
   assert(ext, 'extension found');
   await ext.activate();
   log.push('activated');
   const cmds = await vscode.commands.getCommands(true);
-  for (const c of ['pushpal.pull', 'pushpal.checkNow', 'pushpal.setup', 'pushpal.showTeam', 'pushpal.testNotification', 'pushpal.switchMode', 'pushpal.openSettings']) assert(cmds.includes(c), c);
+  for (const c of ['pushpal.pull', 'pushpal.checkNow', 'pushpal.setup', 'pushpal.showTeam', 'pushpal.testNotification', 'pushpal.switchMode', 'pushpal.openSettings', 'pushpal.push', 'pushpal.undoMerge', 'pushpal.snooze']) assert(cmds.includes(c), c);
   log.push('commands ok');
 
   await sleep(1500);
@@ -24,6 +33,15 @@ exports.run = async function () {
 
   await vscode.commands.executeCommand('pushpal.team.focus');
   log.push('team view focused');
+  let diag;
+  for (let i = 0; i < 50 && !diag; i++) {
+    await sleep(200);
+    diag = await vscode.commands.executeCommand('pushpal._diag');
+  }
+  assert(diag, 'team view reported back');
+  assert(diag.gsap && diag.morph, 'animation library loaded in the webview: ' + JSON.stringify(diag));
+  assert(diag.errors.length === 0, 'no script errors in the webview: ' + JSON.stringify(diag.errors));
+  log.push('team view animation ok');
 
   const bob = vscode.workspace.workspaceFolders[0].uri.fsPath;
   const alice = path.join(path.dirname(bob), 'alice');
@@ -39,6 +57,16 @@ exports.run = async function () {
   assert(fs.existsSync(path.join(bob, 'from-alice.txt')), 'pulled file present');
   assert(fs.readFileSync(path.join(bob, 'bob-wip.txt'), 'utf8') === 'uncommitted work', 'wip kept');
   log.push('pull ok');
+
+  // Undo the merge: back to before, uncommitted work still there; then pull again.
+  await vscode.commands.executeCommand('pushpal.undoMerge', bob);
+  await sleep(300);
+  assert(!fs.existsSync(path.join(bob, 'from-alice.txt')), 'undo removed the merged file');
+  assert(fs.readFileSync(path.join(bob, 'bob-wip.txt'), 'utf8') === 'uncommitted work', 'wip kept after undo');
+  await vscode.commands.executeCommand('pushpal.pull', bob);
+  await sleep(300);
+  assert(fs.existsSync(path.join(bob, 'from-alice.txt')), 'pulled again');
+  log.push('undo ok');
 
   const storage = path.join(process.env.PUSHPAL_SMOKE_USERDIR, 'User', 'globalStorage', ext.id.toLowerCase());
   const hb = fs.readdirSync(path.join(storage, 'heartbeats'));
@@ -76,4 +104,4 @@ exports.run = async function () {
   log.push('settings page ok');
 
   fs.writeFileSync(process.env.PUSHPAL_SMOKE_RESULT, JSON.stringify({ ok: true, log }));
-};
+}

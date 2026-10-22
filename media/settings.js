@@ -94,7 +94,13 @@
         toggle('data-setting', 'notifyDesktop', 'screen', s('notify.desktop'), s('notify.desktopHint')) +
         toggle('data-setting', 'notifyBackground', 'clock', s('notify.background'), s('notify.backgroundHint') + ' ' + bgHint, !init.bgSupported) +
         toggle('data-setting', 'sameFileWarning', 'file', s('set.notify.sameFile'), s('set.notify.sameFileHint')) +
+        toggle('data-setting', 'quietEnabled', 'moon', s('set.quiet'), s('set.quietHint')) +
       '</div>' +
+      '<div class="st-rule st-quiet" data-rule="quiet">' + sentence(s('set.quietRange'), [
+        '<input type="time" data-time="quietStart" aria-label="start">', '<input type="time" data-time="quietEnd" aria-label="end">']) + '</div>' +
+      '<div class="st-actions st-snooze"><span class="st-hint" data-text="snoozed"></span>' +
+        '<button class="btn" data-act="snooze" data-show="notSnoozed">' + I('pause') + esc(s('set.snooze')) + '</button>' +
+        '<button class="btn" data-act="unsnooze" data-show="snoozed">' + I('bell') + esc(s('set.unsnooze')) + '</button></div>' +
       '<div class="st-actions"><button class="btn" data-act="test">' + I('bell') + esc(s('set.notify.test')) + '</button>' +
       '<span class="st-ok" data-text="tested" hidden>' + I('check') + '<span>' + esc(s('set.notify.tested')) + '</span></span></div>'
     );
@@ -147,7 +153,16 @@
 
   function secGithub() {
     return section('github', s('set.nav.github'),
-      '<div class="wz-list">' + toggle('data-setting', 'actionsEnabled', 'github', s('set.gh.actions'), s('set.gh.actionsHint')) + '</div>' +
+      '<div class="wz-list">' + toggle('data-setting', 'actionsEnabled', 'github', s('set.gh.actions'), s('set.gh.actionsHint')) +
+        toggle('data-setting', 'checksOnPass', 'check', s('gh.onPass'), s('gh.onPassHint')) +
+        toggle('data-setting', 'avatarsEnabled', 'auto', s('set.gh.avatars'), s('set.gh.avatarsHint')) + '</div>' +
+      '<h3 class="st-h3">' + esc(s('gh.for')) + '</h3>' +
+      '<div class="wz-grid three" role="radiogroup">' +
+        opt('checksFor', 'all', I('globe'), s('gh.for.all'), '') +
+        opt('checksFor', 'mine', I('code'), s('gh.for.mine'), '') +
+        opt('checksFor', 'team', I('branch'), s('gh.for.team'), '') +
+      '</div>' +
+      '<p class="st-hint st-gh-bg" data-text="ghBg"></p>' +
       '<div class="st-card st-account">' +
         '<div class="st-account-ic">' + I('github') + '</div>' +
         '<div class="st-account-text"><div class="st-label">' + esc(s('set.gh.account')) + '</div>' +
@@ -238,10 +253,20 @@
     text('estimate', est);
     text('estNote', s('est.note', Math.max(1, f.repoCount)));
     text('ghEstimate', Modes.estimateLine(s, f.estimates.actions));
+    var snoozed = f.snoozeUntil && f.snoozeUntil > Date.now();
     document.querySelectorAll('[data-show]').forEach(function (el) {
       var want = el.getAttribute('data-show');
-      el.hidden = want === 'signedIn' ? !f.signedIn : !!f.signedIn;
+      if (want === 'snoozed') el.hidden = !snoozed;
+      else if (want === 'notSnoozed') el.hidden = !!snoozed;
+      else el.hidden = want === 'signedIn' ? !f.signedIn : !!f.signedIn;
     });
+    text('snoozed', snoozed ? s('set.snoozed', new Date(f.snoozeUntil).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : '');
+    document.querySelectorAll('input[data-time]').forEach(function (el) {
+      if (el !== document.activeElement) el.value = st[el.getAttribute('data-time')];
+    });
+    var q = document.querySelector('[data-rule="quiet"]');
+    if (q) q.classList.toggle('is-off', !st.quietEnabled);
+    text('ghBg', s(f.ghFound ? 'gh.bgYes' : 'gh.bgNo') + ' ' + s('gh.githubOnly'));
   }
   function text(name, value) {
     var el = document.querySelector('[data-text="' + name + '"]');
@@ -338,6 +363,8 @@
       ok.classList.remove('pop');
       void ok.offsetWidth;
       ok.classList.add('pop');
+    } else if (a === 'snooze' || a === 'unsnooze') {
+      post({ type: a });
     } else if (a === 'signIn') {
       post({ type: 'signIn' });
     } else if (a === 'openVs') {
@@ -376,6 +403,11 @@
   app.addEventListener('change', function (e) {
     var r = e.target.closest('input[data-range]');
     if (r) return sendField(r.getAttribute('data-range'), Number(r.value));
+    var tm = e.target.closest('input[data-time]');
+    if (tm) {
+      if (/^\d\d:\d\d$/.test(tm.value)) post({ type: 'setSetting', key: tm.getAttribute('data-time'), value: tm.value });
+      return;
+    }
     var inp = e.target.closest('input[data-field]');
     if (!inp) return;
     var field = inp.getAttribute('data-field');

@@ -12,6 +12,14 @@ export interface Settings {
   notifyBackground: boolean;
   sameFileWarning: boolean;
   actionsEnabled: boolean;
+  avatarsEnabled: boolean;
+  /** Tell me when checks pass too (failures are always reported). */
+  checksOnPass: boolean;
+  /** Whose pushes to report checks for. */
+  checksFor: 'all' | 'mine' | 'team';
+  quietEnabled: boolean;
+  quietStart: string;
+  quietEnd: string;
 }
 
 const SETTING_KEYS: Record<keyof Settings, string> = {
@@ -22,6 +30,12 @@ const SETTING_KEYS: Record<keyof Settings, string> = {
   notifyBackground: 'notify.background',
   sameFileWarning: 'notify.sameFileWarning',
   actionsEnabled: 'actions.enabled',
+  avatarsEnabled: 'avatars',
+  checksOnPass: 'actions.notifyOnPass',
+  checksFor: 'actions.notifyFor',
+  quietEnabled: 'quiet.enabled',
+  quietStart: 'quiet.start',
+  quietEnd: 'quiet.end',
 };
 
 export function readSettings(): Settings {
@@ -34,6 +48,12 @@ export function readSettings(): Settings {
     notifyBackground: c.get<boolean>('notify.background', false),
     sameFileWarning: c.get<boolean>('notify.sameFileWarning', true),
     actionsEnabled: c.get<boolean>('actions.enabled', true),
+    avatarsEnabled: c.get<boolean>('avatars', true),
+    checksOnPass: c.get<boolean>('actions.notifyOnPass', true),
+    checksFor: c.get<'all' | 'mine' | 'team'>('actions.notifyFor', 'all'),
+    quietEnabled: c.get<boolean>('quiet.enabled', false),
+    quietStart: c.get<string>('quiet.start', '22:00'),
+    quietEnd: c.get<string>('quiet.end', '08:00'),
   };
 }
 
