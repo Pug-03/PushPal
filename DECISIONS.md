@@ -129,3 +129,54 @@ Newest sections are appended at the bottom of each topic.
 - macOS 13+ shows a "Background item added" notice the first time — expected; mentioned in the README FAQ.
 - Tests use a fake command runner (`PUSHPAL_TEST_LOG`) and a temp `HOME`, so running the test suite never
   touches the real `~/Library/LaunchAgents` or Task Scheduler.
+
+## 6. Language system
+
+- Catalogs: `src/i18n/locales/en.json` and `th.json` (one key per message). Keys starting with `wv.` are the
+  webviews' own translation file; they are sent to the page as JSON, so switching language in the wizard
+  is instant (both languages are sent to the wizard up front).
+- **Why not only `vscode.l10n`**: `vscode.l10n` always follows VS Code's display language, but PushPal lets
+  the user pick Thai/English independently — and Microsoft ships no official Thai language pack, so for
+  almost every Thai user VS Code itself is in English. So:
+  - `pushpal.language = auto`: Thai if VS Code's UI language **or the OS locale** is Thai. When VS Code
+    itself is Thai (community pack), messages go through `vscode.l10n.t` using `l10n/bundle.l10n.th.json`,
+    which the build generates from `th.json` (it fails the build if a Thai key is missing).
+  - `th` / `en`: our catalog directly.
+  - Manifest strings (command titles, settings) use `package.nls.json` / `package.nls.th.json`, which can
+    only follow VS Code's language. Command titles are therefore **bilingual** in the default file
+    (e.g. "ตั้งค่าใหม่ · Run Setup Again") so "PushPal: ตั้งค่าใหม่" is findable in the Command Palette
+    whatever language VS Code runs in.
+- Thai copy is written to sound like a friend talking ("ดึงโค้ดมารวม", "ไว้ทีหลัง", "ไม่ต้องห่วง งานคุณมีสำรองไว้")
+  rather than translated word-for-word. Git terms (commit, push, stash, branch) stay in English because
+  that's what Thai developers actually say.
+- Relative times use `Intl.RelativeTimeFormat` ("2 นาทีที่ผ่านมา" / "2 minutes ago").
+
+## 7. Theme system and visual language
+
+- `media/base.css` defines tokens (`--pp-bg`, `--pp-surface`, `--pp-text`, `--pp-accent`, status colours…)
+  for three themes set by a class on `<html>`:
+  - `theme-light`, `theme-dark`: PushPal's own palettes (warm paper / deep slate, teal accent, coral "new").
+    Text colours were chosen for ≥ 4.5:1 contrast on their surfaces.
+  - `theme-system`: surfaces, text, buttons and focus ring come from `--vscode-*` variables, so any VS Code
+    theme (including high contrast) is followed **live** — VS Code updates those variables and the body
+    class in the webview when the user switches theme, no reload or message needed. Status colours
+    (new/warn/danger/success) have no VS Code equivalents, so PushPal picks its light or dark variant from
+    the `vscode-light` / `vscode-dark` body class.
+- Changing the setting posts a message to open webviews, which swap the class instantly.
+- Fonts: system UI font for Latin, then Sukhumvit Set (macOS), Noto Sans Thai, Leelawadee UI (Windows).
+  No web fonts are bundled (keeps the .vsix small; every target OS has a good Thai face).
+  Line-height is raised to 1.65 for Thai because of stacked vowels and tone marks.
+- Spacing scale 4/8/12/16/24/32/48, radii 8/12/18/pill.
+- **Mascot "Pal"**: hand-written SVG (`media/mascot.js`) — round teal buddy whose antenna is a coral git
+  commit node. Parts (arms, eyes, antenna, whole body) are separate groups, animated only with CSS
+  `transform` / `opacity`. Poses: idle, wave, point, cheer, worry, chill, busy. The 128×128 icon
+  (`media/icon.png`) is rendered from the same SVG with headless Chrome (`npm run icon`). The Activity Bar
+  icon is a single-colour silhouette with cut-out eyes, as VS Code requires.
+- **Motion**: transitions 150–400 ms with ease-out / spring curves. Small ambient loops (breathing, the
+  "new" dot pulse, a wave) run longer but are low-amplitude transform-only animations. With
+  `prefers-reduced-motion: reduce` every animation and transition collapses to 1 ms and confetti is not drawn.
+- **CSP** (every webview): `default-src 'none'`, styles and images only from the extension's `media/`
+  folder (`webview.cspSource`) plus `data:` images, scripts only with a per-render nonce. No inline
+  `style=""` attributes (blocked by the policy); dynamic values are set through the CSSOM. Initial data is
+  passed in a `<script type="application/json">` block with `<`, `>` and `&` escaped.
+- No framework: plain HTML/CSS/JS. Total webview JS + CSS is a few dozen KB.
