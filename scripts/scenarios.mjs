@@ -4,11 +4,47 @@ const now = Math.floor(Date.now() / 1000);
 const W = { width: 1100, height: 760 };
 const S = { width: 380, height: 760 };
 
-const steps = ['welcome', 'language', 'theme', 'notify', 'test', 'done'];
+// Shaped like frequencyModel() in src/ext/settingsPage.ts; numbers use the
+// measured constants from src/core/frequency.ts (5,400 B + 58 B/ref per fetch).
+const fetchBytes = (refs) => 5400 + 58 * refs;
+const est = (sec, refs = [4, 12]) => ({ checksPerHour: Math.round((3600 / sec) * refs.length), bytesPerHour: Math.round(refs.reduce((a, r) => a + (3600 / sec) * fetchBytes(r), 0)) });
+const rules = (idleMin, idleS, pct, lowS, lpmS) => ({
+  idle: { enabled: true, minutes: idleMin, seconds: idleS },
+  lowBattery: { enabled: true, percent: pct, seconds: lowS },
+  lowPowerMode: { enabled: true, seconds: lpmS },
+  pluggedInUsesNormal: true,
+});
+const presets = {
+  fast: { checkSeconds: 10, actionsSeconds: 10, backgroundSeconds: 60, ...rules(10, 60, 20, 60, 60) },
+  balanced: { checkSeconds: 30, actionsSeconds: 20, backgroundSeconds: 120, ...rules(10, 60, 20, 60, 60) },
+  batterySaver: { checkSeconds: 60, actionsSeconds: 30, backgroundSeconds: 300, ...rules(5, 180, 30, 180, 300) },
+};
+const freqModel = (mode, config, over = {}) => ({
+  mode,
+  config,
+  limits: { checkSeconds: [10, 300], actionsSeconds: [10, 120], backgroundSeconds: [60, 3600], 'idle.minutes': [1, 240], 'idle.seconds': [10, 3600], 'lowBattery.percent': [5, 95], 'lowBattery.seconds': [10, 3600], 'lowPowerMode.seconds': [10, 3600] },
+  presets: Object.fromEntries(Object.entries(presets).map(([k, v]) => [k, { ...v, estimate: est(v.checkSeconds) }])),
+  repoCount: 2,
+  estimates: { check: est(config.checkSeconds), background: est(config.backgroundSeconds), actions: { checksPerHour: Math.round(3600 / config.actionsSeconds), bytesPerHour: Math.round((3600 / config.actionsSeconds) * 7300) } },
+  effective: { seconds: config.checkSeconds, normalSeconds: config.checkSeconds, reason: 'normal' },
+  nowText: 'เช็กทุก 30 วิ',
+  signedIn: false,
+  ...over,
+});
+const hours = { enabled: false, start: '08:00', end: '23:00' };
+const balancedModel = freqModel('balanced', { ...presets.balanced, activeHours: hours });
+const customModel = freqModel('custom', { ...presets.balanced, checkSeconds: 45, backgroundSeconds: 300, activeHours: { enabled: true, start: '08:00', end: '22:00' } }, {
+  effective: { seconds: 60, normalSeconds: 45, reason: 'lowBattery', percent: 15 },
+  nowText: 'ตอนนี้เช็กทุก 1 นาที เพราะแบตเหลือ 15%',
+  signedIn: true,
+});
+const settingsOn = { language: 'th', theme: 'light', notifyInVSCode: true, notifyDesktop: true, notifyBackground: true, sameFileWarning: true, actionsEnabled: true };
+
+const steps = ['welcome', 'language', 'theme', 'notify', 'frequency', 'test', 'done'];
 const wizard = [];
 for (const [theme, vscode] of [['light', 'light'], ['dark', 'dark']]) {
   steps.forEach((name, i) => {
-    const sc = { name: `wizard-${i + 1}-${name}-${theme}`, kind: 'wizard', lang: 'th', theme, vscode, state: { step: i }, ...W };
+    const sc = { name: `wizard-${i + 1}-${name}-${theme}`, kind: 'wizard', lang: 'th', theme, vscode, state: { step: i }, freq: balancedModel, ...W };
     if (name === 'test') sc.script = `setTimeout(() => window.postMessage({ type: 'testResult', backend: 'alerter' }, '*'), 50);`;
     if (name === 'done') {
       sc.script = `setTimeout(() => window.postMessage({ type: 'finished', background: 'enabled' }, '*'), 50);`;
@@ -18,8 +54,25 @@ for (const [theme, vscode] of [['light', 'light'], ['dark', 'dark']]) {
     wizard.push(sc);
   });
 }
-wizard.push({ name: 'wizard-1-welcome-en-system-dark', kind: 'wizard', lang: 'en', theme: 'system', vscode: 'dark', state: { step: 0 }, ...W });
-wizard.push({ name: 'wizard-3-theme-en-system-light', kind: 'wizard', lang: 'en', theme: 'system', vscode: 'light', state: { step: 2 }, ...W });
+wizard.push({ name: 'wizard-1-welcome-en-system-dark', kind: 'wizard', lang: 'en', theme: 'system', vscode: 'dark', state: { step: 0 }, freq: balancedModel, ...W });
+wizard.push({ name: 'wizard-3-theme-en-system-light', kind: 'wizard', lang: 'en', theme: 'system', vscode: 'light', state: { step: 2 }, freq: balancedModel, ...W });
+wizard.push({ name: 'wizard-5-frequency-en-system-dark', kind: 'wizard', lang: 'en', theme: 'system', vscode: 'dark', state: { step: 4 }, freq: balancedModel, ...W });
+
+// Settings page: the extension posts { type: 'state' } after the page says "ready".
+const settingsPage = [];
+const postState = (settings, freq, extra = {}, only = []) =>
+  `setTimeout(() => window.postMessage(${JSON.stringify({ type: 'state', settings, freq, ...extra })}, '*'), 30);` +
+  (only.length ? `setTimeout(() => document.querySelectorAll('.st-sec').forEach((e) => { if (!${JSON.stringify(only)}.includes(e.dataset.sec)) e.remove(); }), 80);` : '');
+for (const [theme, vscode] of [['light', 'light'], ['dark', 'dark']]) {
+  const st = { ...settingsOn, theme };
+  settingsPage.push({ name: `settings-notify-${theme}`, kind: 'settings', lang: 'th', theme, vscode, script: postState(st, balancedModel, {}, ['notify']), width: 1100, height: 760 });
+  settingsPage.push({ name: `settings-frequency-${theme}`, kind: 'settings', lang: 'th', theme, vscode, script: postState(st, customModel, {}, ['frequency']), width: 1100, height: 1640 });
+  settingsPage.push({ name: `settings-github-${theme}`, kind: 'settings', lang: 'th', theme, vscode, script: postState(st, customModel, {}, ['look', 'github']), width: 1100, height: 1080 });
+}
+settingsPage.push({
+  name: 'settings-clamped-en-system-light', kind: 'settings', lang: 'en', theme: 'system', vscode: 'light', width: 1100, height: 1640,
+  script: postState({ ...settingsOn, language: 'en', theme: 'system' }, { ...customModel, nowText: 'Checking every 1 min right now because the battery is at 15%' }, { notice: 'Check interval (s): 5 is outside 10–300, so PushPal uses 10.', adjusted: ['checkSeconds'] }, ['frequency']),
+});
 
 const people = {
   alice: { author: 'Alice Lee', email: 'alice@example.com' },
@@ -90,4 +143,4 @@ for (const [theme, vscode] of [['light', 'light'], ['dark', 'dark']]) {
 team.push({ name: 'team-behind-en-system-dark', kind: 'team', lang: 'en', theme: 'system', vscode: 'dark', view: views.behind, ...S });
 team.push({ name: 'team-conflictMerge-en-system-light', kind: 'team', lang: 'en', theme: 'system', vscode: 'light', view: views.conflictMerge, ...S });
 
-export const scenarios = [...wizard, ...team];
+export const scenarios = [...wizard, ...settingsPage, ...team];

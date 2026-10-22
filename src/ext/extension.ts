@@ -13,6 +13,11 @@ import { focusThisWindow } from './host';
 import { Background } from './background';
 import { SetupWizard, SETUP_SHOWN_KEY } from './wizard';
 import { TeamViewProvider } from './teamView';
+import { ModeController } from './modes';
+import { Scheduler } from './scheduler';
+import { CiWatcher } from './ciWatcher';
+import { SettingsPage, type FrequencyDeps } from './settingsPage';
+import { MODES, type Mode } from '../core/frequency';
 
 /** The setup wizard announces background changes itself. */
 let suppressBackgroundAnnounce = false;
@@ -26,8 +31,15 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const repos = new RepoManager(context, log);
   const alerts = new Alerts(store, log);
   const actions = new Actions(repos, alerts, log);
-  const status = new StatusBar(repos);
-  context.subscriptions.push(log, repos, status);
+  const modes = new ModeController(log);
+  const scheduler = new Scheduler(repos, modes, log);
+  const ci = new CiWatcher(repos, scheduler, log);
+  const status = new StatusBar(repos, () => ({ mode: modes.mode, effective: scheduler.effective }));
+  scheduler.onDidChange(() => status.update());
+  modes.onDidChange(() => status.update());
+  repos.canAutoFetch = () => !scheduler.paused;
+  const freqDeps: FrequencyDeps = { modes, repos, scheduler, ci };
+  context.subscriptions.push(log, repos, status, modes, scheduler, ci);
 
   const desktop = new ExtensionDesktopChannel(context);
   alerts.desktop = desktop;
@@ -53,7 +65,22 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   cmd('pushpal.finishMerge', () => actions.finishMerge());
   cmd('pushpal.showTeam', () => actions.revealTeam());
   cmd('pushpal.testNotification', () => sendTestNotification(desktop));
-  cmd('pushpal.openSettings', () => vscode.commands.executeCommand('workbench.action.openSettings', '@ext:' + context.extension.id));
+  cmd('pushpal.openSettings', (section?: string) => SettingsPage.show(context, freqDeps, desktop, typeof section === 'string' ? section : undefined));
+  cmd('pushpal.switchMode', async () => {
+    const current = modes.mode;
+    const items = MODES.map((m) => ({
+      label: `${t(`mode.icon.${m}` as 'mode.icon.fast')} ${t(`mode.${m}` as 'mode.fast')}`,
+      description: m === current ? t('mode.current') : '',
+      detail: t(`mode.${m}.detail` as 'mode.fast.detail'),
+      mode: m,
+    }));
+    const pick = await vscode.window.showQuickPick(items, { title: t('mode.pickTitle'), placeHolder: t('mode.pickPlaceholder') });
+    if (!pick) return;
+    if (pick.mode === 'custom') {
+      await modes.setMode('custom');
+      SettingsPage.show(context, freqDeps, desktop, 'frequency');
+    } else await modes.setMode(pick.mode as Mode);
+  });
 
   // Heartbeat: tells the background worker this window watches these repos.
   const beat = () => {
@@ -67,7 +94,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   repos.onDidChange(beat);
   context.subscriptions.push({ dispose: () => (clearInterval(hb), store.removeHeartbeat(vscode.env.sessionId)) });
 
-  const background = new Background(context, store, repos, log);
+  const background = new Background(context, store, repos, log, modes);
   const syncBackground = async (announce: boolean) => {
     try {
       const r = await background.sync();
@@ -88,15 +115,21 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('pushpal.checkIntervalSeconds')) repos.setInterval(readSettings().intervalSeconds);
+      if (!e.affectsConfiguration('pushpal')) return;
       if (e.affectsConfiguration('pushpal.language')) {
         status.update();
         team.render();
-        void syncBackground(false);
       }
       if (e.affectsConfiguration('pushpal.notify.background') && !suppressBackgroundAnnounce) void syncBackground(true);
+      else {
+        // Any other change (interval, battery rules, active hours, language…) goes
+        // into config.json right away; the worker reads it on its next run.
+        clearTimeout(bgTimer);
+        bgTimer = setTimeout(() => void syncBackground(false), 300);
+      }
       if (e.affectsConfiguration('pushpal.theme')) {
         SetupWizard.postTheme(readSettings().theme);
+        SettingsPage.postTheme(readSettings().theme);
         team.setTheme();
       }
     }),
@@ -129,11 +162,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         }
       },
       () => actions.revealTeam(),
+      freqDeps,
     );
   cmd('pushpal.setup', openWizard);
   if (!context.globalState.get<boolean>(SETUP_SHOWN_KEY)) openWizard();
 
-  await repos.init(readSettings().intervalSeconds);
+  await modes.init();
+  await repos.init();
+  scheduler.start();
   beat();
   void syncBackground(false);
   void uriHandler.consumePending();

@@ -1,7 +1,14 @@
 import * as vscode from 'vscode';
 import type { RepoEntry, RepoManager } from './repoManager';
 import { t, currentLang } from './l10n';
-import { relativeTime } from '../i18n';
+import { relativeTime, formatSeconds } from '../i18n';
+import type { Effective, Mode } from '../core/frequency';
+
+/** What the scheduler is doing, for the tooltip. */
+export interface ScheduleInfo {
+  mode: Mode;
+  effective: Effective | undefined;
+}
 
 type Aggregate = 'pulling' | 'conflict' | 'behind' | 'error' | 'upToDate' | 'noUpstream' | 'checking' | 'none';
 
@@ -9,7 +16,10 @@ type Aggregate = 'pulling' | 'conflict' | 'behind' | 'error' | 'upToDate' | 'noU
 export class StatusBar implements vscode.Disposable {
   private readonly item = vscode.window.createStatusBarItem('pushpal.status', vscode.StatusBarAlignment.Left, 50);
 
-  constructor(private readonly repos: RepoManager) {
+  constructor(
+    private readonly repos: RepoManager,
+    private readonly schedule: () => ScheduleInfo | undefined = () => undefined,
+  ) {
     this.item.name = 'PushPal';
     repos.onDidChange(() => this.update());
     this.update();
@@ -78,6 +88,7 @@ export class StatusBar implements vscode.Disposable {
 
   private tooltip(entries: RepoEntry[]): vscode.MarkdownString {
     const md = new vscode.MarkdownString(undefined, true);
+    md.isTrusted = { enabledCommands: ['pushpal.switchMode', 'pushpal.openSettings'] };
     md.appendMarkdown(`$(account) ${t('tip.header')}\n\n`);
     let newest = 0;
     for (const e of entries) {
@@ -109,11 +120,37 @@ export class StatusBar implements vscode.Disposable {
       md.appendMarkdown(`- ${line}\n`);
     }
     if (newest) md.appendMarkdown(`\n_${t('tip.checkedAt', relativeTime(currentLang(), newest / 1000))}_`);
+    const info = this.schedule();
+    if (info) {
+      md.appendMarkdown(`\n\n---\n\n${scheduleLine(info)}\n\n`);
+      md.appendMarkdown(`${t(`mode.icon.${info.mode}` as 'mode.icon.fast')} ${t('tip.mode', t(`mode.${info.mode}` as 'mode.fast'))} · [${t('tip.switchMode')}](command:pushpal.switchMode) · [${t('tip.settings')}](command:pushpal.openSettings)`);
+    }
     return md;
   }
 
   dispose(): void {
     this.item.dispose();
+  }
+}
+
+/** "Checking every 60 s because the battery is at 15%", etc. */
+export function scheduleLine(info: ScheduleInfo): string {
+  const e = info.effective;
+  if (!e) return '';
+  const every = formatSeconds(currentLang(), e.seconds ?? 0);
+  switch (e.reason) {
+    case 'outsideHours':
+      return `$(debug-pause) ${t('sched.paused', e.resumeAt ?? '')}`;
+    case 'lowBattery':
+      return `$(watch) ${t('sched.lowBattery', every, e.percent ?? '?')}`;
+    case 'idle':
+      return `$(watch) ${t('sched.idle', every, e.idleMinutes ?? '?')}`;
+    case 'lowPowerMode':
+      return `$(watch) ${t('sched.lowPowerMode', every)}`;
+    case 'pluggedIn':
+      return `$(plug) ${t('sched.pluggedIn', every)}`;
+    default:
+      return `$(sync) ${t('sched.normal', every)}`;
   }
 }
 

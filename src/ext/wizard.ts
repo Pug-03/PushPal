@@ -6,6 +6,8 @@ import { currentLang } from './l10n';
 import { isBackgroundSupported } from '../background/agent';
 import type { ExtensionDesktopChannel } from './desktopChannel';
 import { sendTestNotification, installAlerter } from './desktopSetup';
+import { frequencyModel, type FrequencyDeps } from './settingsPage';
+import type { Mode } from '../core/frequency';
 
 export const SETUP_SHOWN_KEY = 'pushpal.setupShown';
 
@@ -13,6 +15,8 @@ type FromWizard =
   | { type: 'setLang'; lang: Lang }
   | { type: 'setTheme'; theme: ThemeSetting }
   | { type: 'setNotify'; key: 'notifyInVSCode' | 'notifyDesktop' | 'notifyBackground'; value: boolean }
+  | { type: 'setMode'; mode: Mode }
+  | { type: 'openSettings' }
   | { type: 'test' }
   | { type: 'installAlerter' }
   | { type: 'finish' }
@@ -28,13 +32,14 @@ export class SetupWizard {
     desktop: ExtensionDesktopChannel,
     applyBackground: (want: boolean | undefined) => Promise<string>,
     onDone: () => void,
+    freq: FrequencyDeps,
   ): void {
     if (SetupWizard.current) {
       SetupWizard.current.panel.reveal();
       return;
     }
     void context.globalState.update(SETUP_SHOWN_KEY, true);
-    SetupWizard.current = new SetupWizard(context, desktop, applyBackground, onDone);
+    SetupWizard.current = new SetupWizard(context, desktop, applyBackground, onDone, freq);
   }
 
   static postTheme(theme: ThemeSetting): void {
@@ -48,6 +53,7 @@ export class SetupWizard {
     private readonly desktop: ExtensionDesktopChannel,
     private readonly applyBackground: (want: boolean | undefined) => Promise<string>,
     private readonly onDone: () => void,
+    private readonly freq: FrequencyDeps,
   ) {
     const lang = currentLang();
     this.panel = vscode.window.createWebviewPanel('pushpal.setup', lang === 'th' ? 'ตั้งค่า PushPal' : 'PushPal Setup', vscode.ViewColumn.Active, {
@@ -59,6 +65,11 @@ export class SetupWizard {
     this.render(lang);
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
     this.panel.webview.onDidReceiveMessage((m: FromWizard) => void this.onMessage(m), null, this.disposables);
+    freq.modes.onDidChange(() => void this.postFreq(), null, this.disposables);
+  }
+
+  private async postFreq(): Promise<void> {
+    void this.panel.webview.postMessage({ type: 'freq', freq: await frequencyModel(this.freq) });
   }
 
   private async render(lang: Lang): Promise<void> {
@@ -69,8 +80,8 @@ export class SetupWizard {
       lang,
       theme: s.theme,
       surface: 'panel',
-      styles: ['wizard.css'],
-      scripts: ['wizard.js'],
+      styles: ['controls.css', 'wizard.css'],
+      scripts: ['modes.js', 'wizard.js'],
       init: {
         lang,
         theme: s.theme,
@@ -79,6 +90,7 @@ export class SetupWizard {
         backend,
         bgSupported: isBackgroundSupported(process.platform),
         notify: { notifyInVSCode: s.notifyInVSCode, notifyDesktop: s.notifyDesktop, notifyBackground: s.notifyBackground },
+        freq: await frequencyModel(this.freq),
       },
     });
   }
@@ -96,6 +108,12 @@ export class SetupWizard {
         // Background is applied on "finish" so toggling doesn't install/remove repeatedly.
         if (m.key !== 'notifyBackground') await saveSettings({ [m.key]: m.value });
         else this.wantBackground = m.value;
+        return;
+      case 'setMode':
+        await this.freq.modes.setMode(m.mode);
+        return;
+      case 'openSettings':
+        await vscode.commands.executeCommand('pushpal.openSettings', 'frequency');
         return;
       case 'test': {
         const backend = await sendTestNotification(this.desktop);

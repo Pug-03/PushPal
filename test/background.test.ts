@@ -8,6 +8,7 @@ import { makeTeam, write, commitAndPush, type Team } from './helpers';
 import { git } from '../src/git/exec';
 import { installAgent, uninstallAgent, isAgentInstalled, isBackgroundSupported, plistPath, windowsTaskName, type AgentPaths, type Runner } from '../src/background/agent';
 import { SharedStore, type WorkerConfig } from '../src/core/storage';
+import { presetConfig, type FrequencyConfig } from '../src/core/frequency';
 
 function fakeRunner() {
   const calls: Array<{ file: string; args: string[] }> = [];
@@ -108,9 +109,9 @@ describe('background worker', () => {
   });
   afterEach(() => t.cleanup());
 
-  function runWorker() {
+  function runWorker(env: Record<string, string> = {}) {
     execFileSync(process.execPath, [workerBundle, storage], {
-      env: { ...process.env, PUSHPAL_TEST_LOG: logFile, HOME: home, USERPROFILE: home },
+      env: { ...process.env, PUSHPAL_TEST_LOG: logFile, HOME: home, USERPROFILE: home, ...env },
       timeout: 60_000,
     });
   }
@@ -184,4 +185,68 @@ describe('background worker', () => {
     runWorker();
     assert.equal(events('selfDestruct').length, 1);
   });
+
+  describe('schedule from config.json', () => {
+    const setFrequency = (f: FrequencyConfig) => {
+      const store = new SharedStore(storage);
+      store.writeConfig({ ...store.readConfig()!, frequency: f });
+    };
+    const lastCheck = (msAgo: number) => writeFileSync(new SharedStore(storage).stateFile, JSON.stringify({ lastCheckAt: Date.now() - msAgo }));
+    const last = () => events().filter((e) => e.type === 'run' || e.type === 'skip').pop();
+    const allDay = (h: number) => {
+      // A one-hour window that is certainly not "now".
+      const s = (h + 2) % 24;
+      return { enabled: true, start: `${String(s).padStart(2, '0')}:00`, end: `${String((s + 1) % 24).padStart(2, '0')}:00` };
+    };
+
+    test('runs when due, skips until the background interval has passed', () => {
+      setFrequency(presetConfig('balanced')); // background every 120 s
+      runWorker();
+      assert.equal(last().type, 'run');
+      runWorker();
+      assert.deepEqual(last(), { type: 'skip', reason: 'notDue' });
+      lastCheck(125_000);
+      runWorker();
+      assert.equal(last().type, 'run');
+    });
+
+    test('a new interval in config.json applies on the very next run', () => {
+      setFrequency({ ...presetConfig('balanced'), backgroundSeconds: 3600 });
+      lastCheck(200_000);
+      runWorker();
+      assert.deepEqual(last(), { type: 'skip', reason: 'notDue' });
+      setFrequency({ ...presetConfig('balanced'), backgroundSeconds: 120 }); // what the extension writes when the user changes it
+      runWorker();
+      assert.equal(last().type, 'run');
+    });
+
+    test('pauses outside the checking hours', () => {
+      setFrequency({ ...presetConfig('balanced'), activeHours: allDay(new Date().getHours()) });
+      lastCheck(3600_000);
+      runWorker();
+      assert.deepEqual(last(), { type: 'skip', reason: 'outsideHours' });
+    });
+
+    test('battery rules slow the background job down too', () => {
+      const f = { ...presetConfig('balanced'), lowBattery: { enabled: true, percent: 20, seconds: 600 }, lowPowerMode: { enabled: true, seconds: 900 } };
+      setFrequency(f);
+      lastCheck(130_000);
+      runWorker({ PUSHPAL_TEST_POWER: JSON.stringify({ onAC: false, percent: 10 }) });
+      assert.deepEqual(last(), { type: 'skip', reason: 'lowBattery' });
+      runWorker({ PUSHPAL_TEST_POWER: JSON.stringify({ onAC: true, percent: 10 }) });
+      assert.deepEqual(last(), { type: 'run', reason: 'pluggedIn' }, 'plugged in → normal interval');
+      lastCheck(130_000);
+      runWorker({ PUSHPAL_TEST_POWER: JSON.stringify({ onAC: false, lowPowerMode: true }) });
+      assert.deepEqual(last(), { type: 'skip', reason: 'lowPowerMode' });
+      runWorker({ PUSHPAL_TEST_POWER: JSON.stringify({ onAC: false, percent: 90, lowPowerMode: false }) });
+      assert.deepEqual(last(), { type: 'run', reason: 'normal' });
+    });
+
+    test('configs written by 1.0.0 (no frequency) keep running every time', () => {
+      runWorker();
+      runWorker();
+      assert.deepEqual(events('run').map((e) => e.reason), ['legacy', 'legacy']);
+    });
+  });
 });
+

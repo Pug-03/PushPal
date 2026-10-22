@@ -5,10 +5,12 @@
 //   notified.json        { [repoKey]: upstreamSha } — last commit we alerted about
 //   heartbeats/<id>.json one per VS Code window: { ts, repos } written every 30 s
 //   worker.js            copy of the bundled worker (survives extension updates)
+//   worker-state.json    { lastCheckAt } — when the worker last ran a check
 import { mkdirSync, readFileSync, writeFileSync, renameSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import type { Lang } from '../i18n';
+import type { FrequencyConfig } from './frequency';
 
 export const HEARTBEAT_INTERVAL_MS = 30_000;
 /** A window counts as "open" if it wrote a heartbeat within this window. */
@@ -34,6 +36,8 @@ export interface WorkerConfig {
   /** macOS bundle id of VS Code (alerter --sender). */
   macBundleId?: string;
   enabled: boolean;
+  /** Background interval, battery rules and active hours. Missing in configs written by 1.0.0 (= every run). */
+  frequency?: FrequencyConfig;
 }
 
 export function repoKey(root: string): string {
@@ -74,6 +78,9 @@ export class SharedStore {
   }
   get workerFile() {
     return join(this.dir, 'worker.js');
+  }
+  get stateFile() {
+    return join(this.dir, 'worker-state.json');
   }
   get heartbeatDir() {
     return join(this.dir, 'heartbeats');

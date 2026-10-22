@@ -67,7 +67,7 @@
         "command": "pushpal.setup",
         "title": "%cmd.setup%",
         "category": "PushPal",
-        "icon": "$(settings-gear)"
+        "icon": "$(rocket)"
       },
       {
         "command": "pushpal.showTeam",
@@ -92,7 +92,14 @@
       {
         "command": "pushpal.openSettings",
         "title": "%cmd.openSettings%",
-        "category": "PushPal"
+        "category": "PushPal",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "pushpal.switchMode",
+        "title": "%cmd.switchMode%",
+        "category": "PushPal",
+        "icon": "$(dashboard)"
       }
     ],
     "menus": {
@@ -106,6 +113,11 @@
           "command": "pushpal.setup",
           "when": "view == pushpal.team",
           "group": "navigation@2"
+        },
+        {
+          "command": "pushpal.openSettings",
+          "when": "view == pushpal.team",
+          "group": "navigation@3"
         }
       ],
       "commandPalette": [
@@ -170,37 +182,163 @@
           "order": 2,
           "description": "%cfg.theme%"
         },
+        "pushpal.mode": {
+          "type": "string",
+          "enum": [
+            "fast",
+            "balanced",
+            "batterySaver",
+            "custom"
+          ],
+          "enumDescriptions": [
+            "%cfg.mode.fast%",
+            "%cfg.mode.balanced%",
+            "%cfg.mode.batterySaver%",
+            "%cfg.mode.custom%"
+          ],
+          "default": "balanced",
+          "markdownDescription": "%cfg.mode%",
+          "order": 3
+        },
         "pushpal.checkIntervalSeconds": {
           "type": "number",
-          "default": 60,
-          "minimum": 15,
+          "default": 30,
+          "minimum": 10,
+          "maximum": 300,
+          "order": 4,
+          "markdownDescription": "%cfg.interval%"
+        },
+        "pushpal.background.intervalSeconds": {
+          "type": "number",
+          "default": 120,
+          "minimum": 60,
           "maximum": 3600,
-          "order": 3,
-          "description": "%cfg.interval%"
+          "markdownDescription": "%cfg.background.interval%",
+          "order": 5
+        },
+        "pushpal.battery.idle.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "%cfg.battery.idle.enabled%",
+          "order": 6
+        },
+        "pushpal.battery.idle.minutes": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 240,
+          "markdownDescription": "%cfg.battery.idle.minutes%",
+          "order": 7
+        },
+        "pushpal.battery.idle.intervalSeconds": {
+          "type": "number",
+          "default": 60,
+          "minimum": 10,
+          "maximum": 3600,
+          "markdownDescription": "%cfg.battery.idle.interval%",
+          "order": 8
+        },
+        "pushpal.battery.lowBattery.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "%cfg.battery.low.enabled%",
+          "order": 9
+        },
+        "pushpal.battery.lowBattery.percent": {
+          "type": "number",
+          "default": 20,
+          "minimum": 5,
+          "maximum": 95,
+          "markdownDescription": "%cfg.battery.low.percent%",
+          "order": 10
+        },
+        "pushpal.battery.lowBattery.intervalSeconds": {
+          "type": "number",
+          "default": 60,
+          "minimum": 10,
+          "maximum": 3600,
+          "markdownDescription": "%cfg.battery.low.interval%",
+          "order": 11
+        },
+        "pushpal.battery.lowPowerMode.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "%cfg.battery.lpm.enabled%",
+          "order": 12
+        },
+        "pushpal.battery.lowPowerMode.intervalSeconds": {
+          "type": "number",
+          "default": 60,
+          "minimum": 10,
+          "maximum": 3600,
+          "markdownDescription": "%cfg.battery.lpm.interval%",
+          "order": 13
+        },
+        "pushpal.battery.pluggedInUsesNormal": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "%cfg.battery.plugged%",
+          "order": 14
+        },
+        "pushpal.activeHours.enabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "%cfg.hours.enabled%",
+          "order": 15
+        },
+        "pushpal.activeHours.start": {
+          "type": "string",
+          "default": "08:00",
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+          "patternErrorMessage": "HH:MM",
+          "markdownDescription": "%cfg.hours.start%",
+          "order": 16
+        },
+        "pushpal.activeHours.end": {
+          "type": "string",
+          "default": "23:00",
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+          "patternErrorMessage": "HH:MM",
+          "markdownDescription": "%cfg.hours.end%",
+          "order": 17
         },
         "pushpal.notify.inVSCode": {
           "type": "boolean",
           "default": true,
-          "order": 4,
+          "order": 18,
           "description": "%cfg.notify.inVSCode%"
         },
         "pushpal.notify.desktop": {
           "type": "boolean",
           "default": true,
-          "order": 5,
+          "order": 19,
           "description": "%cfg.notify.desktop%"
         },
         "pushpal.notify.background": {
           "type": "boolean",
           "default": false,
-          "order": 6,
+          "order": 20,
           "markdownDescription": "%cfg.notify.background%"
         },
         "pushpal.notify.sameFileWarning": {
           "type": "boolean",
           "default": true,
-          "order": 7,
+          "order": 21,
           "description": "%cfg.notify.sameFile%"
+        },
+        "pushpal.actions.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "%cfg.actions.enabled%",
+          "order": 22
+        },
+        "pushpal.actions.intervalSeconds": {
+          "type": "number",
+          "default": 20,
+          "minimum": 10,
+          "maximum": 120,
+          "markdownDescription": "%cfg.actions.interval%",
+          "order": 23
         }
       }
     }

@@ -49,3 +49,12 @@ export function relativeTime(lang: Lang, unixSeconds: number, now = Date.now()):
   if (abs < 86400 * 30) return rtf.format(Math.round(diff / 86400), 'day');
   return new Date(unixSeconds * 1000).toLocaleDateString(lang === 'th' ? 'th-TH' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' });
 }
+
+/** "45 วิ", "2 นาที", "1 นาที 30 วิ" / "45 s", "2 min". */
+export function formatSeconds(lang: Lang, seconds: number): string {
+  const s = Math.round(seconds);
+  if (s < 60) return translate(lang, 'wv.unit.s', s);
+  if (s >= 3600 && s % 3600 === 0) return translate(lang, 'wv.unit.h', s / 3600);
+  const m = Math.floor(s / 60);
+  return s % 60 ? translate(lang, 'wv.unit.minS', m, s % 60) : translate(lang, 'wv.unit.min', m);
+}

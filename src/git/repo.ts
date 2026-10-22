@@ -320,3 +320,18 @@ export async function finishMerge(root: string, opts: GitOptions = {}): Promise<
   const r = await runGit(root, ['commit', '--no-edit'], opts);
   return interpretMergeOutcome(root, r.code, `${r.stdout}\n${r.stderr}`, before, !!conflict.mergeAutostash, opts);
 }
+
+/** Branches + tags the remote advertises on every fetch (approximated from local remote-tracking refs). */
+export async function countRemoteRefs(root: string, opts?: GitOptions): Promise<number> {
+  const r = await runGit(root, ['for-each-ref', '--format=x', 'refs/remotes', 'refs/tags'], opts);
+  return r.code === 0 ? r.stdout.split('\n').filter(Boolean).length : 1;
+}
+
+/** URL of the remote the current branch tracks. */
+export async function upstreamRemoteUrl(root: string, opts?: GitOptions): Promise<string | null> {
+  const branch = await currentBranch(root, opts);
+  const remote = branch ? await remoteOfBranch(root, branch, opts) : null;
+  if (!remote) return null;
+  const r = await runGit(root, ['remote', 'get-url', remote], opts);
+  return r.code === 0 ? r.stdout.trim() : null;
+}

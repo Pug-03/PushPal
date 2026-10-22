@@ -16,7 +16,9 @@
     testSent: false,
     finished: null
   };
-  var STEPS = ['welcome', 'lang', 'theme', 'notify', 'test', 'done'];
+  var STEPS = ['welcome', 'lang', 'theme', 'notify', 'frequency', 'test', 'done'];
+  var Modes = window.PushPalModes;
+  state.freq = init.freq;
   var app = document.getElementById('app');
 
   function s(key) {
@@ -88,6 +90,16 @@
         toggle('notifyDesktop', I('screen'), s('notify.desktop'), s('notify.desktopHint'), state.notify.notifyDesktop, false) +
         toggle('notifyBackground', I('clock'), s('notify.background'), s('notify.backgroundHint') + ' ' + bgHint, state.notify.notifyBackground && init.bgSupported, !init.bgSupported) +
       '</div>'
+    );
+  }
+
+  function stepFrequency() {
+    var f = state.freq;
+    return (
+      header(s('freq.title'), s('freq.body')) +
+      '<div id="freqCards">' + Modes.cards(s, f) + '</div>' +
+      '<p class="mode-note">' + esc(s('est.note', Math.max(1, f.repoCount))) + '</p>' +
+      '<div class="wz-more"><button class="btn btn-ghost" data-act="openSettings">' + I('sliders') + esc(s('freq.more')) + '</button></div>'
     );
   }
 
@@ -166,7 +178,7 @@
     );
   }
 
-  var renderers = [stepWelcome, stepLang, stepTheme, stepNotify, stepTest, stepDone];
+  var renderers = [stepWelcome, stepLang, stepTheme, stepNotify, stepFrequency, stepTest, stepDone];
 
   // ---------- Shell ----------
   function shell() {
@@ -262,6 +274,15 @@
   }
 
   function onStageClick(e) {
+    var card = e.target.closest('.mode-card');
+    if (card) {
+      var mode = card.getAttribute('data-mode');
+      Modes.pick(card);
+      state.freq.mode = mode;
+      if (mode === 'custom') post({ type: 'openSettings' });
+      post({ type: 'setMode', mode: mode });
+      return;
+    }
     var opt = e.target.closest('.opt');
     if (opt) {
       var group = opt.getAttribute('data-group');
@@ -299,6 +320,7 @@
       var a = act.getAttribute('data-act');
       if (a === 'test') post({ type: 'test' });
       if (a === 'installAlerter') post({ type: 'installAlerter' });
+      if (a === 'openSettings') post({ type: 'openSettings' });
     }
   }
 
@@ -315,10 +337,26 @@
     } else if (m.type === 'testResult') {
       state.backend = m.backend;
       state.testSent = true;
-      fillStep(4);
+      fillStep(STEPS.indexOf('test'));
     } else if (m.type === 'finished') {
       state.finished = m.background;
-      fillStep(5);
+      fillStep(STEPS.indexOf('done'));
+    } else if (m.type === 'freq') {
+      // Keep the picked card's animation running; only refresh the text.
+      state.freq = m.freq;
+      var host = document.getElementById('freqCards');
+      if (host) {
+        host.querySelectorAll('.mode-card').forEach(function (b) {
+          var fresh = document.createElement('div');
+          fresh.innerHTML = Modes.cards(s, m.freq);
+          var twin = fresh.querySelector('[data-mode="' + b.getAttribute('data-mode') + '"]');
+          b.querySelector('.mode-every').textContent = twin.querySelector('.mode-every').textContent;
+          b.querySelector('.mode-est').innerHTML = twin.querySelector('.mode-est').innerHTML;
+          var on = m.freq.mode === b.getAttribute('data-mode');
+          b.classList.toggle('is-on', on);
+          b.setAttribute('aria-checked', String(on));
+        });
+      }
     }
   });
 

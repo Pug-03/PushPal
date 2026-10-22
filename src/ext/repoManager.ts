@@ -39,7 +39,6 @@ export class RepoManager implements vscode.Disposable {
   private readonly disposables: vscode.Disposable[] = [];
   private readonly repoWatchers = new Map<string, vscode.Disposable>();
   private readonly localCheckTimers = new Map<string, NodeJS.Timeout>();
-  private timer: NodeJS.Timeout | undefined;
   private checkListeners: CheckListener[] = [];
   private gitApi: GitAPI | undefined;
   readonly onDidChange = this.emitter.event;
@@ -57,22 +56,20 @@ export class RepoManager implements vscode.Disposable {
     return this.gitApi?.git.path;
   }
 
-  async init(intervalSeconds: number): Promise<void> {
+  /** Automatic fetches (on focus, on discovery) are skipped while this returns false (outside active hours). */
+  canAutoFetch: () => boolean = () => true;
+
+  /** Periodic checks are driven by the Scheduler (src/ext/scheduler.ts). */
+  async init(): Promise<void> {
     await this.connectGitExtension();
     this.disposables.push(
       vscode.workspace.onDidChangeWorkspaceFolders(() => void this.discover()),
       vscode.window.onDidChangeWindowState((s) => {
-        if (s.focused) void this.refreshAll({ fetch: true, minFetchGapMs: 10_000 });
+        if (s.focused) void this.refreshAll({ fetch: this.canAutoFetch(), minFetchGapMs: 10_000 });
       }),
     );
     await this.discover();
-    this.setInterval(intervalSeconds);
-    void this.refreshAll({ fetch: true });
-  }
-
-  setInterval(seconds: number): void {
-    if (this.timer) clearInterval(this.timer);
-    this.timer = setInterval(() => void this.refreshAll({ fetch: true }), Math.max(15, seconds) * 1000);
+    void this.refreshAll({ fetch: this.canAutoFetch() });
   }
 
   private async connectGitExtension(): Promise<void> {
@@ -106,7 +103,7 @@ export class RepoManager implements vscode.Disposable {
       this.entries.set(key, { root, name: basename(root), snapshot: null, phase: 'idle', recent: [], lastFetchAt: 0 });
       this.watchRepo(key, root);
       changed = true;
-      void this.refresh(root, { fetch: true });
+      void this.refresh(root, { fetch: this.canAutoFetch() });
     }
     for (const key of [...this.entries.keys()]) {
       if (roots.has(key)) continue;
@@ -236,7 +233,6 @@ export class RepoManager implements vscode.Disposable {
   }
 
   dispose(): void {
-    if (this.timer) clearInterval(this.timer);
     for (const t of this.localCheckTimers.values()) clearTimeout(t);
     for (const d of this.repoWatchers.values()) d.dispose();
     for (const d of this.disposables) d.dispose();

@@ -14,7 +14,7 @@ exports.run = async function () {
   await ext.activate();
   log.push('activated');
   const cmds = await vscode.commands.getCommands(true);
-  for (const c of ['pushpal.pull', 'pushpal.checkNow', 'pushpal.setup', 'pushpal.showTeam', 'pushpal.testNotification']) assert(cmds.includes(c), c);
+  for (const c of ['pushpal.pull', 'pushpal.checkNow', 'pushpal.setup', 'pushpal.showTeam', 'pushpal.testNotification', 'pushpal.switchMode', 'pushpal.openSettings']) assert(cmds.includes(c), c);
   log.push('commands ok');
 
   await sleep(1500);
@@ -44,6 +44,36 @@ exports.run = async function () {
   const hb = fs.readdirSync(path.join(storage, 'heartbeats'));
   assert(hb.length > 0, 'heartbeat written');
   log.push('heartbeat ok');
+
+  // Modes and values stay in sync both ways, out-of-range values are clamped.
+  const cfg = () => vscode.workspace.getConfiguration('pushpal');
+  const waitFor = async (fn, what) => {
+    for (let i = 0; i < 40; i++) {
+      if (fn()) return;
+      await sleep(100);
+    }
+    throw new Error('ASSERT: ' + what);
+  };
+  const G = vscode.ConfigurationTarget.Global;
+  await cfg().update('mode', 'fast', G);
+  await waitFor(() => cfg().get('checkIntervalSeconds') === 10 && cfg().get('background.intervalSeconds') === 60, 'fast preset fills in its values');
+  await cfg().update('checkIntervalSeconds', 45, G);
+  await waitFor(() => cfg().get('mode') === 'custom', 'editing a value switches to custom');
+  await cfg().update('checkIntervalSeconds', 5, G);
+  await waitFor(() => cfg().get('checkIntervalSeconds') === 10, 'out-of-range value clamped to 10');
+  await cfg().update('mode', 'batterySaver', G);
+  await waitFor(() => cfg().get('checkIntervalSeconds') === 60, 'battery saver preset');
+  log.push('modes ok');
+  await sleep(800);
+  const workerCfg = JSON.parse(fs.readFileSync(path.join(storage, 'config.json'), 'utf8'));
+  assert(workerCfg.frequency && workerCfg.frequency.backgroundSeconds === 300, 'config.json has the new background interval: ' + JSON.stringify(workerCfg.frequency));
+  log.push('worker config ok');
+
+  await vscode.commands.executeCommand('pushpal.openSettings');
+  await sleep(800);
+  const tabs2 = vscode.window.tabGroups.all.flatMap((g) => g.tabs.map((t) => t.label));
+  assert(tabs2.some((l) => /PushPal Settings|ตั้งค่า PushPal/.test(l)), 'settings page opened: ' + tabs2.join(','));
+  log.push('settings page ok');
 
   fs.writeFileSync(process.env.PUSHPAL_SMOKE_RESULT, JSON.stringify({ ok: true, log }));
 };

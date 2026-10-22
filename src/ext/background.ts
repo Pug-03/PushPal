@@ -10,6 +10,7 @@ import { iconPath } from './desktopChannel';
 import { currentLang } from './l10n';
 import { readSettings } from './settings';
 import type { RepoManager } from './repoManager';
+import type { ModeController } from './modes';
 
 /** Keeps config.json, worker.js and the OS background job in sync with settings. */
 export class Background {
@@ -18,6 +19,7 @@ export class Background {
     private readonly store: SharedStore,
     private readonly repos: RepoManager,
     private readonly log: vscode.OutputChannel,
+    private readonly modes: ModeController,
   ) {}
 
   private paths(): AgentPaths {
@@ -47,10 +49,11 @@ export class Background {
       windowsAppId: productJson().win32AppUserModelId,
       macBundleId: productJson().darwinBundleIdentifier,
       enabled,
+      frequency: this.modes.config,
     };
   }
 
-  /** Called on activation, on settings change and when repos are discovered. */
+  /** Called on activation, on any PushPal settings change and when repos are discovered. The worker re-reads config.json on every run. */
   async sync(): Promise<'enabled' | 'disabled' | 'unsupported'> {
     const enabled = readSettings().notifyBackground;
     this.store.addRepos(

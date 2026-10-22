@@ -36,12 +36,18 @@ const VSCODE_VARS = {
 
 function page(sc) {
   const vars = Object.entries(VSCODE_VARS[sc.vscode]).map(([k, v]) => `--vscode-${k}:${v}`).join(';');
-  const kindFiles = sc.kind === 'wizard' ? { css: ['wizard.css'], js: ['wizard.js'] } : { css: ['team.css'], js: ['team.js'] };
+  const kindFiles = {
+    wizard: { css: ['controls.css', 'wizard.css'], js: ['modes.js', 'wizard.js'] },
+    settings: { css: ['controls.css', 'settings.css'], js: ['modes.js', 'settings.js'] },
+    team: { css: ['team.css'], js: ['team.js'] },
+  }[sc.kind];
   const init = sc.kind === 'wizard'
     ? { lang: sc.lang, theme: sc.theme, strings, platform: sc.platform ?? 'darwin', backend: sc.backend ?? 'alerter', bgSupported: true,
-        notify: { notifyInVSCode: true, notifyDesktop: true, notifyBackground: sc.background ?? false } }
-    : { lang: sc.lang, theme: sc.theme, strings: strings[sc.lang], view: sc.view };
-  return `<!doctype html><html lang="${sc.lang}" class="theme-${sc.theme} surface-${sc.kind === 'wizard' ? 'panel' : 'sidebar'}" style="${vars}">
+        notify: { notifyInVSCode: true, notifyDesktop: true, notifyBackground: sc.background ?? false }, freq: sc.freq }
+    : sc.kind === 'settings'
+      ? { lang: sc.lang, strings: strings[sc.lang], platform: 'darwin', bgSupported: true, section: sc.section }
+      : { lang: sc.lang, theme: sc.theme, strings: strings[sc.lang], view: sc.view };
+  return `<!doctype html><html lang="${sc.lang}" class="theme-${sc.theme} surface-${sc.kind === 'team' ? 'sidebar' : 'panel'}" style="${vars}">
 <head><meta charset="utf-8">
 ${['base.css', ...kindFiles.css].map((f) => `<link rel="stylesheet" href="file://${join(media, f)}">`).join('')}
 <script>
