@@ -135,7 +135,7 @@
     s.push('<svg class="mascot pug' + (o.enter ? ' enter' : '') + '" data-pose="' + pose + '" viewBox="0 -24 200 220" width="' + size + '" height="' + Math.round(size * 1.1) + '" role="img" aria-label="' + (o.label || 'PushPal') + '">');
     s.push('<defs><clipPath id="' + u + 'head"><path d="' + P.head + '"/></clipPath><clipPath id="' + u + 'muzzle"><path d="' + P.muzzle + '"/></clipPath></defs>');
     s.push('<path class="p-shadow" d="' + oval(100, 184, 46, 5) + '" fill="#2a1a20" opacity=".14"/>');
-    s.push('<g class="p-root"><g class="p-spin"><g class="p-tilt">');
+    s.push('<g class="p-root"><g class="p-poke"><g class="p-spin"><g class="p-tilt">');
     // props behind the head
     s.push('<g class="p-rope" opacity="0"><g class="p-ropeA">' + line(P.ropeA, 8) + line(P.ropeA, 4.2, K.teal) + '</g><g class="p-ropeB">' + line(P.ropeB, 8) + line(P.ropeB, 4.2, K.coral) + '</g></g>');
     s.push('<path class="p-earL" d="' + P.earL.rest + '" fill="' + K.dark + '" stroke="' + K.ink + '" stroke-width="' + W + '" stroke-linejoin="round"/>');
@@ -161,7 +161,7 @@
     s.push('<g class="p-tongue" opacity="0">' + shape(P.tongueOut, K.tongue, 2.6) + '</g>');
     s.push('<g class="p-mouthO" opacity="0">' + shape(oval(100, 138, 5.5, 7), K.eye, 2.6) + '</g>');
     s.push('<g class="p-knot" opacity="0">' + shape(oval(100, 152, 9, 7), K.teal, 3) + line('M94 151C98 147 103 149 106 155', 3, K.coral) + '</g>');
-    s.push('</g></g></g>'); // tilt, spin, root
+    s.push('</g></g></g></g>'); // tilt, spin, poke, root
     // props in front, not tilted with the head
     s.push('<g class="p-zzz" opacity="0">' + [0, 1, 2].map(function (i) { return '<g class="p-z" transform="translate(' + (150 + i * 10) + ' ' + (30 - i * 16) + ') scale(' + (1 + i * 0.25) + ')">' + line(P.z, 2.8, K.iris) + '</g>'; }).join('') + '</g>');
     s.push('<g class="p-barkLines" opacity="0">' + line(P.barkL, 3, K.iris) + line(P.barkR, 3, K.iris) + '</g>');
@@ -205,7 +205,7 @@
   var reduceMQ = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
   var ORIGINS = {
-    root: '100 172', spin: '100 100', tilt: '100 128', earL: '62 50', earR: '138 50',
+    root: '100 172', poke: '100 150', spin: '100 100', tilt: '100 128', earL: '62 50', earR: '138 50',
     openL: '66 92', openR: '134 92', heartL: '66 92', heartR: '134 92', happyL: '66 92', happyR: '134 92',
     blush: '100 124', muzzle: '100 120', smile: '100 128', bark: '100 124', tongue: '100 134', mouthO: '100 138',
     knot: '100 152', quest: '159 14', tear: '152 108', shadow: '100 184'
@@ -233,7 +233,7 @@
   function Pal(svg) {
     this.svg = svg;
     var q = (this.parts = {});
-    ['root', 'spin', 'tilt', 'earL', 'earR', 'browL', 'browR', 'openL', 'openR', 'lookL', 'lookR', 'lidL', 'lidR', 'closedL', 'closedR', 'happyL', 'happyR', 'heartL', 'heartR',
+    ['root', 'poke', 'spin', 'tilt', 'earL', 'earR', 'browL', 'browR', 'openL', 'openR', 'lookL', 'lookR', 'lidL', 'lidR', 'closedL', 'closedR', 'happyL', 'happyR', 'heartL', 'heartR',
       'blush', 'muzzle', 'mouth', 'smile', 'bark', 'tongue', 'mouthO', 'knot', 'rope', 'ropeA', 'ropeB', 'zzz', 'barkLines', 'sniff', 'quest', 'tear', 'shadow'].forEach(function (n) {
       q[n] = svg.querySelector('.p-' + n);
     });
@@ -245,7 +245,9 @@
     if (!gsap) return;
     Object.keys(ORIGINS).forEach(function (n) { if (q[n]) gsap.set(q[n], { svgOrigin: ORIGINS[n] }); });
     var self = this;
-    svg.addEventListener('click', function () { self.tickle(); });
+    // Poke with the mouse: squish while pressed, jiggle on release.
+    svg.addEventListener('pointerdown', function (e) { self.press(e); });
+    svg.addEventListener('pointerenter', function () { self.perk(); });
   }
 
   Pal.prototype.clear = function () {
@@ -337,7 +339,79 @@
     tl.call(function () { (LOOPS[pose] || LOOPS.sit).call(self, f); });
   };
 
-  /** Click: love-struck for a moment, then back to what it was doing. */
+  /** Mouse over: a little ear perk and a glance up, without changing the pose. */
+  Pal.prototype.perk = function () {
+    if (!gsap || reduceMQ.matches || this.pokeTl) return;
+    var q = this.parts;
+    gsap.timeline()
+      .to(q.earL, { rotation: -10, duration: 0.08, ease: 'power2.out' }, 0)
+      .to(q.earR, { rotation: 10, duration: 0.08, ease: 'power2.out' }, 0.04)
+      .to([q.earL, q.earR], { rotation: 0, duration: 0.6, ease: 'elastic.out(1.2,0.3)' }, 0.12)
+      .fromTo(q.poke, { y: 0 }, { y: -4, duration: 0.12, ease: 'power2.out', yoyo: true, repeat: 1 }, 0);
+  };
+
+  // Quick reactions shown for a moment after a poke.
+  var POKE_FACES = [
+    { eyes: 'happy', mouth: 'smile', blush: 1.5 },
+    { eyes: 'wide', mouth: 'o', blush: 1.2 },
+    { eyes: 'happy', mouth: 'tongue', blush: 1.4 },
+    { eyes: 'wink', mouth: 'smile', blush: 1.4 }
+  ];
+
+  /**
+   * Poke: squash while the button is held, then a springy jiggle with ears and
+   * muzzle wobbling and a quick funny face. Five quick pokes = heart eyes.
+   */
+  Pal.prototype.press = function (e) {
+    if (!gsap) return;
+    if (e && e.button !== undefined && e.button !== 0) return;
+    var self = this;
+    var q = this.parts;
+    if (this.pose === 'love') return;
+    var now = Date.now();
+    this.pokes = (this.pokes || []).filter(function (t) { return now - t < 2000; });
+    this.pokes.push(now);
+    if (this.pokes.length >= 5) {
+      this.pokes = [];
+      if (this.pokeTl) this.pokeTl.kill();
+      this.pokeTl = null;
+      gsap.set(q.poke, { scaleX: 1, scaleY: 1, rotation: 0, y: 0 });
+      return this.tickle();
+    }
+    if (this.pokeTl) this.pokeTl.kill();
+    var reduce = reduceMQ.matches;
+    if (!reduce) gsap.to(q.poke, { scaleX: 1.12, scaleY: 0.86, rotation: 0, y: 4, duration: 0.08, ease: 'power2.out', overwrite: true });
+    var released = false;
+    var release = function () {
+      if (released) return;
+      released = true;
+      document.removeEventListener('pointerup', release);
+      document.removeEventListener('pointercancel', release);
+      var base = Object.assign({}, FACES[self.pose] || FACES.sit);
+      var flash = Object.assign({}, base, POKE_FACES[Math.floor(Math.random() * POKE_FACES.length)]);
+      var tl = (self.pokeTl = gsap.timeline({ onComplete: function () { self.pokeTl = null; } }));
+      if (!reduce) {
+        var dir = Math.random() < 0.5 ? -1 : 1;
+        tl.to(q.poke, { scaleX: 0.9, scaleY: 1.12, y: -10, rotation: 9 * dir, duration: 0.12, ease: 'power2.out' }, 0)
+          .to(q.poke, { keyframes: [
+            { rotation: -7 * dir, scaleX: 1.05, scaleY: 0.96, y: 0, duration: 0.12 },
+            { rotation: 5 * dir, scaleX: 0.98, scaleY: 1.03, duration: 0.11 },
+            { rotation: -3 * dir, scaleX: 1.01, scaleY: 0.99, duration: 0.1 },
+            { rotation: 0, scaleX: 1, scaleY: 1, duration: 0.3, ease: 'elastic.out(1,0.4)' }
+          ] }, 0.12)
+          .fromTo(q.earL, { rotation: -26 * dir }, { rotation: 0, duration: 1, ease: 'elastic.out(1.2,0.25)' }, 0.05)
+          .fromTo(q.earR, { rotation: 26 * dir }, { rotation: 0, duration: 1.05, ease: 'elastic.out(1.2,0.25)' }, 0.08)
+          .fromTo(q.muzzle, { scaleX: 1.08, scaleY: 0.92 }, { scaleX: 1, scaleY: 1, duration: 0.8, ease: 'elastic.out(1,0.3)' }, 0.1);
+      }
+      // Funny face for a moment, then back to the pose's own face.
+      self.face(flash, tl, 0, 0.1);
+      self.face(base, tl, 0.9, 0.2);
+    };
+    document.addEventListener('pointerup', release);
+    document.addEventListener('pointercancel', release);
+  };
+
+  /** Five quick pokes: love-struck for a moment, then back to what it was doing. */
   Pal.prototype.tickle = function () {
     if (!gsap || this.pose === 'love') return;
     var back = this.pose || 'sit';

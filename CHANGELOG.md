@@ -5,7 +5,7 @@
 - New mascot: Pal is a flat-style pug head whose expressions follow what's going on — asleep when you're up
   to date, sniffing while checking, startled and barking when a teammate pushes, tugging a two-colour rope
   while merging, jump-spinning on success, puzzled at conflicts, teary when GitHub Actions fail, winking when
-  they pass, heart-eyed when clicked. Random idle life (blinks, ear twitches, glances, little smiles).
+  they pass, wiggling when you poke it (heart eyes after a few pokes). Random idle life (blinks, ear twitches, glances, little smiles).
   Animated with GSAP; respects reduced motion
 - New extension icon and Activity Bar icon (pug head)
 - Check frequency modes: ⚡ Fastest (10 s), ⚖️ Balanced (30 s, new default), 🔋 Battery saver (60 s) and 🛠 Custom,

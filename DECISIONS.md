@@ -384,7 +384,10 @@ Newest sections are appended at the bottom of each topic.
   tones per material (fur, eye patch, muzzle), no gradients. Blush is clipped inside the head outline.
 - **Expressions** (`FACES` in `media/mascot.js`): sit, sleep, check, alert, merge, success, conflict,
   fail, pass, welcome, love. Old names (idle, chill, wave, point, cheer, worry, busy, belly) map onto them.
-  Clicking Pal shows "love" (heart eyes, hearts) for 2.4 s, then returns to what it was doing.
+  **Poking** Pal with the mouse: squash while pressed, then a springy jiggle (tilt back and forth, ears and
+  muzzle wobble) and a quick funny face (giggle, surprised, tongue out or wink) before its own face returns.
+  Five pokes within 2 s show "love" (heart eyes, hearts) for 2.4 s. Hovering makes the ears perk. This runs
+  on its own `p-poke` layer so it never fights the pose's loops; with reduced motion only the face changes.
 - **Switching**: ears, brows and the mouth line morph (MorphSVG; all variants share one command
   structure so the morphs are clean); eyes and open mouths cross-fade with a small scale pop; the head
   settles back to rest in 0.3 s before the new pose's entrance, so any pose can follow any other.
