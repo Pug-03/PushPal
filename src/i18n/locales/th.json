@@ -62,5 +62,9 @@
   "bg.unsupported": "การเตือนตอนปิด VS Code ใช้ได้บน macOS กับ Windows เท่านั้น",
   "bg.failed": "ตั้งงานเบื้องหลังไม่สำเร็จ: {0}",
   "welcome.prompt": "PushPal พร้อมแล้ว ตั้งค่าสั้นๆ 1 นาทีไหม?",
-  "setup.title": "ตั้งค่า PushPal"
+  "setup.title": "ตั้งค่า PushPal",
+  "btn.ok": "เยี่ยม!",
+  "alerter.installing": "กำลังติดตั้ง alerter ในเทอร์มินัล พอเสร็จแล้วกด “ส่งแจ้งเตือนทดสอบ” อีกครั้งนะ",
+  "alerter.noBrew": "alerter ติดตั้งผ่าน Homebrew ต้องลง Homebrew ก่อน (brew.sh) แล้วค่อยลองใหม่",
+  "btn.openBrew": "เปิด brew.sh"
 }

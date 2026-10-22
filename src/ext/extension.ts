@@ -6,6 +6,10 @@ import { Alerts } from './alerts';
 import { SharedStore, HEARTBEAT_INTERVAL_MS } from '../core/storage';
 import { readSettings } from './settings';
 import { t } from './l10n';
+import { ExtensionDesktopChannel } from './desktopChannel';
+import { sendTestNotification } from './desktopSetup';
+import { PushPalUriHandler, type UriAction } from './uriHandler';
+import { focusThisWindow } from './host';
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const log = vscode.window.createOutputChannel('PushPal');
@@ -16,6 +20,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const status = new StatusBar(repos);
   context.subscriptions.push(log, repos, status);
 
+  const desktop = new ExtensionDesktopChannel(context);
+  alerts.desktop = desktop;
+  alerts.onFocusWindow = focusThisWindow;
   alerts.onPull = (root) => actions.pull(root);
   alerts.onFinishMerge = (root) => actions.finishMerge(root);
   alerts.onReveal = (root) => actions.revealTeam(root);
@@ -34,6 +41,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   cmd('pushpal.showConflicts', () => actions.showConflicts());
   cmd('pushpal.finishMerge', () => actions.finishMerge());
   cmd('pushpal.showTeam', () => actions.revealTeam());
+  cmd('pushpal.testNotification', () => sendTestNotification(desktop));
   cmd('pushpal.openSettings', () => vscode.commands.executeCommand('workbench.action.openSettings', '@ext:' + context.extension.id));
 
   // Heartbeat: tells the background worker this window watches these repos.
@@ -55,8 +63,22 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }),
   );
 
+  const runUriAction = async (root: string, action: UriAction) => {
+    actions.revealTeam(root);
+    if (action === 'pull') await actions.pull(root);
+    else await repos.refresh(root, { fetch: true });
+  };
+  const uriHandler = new PushPalUriHandler(store, repos, runUriAction);
+  context.subscriptions.push(
+    vscode.window.registerUriHandler(uriHandler),
+    vscode.window.onDidChangeWindowState((s) => {
+      if (s.focused) void uriHandler.consumePending();
+    }),
+  );
+
   await repos.init(readSettings().intervalSeconds);
   beat();
+  void uriHandler.consumePending();
 }
 
 export function deactivate(): void {

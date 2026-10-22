@@ -62,5 +62,9 @@
   "bg.unsupported": "Checking while VS Code is closed is available on macOS and Windows only.",
   "bg.failed": "Couldn't set up the background task: {0}",
   "welcome.prompt": "PushPal is ready. Want a 1-minute setup?",
-  "setup.title": "PushPal Setup"
+  "setup.title": "PushPal Setup",
+  "btn.ok": "Nice!",
+  "alerter.installing": "Installing alerter in the terminal. When it finishes, press “Send test” again.",
+  "alerter.noBrew": "alerter is installed with Homebrew. Install Homebrew first (brew.sh), then try again.",
+  "btn.openBrew": "Open brew.sh"
 }

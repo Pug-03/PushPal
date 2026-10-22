@@ -47,3 +47,46 @@ Newest sections are appended at the bottom of each topic.
 - Node's built-in test runner (`node --test`), bundled with esbuild first. No Mocha/Jest dependency.
 - Each test creates a real bare remote plus two clones (alice and bob) in a temp dir, with an isolated
   `GIT_CONFIG_GLOBAL` so the developer's own git config (templates, hooks, pull.rebase) can't leak in.
+
+## 3. In-VS Code alerts, status bar and pull
+
+- **One status bar item for the whole window** (not one per repo) so it never crowds the bar. Priority:
+  pulling → conflict (red, `statusBarItem.errorBackground`) → behind (yellow, `warningBackground`, click = pull)
+  → can't check → up to date. "No upstream" is shown as its own neutral state instead of "error",
+  because for a beginner "เช็กไม่ได้" would sound like something is broken. The tooltip lists every repo.
+- **Repos** come from the built-in Git extension API (covers nested repos and multi-root) plus a
+  `git rev-parse --show-toplevel` of each workspace folder (works even if the Git extension is disabled).
+  Git's `repository.state.onDidChange` triggers a cheap local re-check (no fetch) so the autostash cleanup
+  and "all conflicts fixed" detection react within ~1 s of the user staging a file.
+- **One alert per new upstream commit**: `notified.json` in globalStorage stores the last upstream sha
+  alerted per repo. It's shared by every VS Code window *and* the background worker, so the same push is
+  never announced twice, wherever it was first seen.
+- Per-repo lock: a fetch never runs during a pull.
+- **Conflicts** open the conflicted files (max 5) and the first one in VS Code's Merge Editor
+  (`git.openMergeEditor`, falls back to a normal editor). A "Finish merge" action runs `git commit --no-edit`
+  when every file is staged; git then restores any autostashed work by itself.
+- After PushPal's own pull hits an autostash conflict, the stash sha is stored in `workspaceState`, so the
+  automatic `git stash drop` survives a VS Code restart and drops exactly that entry.
+
+## 4. Desktop notifications
+
+- **macOS**: `alerter` when found in `/opt/homebrew/bin` or `/usr/local/bin`. Both flag styles are supported:
+  alerter ≥ 26 (`--title`, `--close-label`) and the original 1.x (`-title`, `-closeLabel`), detected from
+  `--help`. `--timeout 0`, `--group <repo id>` (a newer alert replaces the older one for the same repo),
+  `--sender com.microsoft.VSCode` (read from VS Code's product.json) so it carries the VS Code icon.
+  Fallback: `osascript display notification` with the text passed as `argv` (never spliced into AppleScript).
+  Known limit of the fallback: no buttons, can't be removed later, and clicking it opens Script Editor.
+- **Windows**: toast XML with `scenario="reminder"` (stays until a button is pressed) shown through
+  `powershell.exe -EncodedCommand` (UTF-16 base64, no quoting problems with Thai text). Toast buttons
+  can't call back into a running Node process, so they are `vscode://<id>/pull?repo=…` protocol links,
+  handled by the extension's URI handler — which also brings VS Code to the front.
+  The toast uses VS Code's AppUserModelID (`Microsoft.VisualStudioCode`), falling back to Windows
+  PowerShell's well-known id if Windows rejects it.
+- **Linux**: `notify-send`, with `--action … --wait` buttons when the installed libnotify supports them;
+  closed later through `gdbus … CloseNotification`. If `notify-send` is missing, VS Code pop-ups are used.
+- **Focus rule**: if the VS Code window is focused → VS Code pop-up only; otherwise → desktop only.
+- **Bringing VS Code to the front** after a button click: run VS Code's own CLI (`out/cli.js`, through the
+  bundled Electron with `ELECTRON_RUN_AS_NODE=1`) on this window's folder / `.code-workspace` — VS Code
+  focuses the window that already has it open. Works the same on every OS.
+- After any successful pull (button, status bar, terminal, Source Control) the next check sees
+  `behind` drop to 0 and removes the desktop notification (`alerter --remove`, `History.Remove`, `CloseNotification`).

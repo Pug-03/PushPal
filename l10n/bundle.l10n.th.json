@@ -62,5 +62,9 @@
   "Checking while VS Code is closed is available on macOS and Windows only.": "การเตือนตอนปิด VS Code ใช้ได้บน macOS กับ Windows เท่านั้น",
   "Couldn't set up the background task: {0}": "ตั้งงานเบื้องหลังไม่สำเร็จ: {0}",
   "PushPal is ready. Want a 1-minute setup?": "PushPal พร้อมแล้ว ตั้งค่าสั้นๆ 1 นาทีไหม?",
-  "PushPal Setup": "ตั้งค่า PushPal"
+  "PushPal Setup": "ตั้งค่า PushPal",
+  "Nice!": "เยี่ยม!",
+  "Installing alerter in the terminal. When it finishes, press “Send test” again.": "กำลังติดตั้ง alerter ในเทอร์มินัล พอเสร็จแล้วกด “ส่งแจ้งเตือนทดสอบ” อีกครั้งนะ",
+  "alerter is installed with Homebrew. Install Homebrew first (brew.sh), then try again.": "alerter ติดตั้งผ่าน Homebrew ต้องลง Homebrew ก่อน (brew.sh) แล้วค่อยลองใหม่",
+  "Open brew.sh": "เปิด brew.sh"
 }
