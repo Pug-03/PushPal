@@ -1,0 +1,14 @@
+**
+!dist/extension.js
+!dist/worker.js
+!dist/uninstall.js
+!media/**
+!l10n/**
+!package.json
+!package.nls.json
+!package.nls.th.json
+!README.md
+!README.th.md
+!CHANGELOG.md
+!LICENSE
+media/*.src.svg

@@ -1,0 +1,227 @@
+{
+  "name": "pushpal",
+  "displayName": "PushPal",
+  "description": "%ext.description%",
+  "version": "1.0.0",
+  "publisher": "pushpal",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#0F2A2E",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Pug-03/pushpal.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Pug-03/pushpal/issues"
+  },
+  "homepage": "https://github.com/Pug-03/pushpal#readme",
+  "keywords": [
+    "git",
+    "pull",
+    "merge conflict",
+    "team",
+    "notification",
+    "github",
+    "collaboration",
+    "thai"
+  ],
+  "categories": [
+    "SCM Providers",
+    "Other"
+  ],
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "main": "./dist/extension.js",
+  "l10n": "./l10n",
+  "activationEvents": [
+    "onStartupFinished",
+    "onUri"
+  ],
+  "extensionDependencies": [],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "%ext.untrusted%"
+    },
+    "virtualWorkspaces": false
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "pushpal.pull",
+        "title": "%cmd.pull%",
+        "category": "PushPal",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "pushpal.checkNow",
+        "title": "%cmd.checkNow%",
+        "category": "PushPal",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "pushpal.setup",
+        "title": "%cmd.setup%",
+        "category": "PushPal",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "pushpal.showTeam",
+        "title": "%cmd.showTeam%",
+        "category": "PushPal"
+      },
+      {
+        "command": "pushpal.showConflicts",
+        "title": "%cmd.showConflicts%",
+        "category": "PushPal"
+      },
+      {
+        "command": "pushpal.finishMerge",
+        "title": "%cmd.finishMerge%",
+        "category": "PushPal"
+      },
+      {
+        "command": "pushpal.testNotification",
+        "title": "%cmd.testNotification%",
+        "category": "PushPal"
+      },
+      {
+        "command": "pushpal.openSettings",
+        "title": "%cmd.openSettings%",
+        "category": "PushPal"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "pushpal.checkNow",
+          "when": "view == pushpal.team",
+          "group": "navigation@1"
+        },
+        {
+          "command": "pushpal.setup",
+          "when": "view == pushpal.team",
+          "group": "navigation@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "pushpal.finishMerge",
+          "when": "pushpal.hasConflict"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "pushpal",
+          "title": "PushPal",
+          "icon": "media/activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "pushpal": [
+        {
+          "type": "webview",
+          "id": "pushpal.team",
+          "name": "%view.team%",
+          "icon": "media/activity.svg",
+          "contextualTitle": "PushPal"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "PushPal",
+      "properties": {
+        "pushpal.language": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "th",
+            "en"
+          ],
+          "enumDescriptions": [
+            "%cfg.language.auto%",
+            "ภาษาไทย",
+            "English"
+          ],
+          "default": "auto",
+          "order": 1,
+          "description": "%cfg.language%"
+        },
+        "pushpal.theme": {
+          "type": "string",
+          "enum": [
+            "system",
+            "light",
+            "dark"
+          ],
+          "enumDescriptions": [
+            "%cfg.theme.system%",
+            "%cfg.theme.light%",
+            "%cfg.theme.dark%"
+          ],
+          "default": "system",
+          "order": 2,
+          "description": "%cfg.theme%"
+        },
+        "pushpal.checkIntervalSeconds": {
+          "type": "number",
+          "default": 60,
+          "minimum": 15,
+          "maximum": 3600,
+          "order": 3,
+          "description": "%cfg.interval%"
+        },
+        "pushpal.notify.inVSCode": {
+          "type": "boolean",
+          "default": true,
+          "order": 4,
+          "description": "%cfg.notify.inVSCode%"
+        },
+        "pushpal.notify.desktop": {
+          "type": "boolean",
+          "default": true,
+          "order": 5,
+          "description": "%cfg.notify.desktop%"
+        },
+        "pushpal.notify.background": {
+          "type": "boolean",
+          "default": false,
+          "order": 6,
+          "markdownDescription": "%cfg.notify.background%"
+        },
+        "pushpal.notify.sameFileWarning": {
+          "type": "boolean",
+          "default": true,
+          "order": 7,
+          "description": "%cfg.notify.sameFile%"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build -- --production",
+    "vscode:uninstall": "node ./dist/uninstall.js",
+    "build": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "pretest": "node scripts/build.mjs --tests",
+    "test": "node --test --test-concurrency=1 \"out-test/*.test.js\"",
+    "icon": "node scripts/render-icon.mjs",
+    "screenshots": "node scripts/screenshots.mjs",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "~1.90.0",
+    "@vscode/vsce": "^3.6.0",
+    "esbuild": "^0.25.0",
+    "typescript": "~5.8.3"
+  }
+}
