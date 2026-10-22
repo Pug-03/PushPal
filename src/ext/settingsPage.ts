@@ -127,7 +127,7 @@ export class SettingsPage {
   private async post(extra?: Record<string, unknown>): Promise<void> {
     const s = readSettings();
     const model = await frequencyModel(this.deps);
-    void this.panel.webview.postMessage({ type: 'state', settings: s, freq: model, ...extra });
+    this.send({ type: 'state', settings: s, freq: model, ...extra });
   }
 
   private async onMessage(m: FromPage): Promise<void> {
@@ -161,7 +161,20 @@ export class SettingsPage {
     }
   }
 
+  private disposed = false;
+
+  /** postMessage throws once the panel is closed (e.g. an async result arrives late). */
+  private send(msg: unknown): void {
+    if (this.disposed) return;
+    try {
+      void this.panel.webview.postMessage(msg);
+    } catch {
+      /* panel closed */
+    }
+  }
+
   private dispose(): void {
+    this.disposed = true;
     clearTimeout(this.pending);
     SettingsPage.current = undefined;
     for (const d of this.disposables) d.dispose();

@@ -69,7 +69,7 @@ export class SetupWizard {
   }
 
   private async postFreq(): Promise<void> {
-    void this.panel.webview.postMessage({ type: 'freq', freq: await frequencyModel(this.freq) });
+    this.send({ type: 'freq', freq: await frequencyModel(this.freq) });
   }
 
   private async render(lang: Lang): Promise<void> {
@@ -117,7 +117,7 @@ export class SetupWizard {
         return;
       case 'test': {
         const backend = await sendTestNotification(this.desktop);
-        void this.panel.webview.postMessage({ type: 'testResult', backend });
+        this.send({ type: 'testResult', backend });
         return;
       }
       case 'installAlerter':
@@ -130,7 +130,7 @@ export class SetupWizard {
         } catch (e) {
           result = 'failed:' + (e instanceof Error ? e.message : String(e));
         }
-        void this.panel.webview.postMessage({ type: 'finished', background: result });
+        this.send({ type: 'finished', background: result });
         return;
       }
       case 'close':
@@ -142,7 +142,20 @@ export class SetupWizard {
 
   private wantBackground: boolean | undefined;
 
+  private disposed = false;
+
+  /** postMessage throws once the panel is closed (e.g. an async result arrives late). */
+  private send(msg: unknown): void {
+    if (this.disposed) return;
+    try {
+      void this.panel.webview.postMessage(msg);
+    } catch {
+      /* panel closed */
+    }
+  }
+
   private dispose(): void {
+    this.disposed = true;
     SetupWizard.current = undefined;
     for (const d of this.disposables) d.dispose();
   }

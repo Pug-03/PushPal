@@ -7,7 +7,7 @@
 //   worker.js            copy of the bundled worker (survives extension updates)
 //   worker-state.json    { lastCheckAt } — when the worker last ran a check
 import { mkdirSync, readFileSync, writeFileSync, renameSync, readdirSync, rmSync, statSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import type { Lang } from '../i18n';
 import type { FrequencyConfig } from './frequency';
@@ -60,6 +60,8 @@ export function readJson<T>(file: string, fallback: T): T {
 
 /** Write via temp file + rename so a reader never sees half a file. */
 export function writeJsonAtomic(file: string, data: unknown): void {
+  // The folder can disappear under a running VS Code (storage reset, manual clean-up).
+  mkdirSync(dirname(file), { recursive: true });
   const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
   writeFileSync(tmp, JSON.stringify(data, null, 2));
   renameSync(tmp, file);

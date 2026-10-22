@@ -250,3 +250,11 @@ describe('background worker', () => {
   });
 });
 
+test('shared storage recreates its folder if it was deleted while running', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'pushpal-store-'));
+  const store = new SharedStore(join(dir, 'storage'));
+  rmSync(store.dir, { recursive: true, force: true });
+  store.writeHeartbeat('w1', ['/tmp/repo']);
+  assert.ok(existsSync(join(store.heartbeatDir, 'w1.json')));
+  rmSync(dir, { recursive: true, force: true });
+});
