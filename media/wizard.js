@@ -37,7 +37,7 @@
   function stepWelcome() {
     return (
       '<div class="wz-hero">' +
-        '<div class="wz-mascot" id="welcomeMascot">' + M.svg({ pose: 'welcome', size: 150, enter: true }) + '</div>' +
+        '<div class="wz-mascot" id="welcomeMascot">' + M.svg({ pose: 'welcome', size: 200, enter: true }) + '</div>' +
         '<h1 class="wz-title">' + esc(s('welcome.title')) + '</h1>' +
         '<p class="wz-lead">' + esc(s('welcome.body')) + '</p>' +
         '<ul class="wz-features">' +
@@ -71,7 +71,7 @@
       '<div class="wz-preview-label">' + esc(s('theme.preview')) + '</div>' +
       '<div class="wz-preview theme-' + state.theme + '" id="preview">' +
         '<div class="pv-head">' +
-          '<div class="pv-mascot">' + M.svg({ pose: 'check', size: 54 }) + '</div>' +
+          '<div class="pv-mascot">' + M.svg({ pose: 'check', size: 72 }) + '</div>' +
           '<div class="pv-text"><div class="pv-title">' + esc(s('theme.sampleTitle')) + '</div>' +
           '<div class="pv-sub"><span class="chip chip-new"><i class="dot"></i>' + esc(s('team.new')) + '</span></div></div>' +
           '<button class="btn btn-primary pv-btn" tabindex="-1">' + I('pull') + esc(s('team.pull')) + '</button>' +
@@ -142,7 +142,7 @@
     else if (state.finished && state.finished.indexOf('failed:') === 0) bg = '<div class="wz-note bad">' + I('warn') + '<span>' + esc(s('done.bgFailed', state.finished.slice(7))) + '</span></div>';
     return (
       '<div class="wz-hero done">' +
-        '<div class="wz-mascot" id="doneMascot">' + M.svg({ pose: 'success', size: 130 }) + '</div>' +
+        '<div class="wz-mascot" id="doneMascot">' + M.svg({ pose: 'success', size: 180 }) + '</div>' +
         '<h1 class="wz-title">' + esc(s('done.title')) + '</h1>' +
         '<p class="wz-lead">' + esc(s('done.body')) + '</p>' +
       '</div>' +

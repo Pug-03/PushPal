@@ -298,7 +298,7 @@
     var host = document.getElementById('mascotHost');
     if (!host) return;
     if (!mascotEl) {
-      host.innerHTML = M.svg({ pose: pose, size: 92, enter: firstTime, label: 'Pal' });
+      host.innerHTML = M.svg({ pose: pose, size: 140, enter: firstTime, label: 'Pal' });
       mascotEl = host.firstChild;
     } else {
       host.appendChild(mascotEl);

@@ -110,12 +110,12 @@
   flex-direction: row;
 }
 .hero[data-mode='pulling'] .mascot {
-  width: 64px;
-  height: 70px;
+  width: 110px;
+  height: 121px;
 }
 .hero[data-mode='success'] .mascot {
-  width: 74px;
-  height: 81px;
+  width: 120px;
+  height: 132px;
 }
 .hero-title {
   font-size: 15px;
