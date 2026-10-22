@@ -215,7 +215,9 @@
     "test": "node --test --test-concurrency=1 \"out-test/*.test.js\"",
     "icon": "node scripts/render-icon.mjs",
     "screenshots": "node scripts/screenshots.mjs",
-    "package": "vsce package --no-dependencies"
+    "package": "vsce package --no-dependencies",
+    "smoke": "npm run build && node scripts/smoke/run.mjs",
+    "demo-gif": "node scripts/demo-gif.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",

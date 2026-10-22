@@ -229,3 +229,19 @@ Newest sections are appended at the bottom of each topic.
   (`[hidden]` lost to `display:inline-flex`).
 - These are faithful renders of the webview pages, not captures of the full VS Code window (automating
   real VS Code window screenshots isn't reliable headless).
+
+## 11. Distribution
+
+- `README.md` is bilingual in one file (Thai first, then English) because the Marketplace only renders
+  `README.md`. Images use repo-relative paths, which `vsce` rewrites to GitHub URLs from `repository.url`.
+- `publisher` is a placeholder (`pushpal`) and the repo URL assumes `github.com/Pug-03/pushpal` (from the
+  local git user name). PUBLISHING.md says to replace both before publishing.
+- CI: tests + typecheck + build on Ubuntu, macOS and Windows (Node 22) on every push; on a `v*` tag it packages
+  the .vsix and attaches it to a GitHub Release (`softprops/action-gh-release`). Automatic Marketplace /
+  Open VSX publishing is documented as an optional extra step, not enabled, because it needs secrets.
+- `.vscodeignore` is an allow-list: only `dist/*.js` (no source maps), `media/`, `l10n/`, manifest files,
+  README, CHANGELOG and LICENSE go into the .vsix.
+- The package is built with `--production` (minified, no source maps) by `vscode:prepublish`.
+- `npm run smoke` runs the built extension inside the locally installed VS Code with an isolated
+  `--user-data-dir` / `--extensions-dir` under `.vscode-test/` (git-ignored): activation, commands, the
+  first-run wizard, the team view and a real pull with uncommitted work are all checked.
