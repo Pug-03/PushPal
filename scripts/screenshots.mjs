@@ -48,6 +48,7 @@ ${['base.css', ...kindFiles.css].map((f) => `<link rel="stylesheet" href="file:/
 window.__posted = [];
 window.acquireVsCodeApi = () => ({ postMessage: (m) => window.__posted.push(m), getState: () => (${JSON.stringify(sc.state ?? null)}), setState: () => {} });
 </script></head>
+${sc.kind === 'team' ? `<style>html,body{width:${sc.width}px;overflow-x:hidden}</style>` : ''}
 <body class="vscode-${sc.vscode}">
 <div id="app"></div>
 <script type="application/json" id="pp-init">${JSON.stringify(init).replace(/</g, '\\u003c')}</script>
@@ -74,7 +75,7 @@ for (const sc of scenarios) {
   const out = join(outDir, `${sc.name}.png`);
   execFileSync(findChrome(), [
     '--headless=new', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files', '--force-device-scale-factor=2',
-    `--window-size=${sc.width},${sc.height}`, '--virtual-time-budget=4000', `--screenshot=${out}`, `file://${html}`,
+    `--window-size=${sc.width},${sc.height}`, `--virtual-time-budget=${sc.budget ?? 4000}`, `--screenshot=${out}`, `file://${html}`,
   ], { stdio: 'ignore' });
   count++;
 }

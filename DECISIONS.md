@@ -200,3 +200,32 @@ Newest sections are appended at the bottom of each topic.
   VS Code terminal; links to brew.sh if Homebrew is missing), plus per-OS "not seeing it?" steps.
 - Keyboard: every control is a real `<button>` with `role=radio/switch` + `aria-checked`; focus moves to
   the new step's heading; Alt+→ / Alt+← navigate.
+
+## 9. My Team view
+
+- `WebviewViewProvider` in PushPal's own Activity Bar container. It picks the repo that needs attention most
+  (conflict > behind > others) unless the user selected one; multi-repo workspaces get a row of pills with a
+  coloured state dot and the "behind" count.
+- The page keeps its DOM between updates: the mascot element is re-used and only its pose class changes;
+  timeline items are keyed by sha, so only commits that weren't on screen before slide in (staggered 70 ms).
+  Switching repo doesn't replay the slide-in for every row.
+- States → mascot pose: up to date = chill, teammates pushed = wave, pulling = busy + two branch lanes with
+  commit dots flowing into one, success = cheer + a check mark that "draws itself" (a clip rect scaled with
+  `transform`, so it stays transform/opacity-only) + light confetti, conflict / error = worried with a sweat drop,
+  no upstream = pointing at the Publish button, no repo = waving with Open Folder / Clone.
+- The "what do the buttons mean?" card swaps meanings by conflict kind: in a normal merge conflict "Current"
+  is *your* commit and "Incoming" is your teammate's, but in an autostash conflict git applies your stash
+  *onto* the merged code, so "Current" is your teammate's code and "Incoming" is your uncommitted work.
+  Getting that backwards would make beginners throw away the wrong side.
+- Avatar colour = hash of the author e-mail → hue, so one person always has the same colour. Thai names use a
+  single leading consonant as the initial (two Thai letters read oddly).
+
+## 10. Screenshots
+
+- `npm run screenshots` renders every wizard step and every team state in headless Chrome with a mocked
+  `acquireVsCodeApi`, the real CSS/JS from `media/`, and VS Code's Dark Modern / Light Modern variables,
+  at 2× scale, into `docs/screenshots/`. They were reviewed by eye; issues found and fixed that way:
+  sidebar cards overflowing (grid min-width), a translation key used twice, the Back button showing on step 1
+  (`[hidden]` lost to `display:inline-flex`).
+- These are faithful renders of the webview pages, not captures of the full VS Code window (automating
+  real VS Code window screenshots isn't reliable headless).

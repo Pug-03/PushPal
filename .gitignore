@@ -4,3 +4,4 @@ out-test/
 *.vsix
 .DS_Store
 docs/preview/.tmp/
+.vscode-test/

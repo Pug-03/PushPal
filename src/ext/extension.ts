@@ -12,6 +12,7 @@ import { PushPalUriHandler, type UriAction } from './uriHandler';
 import { focusThisWindow } from './host';
 import { Background } from './background';
 import { SetupWizard, SETUP_SHOWN_KEY } from './wizard';
+import { TeamViewProvider } from './teamView';
 
 /** The setup wizard announces background changes itself. */
 let suppressBackgroundAnnounce = false;
@@ -36,7 +37,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   alerts.onReveal = (root) => actions.revealTeam(root);
   repos.onDidCheck((entry, prev) => alerts.onCheck(entry, prev));
   repos.onAutostashDropped = () => void vscode.window.showInformationMessage(t('autostash.dropped'));
-  actions.revealTeam = () => void vscode.commands.executeCommand('pushpal.team.focus');
+  const team = new TeamViewProvider(context, repos, actions);
+  context.subscriptions.push(vscode.window.registerWebviewViewProvider(TeamViewProvider.id, team));
+  actions.revealTeam = (root) => team.reveal(root);
 
   repos.onDidChange(() => {
     const hasConflict = repos.list().some((e) => e.snapshot?.state === 'conflict');
@@ -88,10 +91,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (e.affectsConfiguration('pushpal.checkIntervalSeconds')) repos.setInterval(readSettings().intervalSeconds);
       if (e.affectsConfiguration('pushpal.language')) {
         status.update();
+        team.render();
         void syncBackground(false);
       }
       if (e.affectsConfiguration('pushpal.notify.background') && !suppressBackgroundAnnounce) void syncBackground(true);
-      if (e.affectsConfiguration('pushpal.theme')) SetupWizard.postTheme(readSettings().theme);
+      if (e.affectsConfiguration('pushpal.theme')) {
+        SetupWizard.postTheme(readSettings().theme);
+        team.setTheme();
+      }
     }),
   );
 

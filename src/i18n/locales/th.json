@@ -178,5 +178,6 @@
   "wv.team.help.autoCurrent": "เก็บของเพื่อน (ตอนนี้อยู่ในโปรเจกต์คุณแล้ว)",
   "wv.team.help.autoIncoming": "เก็บงานที่คุณยังไม่ได้ commit (ตัวสำรอง)",
   "wv.team.help.tip": "ไม่แน่ใจ? เลือก Accept Both ไว้ก่อน แล้วอ่านผลลัพธ์ ลบส่วนที่ไม่ใช้ออก",
-  "wv.team.repos": "โปรเจกต์"
+  "wv.team.repos": "โปรเจกต์",
+  "wv.team.help.bothLabel": "Accept Both"
 }

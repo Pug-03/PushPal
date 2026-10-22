@@ -63,7 +63,7 @@ const views = {
   upToDate: { repos: [repo({})], selected: 0 },
   behind: { repos: [behindRepo, repo({ root: '/Users/me/code/shop-api', name: 'shop-api' })], selected: 0 },
   pulling: { repos: [{ ...behindRepo, phase: 'pulling' }], selected: 0 },
-  success: { repos: [repo({ lastResult: { kind: 'ok', pulled: 3, at: Date.now() } })], selected: 0 },
+  success: { repos: [repo({ lastResult: { kind: 'ok', pulled: 3, at: Date.now() + 3_600_000 } })], selected: 0 },
   conflictMerge: {
     repos: [repo({ state: 'conflict', conflict: { kind: 'merge', files: ['src/pages/Login.tsx', 'src/api/client.ts'] } })],
     selected: 0,
@@ -82,7 +82,7 @@ const team = [];
 for (const [theme, vscode] of [['light', 'light'], ['dark', 'dark']]) {
   for (const [name, view] of Object.entries(views)) {
     const sc = { name: `team-${name}-${theme}`, kind: 'team', lang: 'th', theme, vscode, view, ...S };
-    if (name === 'success') sc.wait = 700;
+    if (name === 'success') Object.assign(sc, { wait: 900, budget: 1600 });
     if (name === 'pulling') sc.freezeAt = 900;
     team.push(sc);
   }

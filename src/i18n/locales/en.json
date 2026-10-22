@@ -178,5 +178,6 @@
   "wv.team.help.autoCurrent": "keep your teammate's version (it's already in your project now).",
   "wv.team.help.autoIncoming": "keep your uncommitted work (the backup).",
   "wv.team.help.tip": "Not sure? Choose Accept Both, then read the result and delete what you don't need.",
-  "wv.team.repos": "Projects"
+  "wv.team.repos": "Projects",
+  "wv.team.help.bothLabel": "Accept Both"
 }
