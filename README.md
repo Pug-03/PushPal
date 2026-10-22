@@ -1,248 +1,384 @@
 <p align="center">
-  <img src="docs/mascot/success.gif" width="200" alt="Pal the pug jumping for joy">
+  <img src="docs/mascot/success.gif" width="180" alt="Pal the pug doing a happy spin">
 </p>
 
 <h1 align="center">PushPal</h1>
 
 <p align="center">
-  <b>รู้ทันทีที่เพื่อน push · ดึงโค้ดมารวมในคลิกเดียว · งานคุณไม่หาย</b><br>
-  Know the moment a teammate pushes · pull their code in with one click · never lose your work
+  <b>Know the moment a teammate pushes. Pull their code in with one click. Never lose your work.</b>
 </p>
 
 <p align="center">
-  <a href="#ภาษาไทย">ภาษาไทย</a> · <a href="#english">English</a>
+  <a href="https://github.com/Pug-03/PushPal/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Pug-03/PushPal/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="VS Code 1.90+" src="https://img.shields.io/badge/VS%20Code-1.90%2B-0b7a6b">
+  <img alt="macOS · Windows · Linux" src="https://img.shields.io/badge/macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-supported-1f9e89">
+  <img alt="MIT" src="https://img.shields.io/badge/license-MIT-ff7a59">
 </p>
 
 <p align="center">
-  <img src="docs/demo.gif" width="320" alt="PushPal demo: teammate pushed → pulling → merged">
+  <img src="docs/demo.gif" width="340" alt="A teammate pushes, PushPal pulls their code in, everything merged">
+</p>
+
+<p align="center">
+  <a href="#why-pushpal">Why</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#install">Install</a> ·
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#how-to">How-to</a> ·
+  <a href="#settings">Settings</a> ·
+  <a href="#privacy">Privacy</a> ·
+  <a href="#troubleshooting">Troubleshooting</a>
 </p>
 
 ---
 
-## ภาษาไทย
+## Why PushPal
 
-### ปัญหาที่ PushPal แก้
+You're building something with friends on GitHub. Someone pushes, you don't notice, you keep working on
+old code — and when you finally push, everything conflicts.
 
-ทำงานกับเพื่อนผ่าน GitHub แล้วเพื่อน push โค้ดใหม่ แต่เราไม่รู้ ทำต่อบนโค้ดเก่าไปเรื่อยๆ
-พอจะ push ก็ชนกันเละ — PushPal เตือนทันทีที่เพื่อน push (แม้ปิด VS Code อยู่ก็ได้)
-แล้วดึงโค้ดมารวมให้ในคลิกเดียว โดยงานที่ยังไม่ commit ของคุณไม่หาย
+PushPal sits quietly in VS Code and watches the remote for you. The moment a teammate pushes, it tells you
+who pushed what, warns you if they touched the same file you're editing, and pulls their code in with one
+click — with your uncommitted work set aside safely and put back afterwards. When something does conflict,
+it walks you through fixing it in plain language.
 
-### ฟีเจอร์
+It's made for people who are new to Git, and for everyone who'd rather not think about it.
 
-- **เช็กให้อัตโนมัติ** และทุกครั้งที่สลับกลับมา VS Code เลือกความถี่ได้ 4 โหมด:
-  ⚡ เร็วสุด (ทุก 10 วิ) · ⚖️ สมดุล (ทุก 30 วิ ค่าเริ่มต้น) · 🔋 ประหยัดแบต (ทุก 60 วิ) · 🛠 กำหนดเอง
-  แต่ละโหมดบอกค่าประมาณให้เห็นภาพ เช่น “เช็ก 120 ครั้ง/ชม. · ใช้เน็ตประมาณ 655 KB/ชม.” (คิดจากขนาด `git fetch` ที่วัดจริง)
-- **ประหยัดแบตอัตโนมัติ** ปรับ/ปิดได้ทีละข้อ: ไม่ได้แตะคอมนาน, แบตต่ำและไม่ได้เสียบสาย, เปิด Low Power Mode / Battery Saver
-  และ “เสียบสายอยู่ = ความถี่ปกติเสมอ” แถบสถานะบอกเหตุผลเวลาลดความถี่ เช่น “ตอนนี้เช็กทุก 1 นาที เพราะแบตเหลือ 15%”
-- **ช่วงเวลาที่เช็ก** เช่น 08:00–23:00 นอกช่วงหยุดเช็ก (รวมงานเบื้องหลัง)
-- **ติดตามผลเทสต์ GitHub Actions** หลังมีคน push: โชว์สถานะที่แถบสถานะ และบอกเมื่อผ่าน/ไม่ผ่าน
-- **แจ้งเตือนครั้งเดียวต่อ commit ใหม่** บอกว่าใคร push, กี่ commit, ข้อความล่าสุด, เมื่อไหร่
-- **เตือนพิเศษเมื่อเพื่อนแก้ไฟล์เดียวกับคุณ** (ทั้งที่ยังไม่ commit, commit แล้วยังไม่ push และไฟล์ใหม่)
-- **ปุ่ม “ดึงโค้ดมารวม”** — ใช้ `git pull --no-rebase --autostash --no-edit` งานที่ยังไม่ commit ถูกพักไว้แล้วคืนให้เอง
-- **ถ้าชนกัน** บอกไฟล์ที่ชน เปิดไฟล์ให้ พาไป Merge Editor และอธิบายว่า Accept Current / Incoming / Both คืออะไร
-  (แยกกรณี “ชนกับ commit ของคุณ” และ “ชนกับงานที่ยังไม่ commit” ให้ถูก และเก็บกวาด stash สำรองให้อัตโนมัติ)
-- **ไม่ดึงซ้ำ** ถ้ายังมีจุดชนค้างจากรอบก่อน
-- **แถบสถานะ 4 แบบ**: โค้ดล่าสุดแล้ว / เพื่อน push มาใหม่ N (เหลือง คลิกเพื่อดึง) / มีจุดชนรอแก้ (แดง) / เช็กไม่ได้
-- **แจ้งเตือนบนหน้าจอเครื่อง** — macOS (alerter มีปุ่ม), Windows (toast มีปุ่ม ไม่ต้องลงอะไร), Linux (notify-send)
-- **เตือนแม้ปิด VS Code** (เลือกเปิดเอง) — ใช้ LaunchAgent / Task Scheduler ทำแค่ `git fetch` ไม่แก้ไฟล์
-- **หน้า “ตั้งค่า PushPal”** สวยแบบเดียวกับหน้าตั้งค่าครั้งแรก แบ่งหมวด การแจ้งเตือน / ความถี่และแบตเตอรี่ / ภาษาและธีม / GitHub
-  เปลี่ยนแล้วมีผลทันที ซิงก์กับ Settings ของ VS Code สองทาง และมีปุ่มคืนค่าเริ่มต้น
-- **หน้า “ทีมของฉัน”** ไทม์ไลน์ commit ของเพื่อน พร้อม Pal หมาปั๊กที่บอกสถานะด้วยสีหน้า: หลับตอนโค้ดล่าสุด, ดมฟุดฟิดตอนเช็ก,
-  สะดุ้งแล้วเห่าเมื่อเพื่อน push, คาบเชือกผูกปมตอนรวมโค้ด, กระโดดหมุนตัวเมื่อรวมสำเร็จ, เอียงหัวงงตอนชนกัน,
-  น้ำตาซึมเมื่อเทสต์ไม่ผ่าน และขยิบตาเมื่อเทสต์ผ่าน กดที่ Pal = ตาเป็นหัวใจ
-- **ภาษาไทย / English** และ **ธีมสว่าง / มืด / ตามเครื่อง**
-- หลาย repo ใน workspace เดียว, repo ที่ยังไม่มี upstream ก็รองรับ
-- **ไม่มี telemetry** ไม่ส่งข้อมูลออกนอกเครื่องนอกจาก `git fetch` / `git pull` ปกติ
+## Features
 
-### ภาพหน้าจอ
+<table>
+<tr>
+<td width="50%" valign="top">
 
-| ตั้งค่าครั้งแรก | เลือกธีม (พรีวิวสด) | เลือกความถี่ |
+### 🔔 Know the moment they push
+Checks the remote on a schedule and whenever you come back to VS Code. One alert per new push: who, how
+many commits, the latest message — as a VS Code pop-up or a desktop notification, never both. Even when
+VS Code is closed, if you want.
+
+### ⬇️ Pull in one click, lose nothing
+**Pull in changes** merges your teammates' code while your uncommitted work is parked and restored.
+Changed your mind? **Undo the last merge** for 10 minutes — everything comes back, uncommitted work
+included.
+
+### 🧭 Conflicts, explained
+Opens the conflicted files, takes you to the Merge Editor, and explains *Accept Current / Incoming / Both*
+for your exact situation. Git errors become plain sentences with the fix, plus *Show full message*.
+
+</td>
+<td width="50%" valign="top">
+
+### ✅ GitHub checks for every commit
+After every push — yours or a teammate's — PushPal follows the GitHub checks and tells you how it went:
+*“❌ Checks failed: 1 of 4 — Test (ubuntu-latest)”*. Each commit in **My Team** gets a badge; open it to
+see every check, the failing step and the end of its log.
+
+### 🛡️ Push without surprises
+**Push (check first)** fetches before pushing. If a teammate pushed in the meantime, you get
+*“Merge, then push for me”* instead of a rejected push. VS Code's own Push and Sync get the same help.
+
+### 🔋 Fast or frugal — your call
+Four modes from ⚡ every 10 s to 🔋 battery saver, automatic slow-downs when idle or on low battery,
+checking hours, do-not-disturb hours and *Mute 1 hour*. Every mode shows what it costs in data.
+
+</td>
+</tr>
+</table>
+
+<p align="center">
+  <img src="docs/screenshots/team-behind-light.png" width="250" alt="A teammate pushed 3 commits">
+  <img src="docs/screenshots/team-checks-dark.png" width="250" alt="GitHub checks of each commit, with the failing step and its log">
+  <img src="docs/screenshots/team-conflictMerge-light.png" width="250" alt="Conflict guide">
+</p>
+
+### Meet Pal
+
+Pal is the pug who lives in the **My Team** view. Its face tells you what's going on — and it wiggles when
+you poke it.
+
+| Up to date | Teammate pushed | Pulling | Conflict | Checks passed | Checks failed |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| <img src="docs/mascot/sleep.gif" width="110"> | <img src="docs/mascot/alert.gif" width="110"> | <img src="docs/mascot/merge.gif" width="110"> | <img src="docs/mascot/conflict.gif" width="110"> | <img src="docs/mascot/pass.gif" width="110"> | <img src="docs/mascot/fail.gif" width="110"> |
+
+## Install
+
+### From the Marketplace (recommended)
+
+1. Open VS Code and go to the **Extensions** view (`⇧⌘X` on macOS, `Ctrl+Shift+X` on Windows/Linux).
+2. Search for **PushPal** and press **Install**.
+3. The setup wizard opens by itself. That's it — updates install automatically from now on.
+
+> Using Cursor, VSCodium or Windsurf? PushPal is on **Open VSX** too: search the same way in their
+> extensions view.
+
+### From a `.vsix` file
+
+1. Download `pushpal-x.y.z.vsix` from the [Releases](https://github.com/Pug-03/PushPal/releases) page.
+2. In VS Code, open the Command Palette (`⇧⌘P` / `Ctrl+Shift+P`) → **Extensions: Install from VSIX…** →
+   pick the file.
+
+A `.vsix` install doesn't update itself — install the newer file over it when a new version comes out.
+
+### Platform setup
+
+<details>
+<summary><b>🍎 macOS</b></summary>
+
+- **Notifications with buttons:** PushPal uses [alerter](https://github.com/vjeantet/alerter) when it's
+  installed, so alerts get a **Pull in changes** button and stay on screen until you click. Install it from
+  the wizard's *Test* step, or in Terminal:
+  ```bash
+  brew install vjeantet/tap/alerter
+  ```
+  Then open **System Settings → Notifications → alerter** (or Visual Studio Code) and set the alert style
+  to **Persistent**. Without alerter, PushPal falls back to standard notifications without buttons.
+- **Alerts while VS Code is closed** (optional): turning this on installs a small LaunchAgent
+  (`~/Library/LaunchAgents/com.pushpal.watcher.plist`). macOS shows a one-time *“Background item added”*
+  notice — that's expected. Turning the option off removes it.
+- **GitHub checks while VS Code is closed:** install the GitHub CLI and sign in once:
+  ```bash
+  brew install gh && gh auth login
+  ```
+
+</details>
+
+<details>
+<summary><b>🪟 Windows</b></summary>
+
+- **Notifications** work out of the box: Windows toasts with **Pull in changes** / **Later** buttons —
+  nothing to install.
+- If you don't see them: **Settings → System → Notifications**, make sure notifications are on for
+  **Visual Studio Code** (or **Windows PowerShell**), and turn off **Do not disturb / Focus**.
+- **Alerts while VS Code is closed** (optional) use a hidden Task Scheduler task (*PushPal Watcher*).
+  No console window ever pops up, and turning the option off deletes the task.
+- **GitHub checks while VS Code is closed:** install the GitHub CLI and sign in once:
+  ```powershell
+  winget install --id GitHub.cli
+  gh auth login
+  ```
+
+</details>
+
+<details>
+<summary><b>🐧 Linux</b></summary>
+
+Desktop notifications use `notify-send` (package `libnotify-bin` / `libnotify`). Alerts while VS Code is
+closed aren't available on Linux; everything else works.
+
+</details>
+
+## Quick start
+
+1. **Install PushPal** — the setup wizard opens: pick your language, theme, how to be notified, how often to
+   check, and whether to sign in to GitHub for test results. Every step can be skipped and changed later.
+2. **Open a project** that's a git repository cloned from GitHub (or any remote).
+3. **Look at the status bar** (bottom left): ✓ *Up to date*, or ⬇ *3 new from your team* in yellow.
+4. **When a teammate pushes,** you get an alert. Press **Pull in changes** — or click the yellow status bar
+   item.
+5. **Open My Team** — click Pal in the Activity Bar — for the timeline, conflicts and checks.
+
+<p align="center">
+  <img src="docs/screenshots/wizard-1-welcome-light.png" width="420" alt="Setup wizard">
+  <img src="docs/screenshots/wizard-6-github-light.png" width="420" alt="Wizard: GitHub checks">
+</p>
+
+## How-to
+
+<details open>
+<summary><b>Pull in my teammates' code</b></summary>
+
+Press **Pull in changes** in the alert, the yellow status bar item, or the button in **My Team**.
+PushPal runs `git pull --no-rebase --autostash --no-edit`: your uncommitted work is set aside and put back
+after the merge. You'll see *“Merged! Got 3 commits — your own work is all still here.”*
+
+</details>
+
+<details>
+<summary><b>Undo a merge I didn't want</b></summary>
+
+Right after a pull, press **Undo this merge** (in the success message or the card in **My Team**), or run
+**PushPal: Undo Last Merge**. For 10 minutes it puts everything back exactly as it was before — commits,
+staged and unstaged changes, new files.
+
+To keep your work safe, PushPal won't undo if you've committed or edited anything since the merge; it tells
+you why instead.
+
+</details>
+
+<details>
+<summary><b>Fix a conflict</b></summary>
+
+PushPal opens the conflicted files and the Merge Editor. **My Team** lists the files and explains the
+buttons — they mean different things depending on whether the conflict is with your commits or with your
+uncommitted work, and PushPal tells you which. Fix each file, save, then:
+
+- conflict with your **commits** → press **Finish merge**;
+- conflict with your **uncommitted work** → stage the files (＋ in Source Control). PushPal cleans up the
+  backup by itself.
+
+</details>
+
+<details>
+<summary><b>Push without getting rejected</b></summary>
+
+Use **PushPal: Push (Check First)** (also in the Source Control title bar and in **My Team**). It fetches
+first; if teammates pushed in the meantime you get **Merge, then push for me**, which does both.
+If you use VS Code's own **Push** or **Sync** and it gets rejected, PushPal explains why and offers the same
+fix.
+
+</details>
+
+<details>
+<summary><b>See why the GitHub checks failed</b></summary>
+
+Sign in once (wizard, **PushPal Settings → GitHub**, or when PushPal asks). Then:
+
+- after **your** push, you get *✅ All checks passed (4/4)* or *❌ Checks failed: 1 of 4 — Test (ubuntu-latest)*;
+- when a **teammate's** push fails its checks, the alert says *“maybe don't pull it yet”* with
+  **See what broke / Pull anyway / Later**, and you're told when it's fixed;
+- the status bar shows ✓ / ✗ / ⏳ for the latest commit;
+- in **My Team**, click a commit's badge for each check (name, result, time). Click **Why did it fail?** for
+  the failing step, the last 30 lines of its log, a plain-language hint (failing tests, install, lint,
+  timeout, build) and **Open on GitHub**.
+
+Skipped, neutral and cancelled checks don't count as failures.
+
+</details>
+
+<details>
+<summary><b>Choose how often PushPal checks</b></summary>
+
+**PushPal Settings → Frequency & battery** (or **PushPal: Switch Check Mode**):
+
+| Mode | Checks | For |
 |---|---|---|
-| ![](docs/screenshots/wizard-1-welcome-light.png) | ![](docs/screenshots/wizard-3-theme-dark.png) | ![](docs/screenshots/wizard-5-frequency-light.png) |
+| ⚡ Fastest | every 10 s | teams pushing all day |
+| ⚖️ Balanced (default) | every 30 s | most people |
+| 🔋 Battery saver | every 60 s, slower when idle / on battery | laptops on the go |
+| 🛠 Custom | your values | full control |
 
-| หน้าตั้งค่า: ความถี่และแบตเตอรี่ | หน้าตั้งค่า: การแจ้งเตือน |
-|---|---|
-| ![](docs/screenshots/settings-frequency-light.png) | ![](docs/screenshots/settings-notify-dark.png) |
+Custom lets you set every interval, battery rules (idle, low battery, Low Power Mode / Battery Saver,
+plugged in = normal) and checking hours. Each mode shows an estimate such as *120 checks/hour ·
+≈ 655 KB/hour*, based on measured `git fetch` sizes.
 
-| เพื่อน push มาใหม่ | กำลังดึง | รวมเรียบร้อย | เจอจุดชน |
-|---|---|---|---|
-| ![](docs/screenshots/team-behind-light.png) | ![](docs/screenshots/team-pulling-dark.png) | ![](docs/screenshots/team-success-light.png) | ![](docs/screenshots/team-conflictMerge-dark.png) |
+</details>
 
-ภาพทั้งหมด (โหมดมืดและสว่าง) อยู่ใน [`docs/screenshots/`](docs/screenshots)
+<details>
+<summary><b>Not be disturbed</b></summary>
 
-| นอนรอ | เพื่อน push มา | รวมโค้ด | เจอจุดชน | เทสต์ผ่าน |
-|---|---|---|---|---|
-| ![](docs/mascot/sleep.gif) | ![](docs/mascot/alert.gif) | ![](docs/mascot/merge.gif) | ![](docs/mascot/conflict.gif) | ![](docs/mascot/pass.gif) |
+- **Do not disturb** hours (e.g. 22:00–08:00): no pop-ups or desktop notifications; the status bar keeps
+  updating, and anything you missed is announced afterwards.
+- **Mute 1 hour** — a button on alerts, also **PushPal: Mute Alerts for 1 Hour**.
 
-สีหน้าทั้งหมดของ Pal อยู่ใน [`docs/mascot/`](docs/mascot) (`sheet.png` และ GIF ทุกท่า)
+Set them in the wizard's *Notifications* step or **PushPal Settings → Notifications**.
 
-### ติดตั้ง
+</details>
 
-- **จาก Marketplace**: ค้นหา “PushPal” ในแถบ Extensions ของ VS Code แล้วกด Install
-- **จากไฟล์ .vsix**: ดาวน์โหลด `pushpal-x.y.z.vsix` จากหน้า Releases บน GitHub
-  แล้วใน VS Code กด `⇧⌘P` / `Ctrl+Shift+P` → **Extensions: Install from VSIX…** → เลือกไฟล์
+<p align="center">
+  <img src="docs/screenshots/settings-frequency-light.png" width="430" alt="Frequency & battery settings">
+  <img src="docs/screenshots/team-undo-light.png" width="250" alt="Undo the last merge">
+</p>
 
-ติดตั้งจาก Marketplace แล้ว **อัปเดตเองอัตโนมัติ** ไม่ต้องทำอะไร (ถ้าปิด auto-update ไว้ จะมีปุ่ม **Update** ในแถบ Extensions)
-ส่วนแบบ .vsix ต้องดาวน์โหลดไฟล์ใหม่มาติดตั้งทับเอง
+## Settings
 
-ติดตั้งเสร็จ หน้าตั้งค่าจะเปิดขึ้นมาเอง 7 ขั้นสั้นๆ (เปิดซ้ำได้ด้วยคำสั่ง **PushPal: ตั้งค่าใหม่**)
+Everything is in **PushPal Settings** (gear icon in **My Team**, or **PushPal: Open Settings**) and
+mirrored in VS Code's Settings — change either, the other follows instantly.
 
-### วิธีใช้
-
-1. เปิดโฟลเดอร์โปรเจกต์ที่ใช้ git (ที่ clone มาจาก GitHub)
-2. ดูแถบสถานะมุมซ้ายล่าง ถ้าเป็นสีเหลือง = เพื่อน push มาใหม่ → คลิกเพื่อดึงโค้ดมารวม
-3. กดรูป Pal บนแถบซ้ายเพื่อเปิดหน้า **ทีมของฉัน**
-4. ถ้าชนกัน: แก้ทีละไฟล์ใน Merge Editor → เซฟ → กด **รวมเสร็จแล้ว** (หรือ stage ไฟล์ ถ้าเป็นงานที่ยังไม่ commit)
-5. เปลี่ยนโหมดเร็วๆ: คำสั่ง **PushPal: เปลี่ยนโหมด** หรือชี้ที่แถบสถานะแล้วกด “เปลี่ยนโหมด” ใน tooltip
-   ปรับละเอียด: คำสั่ง **PushPal: เปิดการตั้งค่า** หรือปุ่มเฟืองบนหน้าทีมของฉัน
-
-### การตั้งค่า
-
-| Setting | ค่าเริ่มต้น | ความหมาย |
+| Setting | Default | |
 |---|---|---|
-| `pushpal.language` | `auto` | `auto` / `th` / `en` |
-| `pushpal.theme` | `system` | `system` (ตามธีม VS Code) / `light` / `dark` |
-| `pushpal.mode` | `balanced` | `fast` / `balanced` / `batterySaver` / `custom` — เลือกโหมดแล้วค่าด้านล่างเปลี่ยนตาม แก้ค่าเองเมื่อไหร่ = `custom` |
-| `pushpal.checkIntervalSeconds` | `30` | เช็กทุกกี่วินาทีตอนเปิด VS Code (10–300) |
-| `pushpal.background.intervalSeconds` | `120` | เช็กทุกกี่วินาทีตอนปิด VS Code (60–3600) |
-| `pushpal.battery.idle.*` | เปิด, 10 นาที → 60 วิ | ไม่ได้แตะคอมเกิน N นาที → เช็กห่างขึ้น |
-| `pushpal.battery.lowBattery.*` | เปิด, 20% → 60 วิ | แบตต่ำกว่า N% และไม่ได้เสียบสาย → เช็กห่างขึ้น |
-| `pushpal.battery.lowPowerMode.*` | เปิด, 60 วิ | Low Power Mode / Battery Saver → เช็กห่างขึ้น |
-| `pushpal.battery.pluggedInUsesNormal` | `true` | เสียบสายอยู่ = ใช้ความถี่ปกติเสมอ |
-| `pushpal.activeHours.enabled` / `.start` / `.end` | ปิด, `08:00`–`23:00` | เช็กเฉพาะช่วงเวลานี้ |
-| `pushpal.actions.enabled` | `true` | ติดตามผลเทสต์ GitHub Actions |
-| `pushpal.actions.intervalSeconds` | `20` | เช็กผลเทสต์ทุกกี่วินาทีตอนกำลังรัน (10–120) |
-| `pushpal.notify.inVSCode` | `true` | เด้งใน VS Code |
-| `pushpal.notify.desktop` | `true` | แจ้งเตือนบนหน้าจอเมื่อไม่ได้อยู่ใน VS Code |
-| `pushpal.notify.background` | `false` | เช็กแม้ปิด VS Code (macOS / Windows) |
-| `pushpal.notify.sameFileWarning` | `true` | เตือนพิเศษเมื่อแก้ไฟล์เดียวกัน |
+| `pushpal.mode` | `balanced` | `fast`, `balanced`, `batterySaver`, `custom` |
+| `pushpal.checkIntervalSeconds` | `30` | while VS Code is open (10–300) |
+| `pushpal.background.intervalSeconds` | `120` | while VS Code is closed (60–3600) |
+| `pushpal.battery.*` | on | idle / low battery / Low Power Mode slow-downs, plugged in = normal |
+| `pushpal.activeHours.*` | off | only check between two times |
+| `pushpal.notify.inVSCode` / `.desktop` | on | where alerts appear |
+| `pushpal.notify.background` | off | alerts while VS Code is closed (macOS, Windows) |
+| `pushpal.notify.sameFileWarning` | on | extra warning for files you're also editing |
+| `pushpal.quiet.enabled` / `.start` / `.end` | off, 22:00–08:00 | do-not-disturb hours |
+| `pushpal.actions.enabled` | on | GitHub checks |
+| `pushpal.actions.notifyOnPass` | on | also tell me when checks pass |
+| `pushpal.actions.notifyFor` | `all` | `all`, `mine`, `team` |
+| `pushpal.avatars` | on | commit authors' GitHub profile pictures |
+| `pushpal.language` / `pushpal.theme` | auto / system | Thai or English; light, dark or match VS Code |
 
-### คำถามที่พบบ่อย
+## Privacy
 
-**งานที่ยังไม่ commit จะหายไหม?**
-ไม่หาย PushPal ใช้ `--autostash` git จะพักงานไว้ก่อน แล้วคืนให้หลังรวมเสร็จ ถ้าคืนแล้วชนกัน
-งานคุณยังมีสำรองอยู่ใน stash จนกว่าคุณจะแก้และ stage ครบ แล้ว PushPal ค่อยลบตัวสำรองให้
+- **No telemetry.** Nothing about you or your code is collected.
+- Your normal `git fetch` / `git pull` / `git push` go to your own remote.
+- For **github.com** projects only, and only if enabled: GitHub checks and commit authors' profile pictures
+  are read from GitHub's API using **VS Code's built-in GitHub sign-in**. PushPal never asks you to paste a
+  token and never writes one to disk. While checks are running it asks every 20–30 s, stops when they're done,
+  and slows down by itself near GitHub's rate limit.
+- The optional background task only runs `git fetch` (and `gh api` for checks, if you use the GitHub CLI).
+  It never pulls or changes your files.
 
-**กินแบต/เน็ตแค่ไหน?**
-ทุกการเช็กคือ `git fetch` ที่ไม่มีอะไรใหม่ วัดจริงกับ GitHub ได้ประมาณ 5.5 KB ต่อครั้ง (+58 ไบต์ต่อ branch/tag บน remote)
-โหมดสมดุลกับ 1 โปรเจกต์ = 120 ครั้ง/ชม. ≈ 655 KB/ชม. ใช้แบตอยู่? เลือกโหมดประหยัดแบต หรือปรับกฎประหยัดแบตในหน้าตั้งค่า
-ค่าที่หน้าตั้งค่าแสดงคิดจากจำนวนโปรเจกต์และจำนวน branch/tag ที่คุณเปิดอยู่จริง
+## Troubleshooting
 
-**ผลเทสต์ GitHub Actions ต้องล็อกอินไหม?**
-repo สาธารณะใช้ได้เลย แต่ GitHub ให้ถามได้ 60 ครั้ง/ชม. PushPal เลยเช็กไม่ถี่กว่านาทีละครั้ง
-กด **เชื่อมบัญชี GitHub** ในหน้าตั้งค่า (ใช้บัญชี GitHub ของ VS Code) เพื่อใช้กับ repo ส่วนตัวและเช็กได้ถี่ตามที่ตั้ง
+<details>
+<summary><b>I don't get desktop notifications</b></summary>
 
-**PushPal จะ pull เองโดยไม่ถามไหม?**
-ไม่ PushPal ดึงโค้ดเฉพาะตอนคุณกดปุ่มเท่านั้น งานเบื้องหลังทำแค่ `git fetch` เพื่อดูว่ามีอะไรใหม่
+Send one from the wizard's *Test* step (**PushPal: Run Setup Again**). On macOS check **System Settings →
+Notifications** for alerter / Visual Studio Code; on Windows check **Settings → System → Notifications** and
+Focus / Do not disturb. Also check PushPal's own **Do not disturb** hours and **Mute 1 hour**.
 
-**Mac ไม่มีปุ่มบนแจ้งเตือน?**
-ติดตั้ง alerter: `brew install vjeantet/tap/alerter` (หรือกดปุ่มในหน้าตั้งค่า) แล้วตั้ง
-System Settings → Notifications → Visual Studio Code / alerter → Alert style: **Persistent**
+</details>
 
-**macOS เด้งว่า “Background item added”?**
-ปกติครับ เกิดตอนเปิด “เตือนแม้ปิด VS Code” เพราะ PushPal ตั้ง LaunchAgent ปิดตัวเลือกนี้เมื่อไหร่ก็ลบออกทันที
+<details>
+<summary><b>“Couldn't sign in to the remote”</b></summary>
 
-**Windows ไม่เห็น toast?**
-Settings → System → Notifications → เปิดของ Visual Studio Code (หรือ Windows PowerShell) และปิด Do not disturb
+PushPal uses the same git as your terminal. Press **Sync** once in Source Control to sign in, then PushPal
+can check again. It never asks for passwords itself.
 
-**ถอนส่วนขยายแล้วงานเบื้องหลังยังอยู่ไหม?**
-ไม่ VS Code จะเรียกสคริปต์ถอนให้ และตัวงานเบื้องหลังเองก็เช็กทุกครั้ง ถ้าส่วนขยายไม่อยู่แล้วจะลบตัวเองทิ้ง
+</details>
 
-**ต้องล็อกอิน GitHub ไหม?**
-PushPal ใช้ git ตัวเดียวกับที่คุณใช้อยู่ ถ้า `git fetch` ในเครื่องคุณทำงานได้ PushPal ก็ทำงานได้
-(ไม่ถามรหัสผ่านเอง ถ้าเข้าไม่ได้จะบอกให้กด Sync ใน Source Control สักครั้ง)
+<details>
+<summary><b>No GitHub checks show up</b></summary>
 
-**ส่งข้อมูลอะไรออกไปไหม?**
-ไม่มี telemetry ใดๆ ข้อมูลที่ออกจากเครื่องมีแค่ `git fetch` / `git pull` ไปยัง remote ของคุณเอง
+Checks only appear for github.com remotes, after you've signed in (**PushPal Settings → GitHub**), for
+repositories that have checks (GitHub Actions or other apps). If you said *No thanks* earlier, turn
+**GitHub checks** back on there.
 
----
+</details>
 
-## English
+<details>
+<summary><b>Pal doesn't move after an update</b></summary>
 
-### The problem
+Run **Developer: Reload Window** once — webviews keep the old version until they're reloaded.
 
-You work with friends on GitHub. A teammate pushes, you don't notice, you keep building on old code,
-and when you finally push — conflicts everywhere. **PushPal tells you the moment a teammate pushes**
-(even when VS Code is closed, if you want) and **pulls their code in with one click without losing your work**.
+</details>
 
-### Features
+<details>
+<summary><b>Removing PushPal</b></summary>
 
-- Checks the remote on a schedule and every time you switch back to VS Code (`git fetch`, then `HEAD..@{u}`).
-  Four modes: ⚡ Fastest (10 s) · ⚖️ Balanced (30 s, default) · 🔋 Battery saver (60 s) · 🛠 Custom.
-  Each mode shows what it costs, e.g. “120 checks/hour · ≈ 655 KB/hour”, computed from measured `git fetch` sizes
-- Automatic battery saving, each rule adjustable or off: idle for N minutes, battery below N% on battery power,
-  Low Power Mode / Battery Saver, and “plugged in = always the normal interval”. The status bar tooltip says why
-  it's slower right now (“Checking every 1 min right now because the battery is at 15%”)
-- Checking hours (e.g. 08:00–23:00); PushPal pauses outside them, background job included
-- GitHub Actions: after a push, the test run shows in the status bar and you're told when it passes or fails
-- A “PushPal Settings” page (Notifications / Frequency & battery / Language & theme / GitHub): changes apply instantly,
-  stay in sync with VS Code's Settings both ways, with a Restore defaults button. **PushPal: Switch Check Mode** for a quick switch
-- One notification per new commit: who pushed, how many commits, the latest message, and when
-- Extra warning when a teammate changed a file you're also changing (uncommitted, committed-but-unpushed, or new)
-- **Pull in changes**: `git pull --no-rebase --autostash --no-edit` — uncommitted work is set aside and restored
-- Conflicts: lists the files, opens them, takes you to VS Code's Merge Editor and explains Accept Current / Incoming / Both
-  in plain words — correctly for both "conflict with your commits" and "conflict with your uncommitted work";
-  the backup stash is dropped automatically once you've staged everything
-- Won't pull again while conflicts from last time are still open
-- Status bar: up to date / N new from your team (yellow, click to pull) / conflicts to fix (red) / can't check
-- Desktop notifications: macOS (alerter with buttons, osascript fallback), Windows (toast with buttons, nothing to install),
-  Linux (notify-send). If VS Code is focused you only get the VS Code pop-up, never both.
-- Optional checks while VS Code is closed: LaunchAgent (macOS) / Task Scheduler (Windows), `git fetch` only
-- “My Team” view: teammates' commit timeline with Pal the pug, whose face tells you what's going on: asleep when
-  you're up to date, sniffing while checking, startled and barking when a teammate pushes, tugging a rope while
-  merging, jump-spinning on success, puzzled at conflicts, teary or winking at GitHub Actions results. Click it
-- Thai / English, Light / Dark / Match VS Code themes, multi-repo workspaces, branches without upstream
-- No telemetry. Nothing leaves your machine except your normal `git fetch` / `git pull`
+Uninstall it from the Extensions view. The background task (if you turned it on) is removed with it — and
+also removes itself if the extension is gone.
 
-### Install
-
-- **Marketplace**: search “PushPal” in the Extensions view.
-- **.vsix**: download it from GitHub Releases, then **Extensions: Install from VSIX…** in the Command Palette.
-
-Marketplace installs update automatically (or show an **Update** button if you turned auto-update off).
-A .vsix install doesn't update itself; install the newer file over it.
-
-The setup wizard opens after the first install. Run **PushPal: ตั้งค่าใหม่ · Run Setup Again** to see it again.
-
-### FAQ
-
-- **Will I lose uncommitted work?** No. Git's autostash parks it and restores it; on a conflict a backup stays in the
-  stash until you've resolved and staged every file.
-- **Does PushPal ever pull on its own?** No. Only when you press the button. The background job only fetches.
-- **No buttons on macOS notifications?** `brew install vjeantet/tap/alerter`, then set the alert style to *Persistent*.
-- **How much battery / data?** Each check is an up-to-date `git fetch`: ≈ 5.5 KB to GitHub (+58 bytes per remote branch/tag),
-  measured with `scripts/measure-fetch.mjs`. Balanced with one project = 120 checks/hour ≈ 655 KB/hour.
-- **GitHub Actions without signing in?** Public repos work, but GitHub allows 60 requests/hour, so PushPal polls once a minute
-  at most. Sign in (Settings page → GitHub) for private repos and the interval you picked.
-- **Uninstalling** removes the background job (uninstall hook + the job removes itself if the extension is gone).
+</details>
 
 ## Development
 
 ```bash
 npm install
-npm test            # real-git tests: bare remote + two clones
+npm test            # 120+ tests: real git repos (bare remote + two clones) and a mocked GitHub API
 npm run build
 npm run smoke       # runs the extension in your local VS Code with an isolated profile (macOS)
 npm run screenshots # renders every screen into docs/screenshots/
 npm run package     # builds pushpal-<version>.vsix
-npm run icon        # re-renders media/icon.png from the mascot
-node scripts/mascot-render.mjs sheet   # docs/mascot/sheet.png (expression sheet)
-node scripts/mascot-render.mjs gifs    # docs/mascot/<pose>.gif, frame-exact
-node scripts/measure-fetch.mjs . 5   # re-measures the bytes of one check (used by the estimates)
+node scripts/mascot-render.mjs gifs   # re-records Pal's animations into docs/mascot/
+node scripts/measure-fetch.mjs . 5    # re-measures the bytes of one check (used by the estimates)
 ```
+
+Design decisions and their reasons: [DECISIONS.md](DECISIONS.md). Publishing: [PUBLISHING.md](PUBLISHING.md).
 
 ### Releasing
 
 ```bash
-npm run release     # bump patch version, tag vX.Y.Z, push
+npm run release     # bump the patch version, tag vX.Y.Z, push
 ```
 
-Pushing the tag makes CI run the tests, attach the .vsix to a GitHub Release, and publish to the VS Code
-Marketplace and Open VSX (when the `VSCE_PAT` / `OVSX_PAT` secrets are set). Users then get the update automatically.
-Commit everything (and add a `CHANGELOG.md` entry) first: `npm version` refuses to run on a dirty working tree.
-
-Design decisions are documented in [DECISIONS.md](DECISIONS.md). Publishing steps: [PUBLISHING.md](PUBLISHING.md).
+Pushing the tag makes CI run the tests, attach the `.vsix` to a GitHub Release and publish to the VS Code
+Marketplace and Open VSX (when the `VSCE_PAT` / `OVSX_PAT` secrets are set). Commit everything and add a
+`CHANGELOG.md` entry first.
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) · Pal the pug is an original drawing made for PushPal.

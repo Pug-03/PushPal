@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- GitHub checks: after your pushes and your teammates', PushPal follows the commit's check runs and statuses
+  and tells you how it went ("✅ All checks passed (4/4)" / "❌ Checks failed: 1 of 4 — Test (ubuntu-latest)").
+  A teammate's failing push says "maybe don't pull it yet" (See what broke / Pull anyway / Later); you're told
+  when it's fixed. Status bar ✓ / ✗ / ⏳; a badge on every commit in My Team that opens the list of checks,
+  and for a failing GitHub Actions job the failed step, the last 30 log lines and a plain-language hint.
+  Uses VS Code's GitHub sign-in (asked once); background alerts include checks when the `gh` CLI is signed in.
+  New wizard step and settings (`actions.notifyOnPass`, `actions.notifyFor`)
+- Push (check first): fetches before pushing and offers "Merge, then push for me"; rejected pushes from VS Code's
+  own Push / Sync are explained with the same offer
+- Undo the last merge for 10 minutes, uncommitted work included (refuses, with a reason, after new commits or edits)
+- Git errors explained in plain language with the fix, plus "Show full message"
+- Do-not-disturb hours and "Mute 1 hour" (status bar keeps updating; missed alerts come afterwards)
+- README rewritten (English) with install steps for macOS and Windows and a how-to section
+- My Team timeline shows commit authors' GitHub profile pictures (initials when there's none); setting `pushpal.avatars`
 - New mascot: Pal is a flat-style pug head whose expressions follow what's going on — asleep when you're up
   to date, sniffing while checking, startled and barking when a teammate pushes, tugging a two-colour rope
   while merging, jump-spinning on success, puzzled at conflicts, teary when GitHub Actions fail, winking when

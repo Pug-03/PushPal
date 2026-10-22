@@ -396,3 +396,82 @@ Newest sections are appended at the bottom of each topic.
   over a no-brow, forehead-wrinkle version.
 - **Icon**: `PushPalIconHead` draws the same head with brows, blush and mouth dropped at ≤ 20 px.
 
+## 15. Profile pictures in the timeline (2026-10-22)
+
+- Authors with a GitHub noreply address (`123+login@users.noreply.github.com`) get their avatar URL without any
+  request. For everyone else, **one** `GET /repos/{owner}/{repo}/commits?sha=<upstream>&per_page=50` per new upstream
+  commit returns each commit's `author.avatar_url`; results are cached in `globalState`, so normal checks never call
+  the API. Uses VS Code's GitHub sign-in when present (private repos), otherwise the public API.
+- The webview loads the images from `avatars.githubusercontent.com` / `github.com` (added to `img-src` in the CSP).
+  The coloured initials stay underneath and remain if the picture can't load (offline, blocked, no GitHub account).
+- This is a second kind of traffic to GitHub besides `git fetch` (after the Actions watcher), so it's a setting
+  (`pushpal.avatars`, on by default, also on the settings page) and the README's privacy answer says so.
+- The team view now reports back whether GSAP loaded and any script errors (PushPal output + a hidden
+  `pushpal._diag` command the smoke test checks). Found while debugging: a webview page from before a reload keeps
+  running the old scripts — "Developer: Reload Window" after installing a new build.
+
+## 16. GitHub checks (2026-10-22)
+
+- **What is read:** check runs (`/commits/{sha}/check-runs`, GitHub Actions and other apps) **and** classic
+  commit statuses (`/commits/{sha}/status`) — together they are what GitHub's "Some checks were not successful"
+  box shows. Re-runs: the newest run per name wins. `skipped`, `neutral`, `stale` don't count as failures;
+  `cancelled` doesn't either (it's almost always a superseded run), shown grey. `timed_out`,
+  `action_required`, `startup_failure` and status `error` count as failures.
+- Replaces the earlier Actions-runs watcher (section 12): one model for badges, alerts, status bar and mascot.
+- **Logic is pure and tested** (`src/core/checks.ts`, `src/core/checksTracker.ts`) against a fake GitHub:
+  running→passed, running→failed, skipped only, failed→fixed, not signed in, token rejected, rate limit, no
+  checks yet, non-GitHub remote.
+- **Polling:** only while something is pending, at the Actions interval but never faster than 20 s (default
+  20 s; battery rules slow it like everything else), stops when done. Finished results are cached for good.
+  Commits with no checks yet are asked about for 3 minutes (runs appear a few seconds after a push).
+  **Rate limit:** `x-ratelimit-remaining` < 50 → 4× slower; 0 / 403 → wait until `x-ratelimit-reset`.
+- **Which commits:** the tip of each branch (alerts, status bar, mascot) and the newest 8 timeline rows
+  (badges) — about 2 requests per commit, once.
+- **Mine vs teammate:** the commit author's e-mail compared with `git config user.email`. Scope setting
+  `actions.notifyFor` (all / mine / team), `actions.notifyOnPass`. Failures are always reported (prominent:
+  warning + desktop when VS Code isn't focused); passes are a light VS Code pop-up only, and only if we saw the
+  checks running (no stale "passed" on startup). A teammate's result is only announced while their push isn't
+  pulled yet; failure → See what broke / Pull anyway / Later; later fix → "Fixed: checks pass again — safe to pull".
+- **The push alert itself** waits up to 3 s for one quick look so it can say "⏳ checks still running" / "❌ …";
+  when the checks finish, the desktop notification is replaced in place (same group / toast tag).
+- **Sign-in:** `vscode.authentication.getSession('github', ['repo'])` — silent first; when checks are needed
+  and there's no session, PushPal asks **once**; "No thanks" turns the feature off (setting), nothing else is
+  affected. The token lives in memory only. The extension-wide anonymous fallback of section 12 is gone (logs
+  need auth anyway, and 60 requests/hour isn't enough).
+- **Why it failed:** for GitHub Actions jobs (check run id = job id) PushPal reads the job's steps (failed
+  step name) and its log (`/actions/jobs/{id}/logs`), strips timestamps / colour codes and shows the last 30
+  lines, plus a hint when it recognises the case: failing tests, dependency install, lint, timeout, build/type
+  errors. Loaded only when the user clicks "Why did it fail?".
+- **Background (VS Code closed):** if `gh` is installed and `gh auth status` succeeds, the worker adds the
+  check state to the push alert via `gh api`. Otherwise checks are only reported while VS Code is open; the
+  wizard says which applies.
+- Only github.com remotes; anything else hides the feature silently.
+
+## 17. Safety nets (2026-10-22)
+
+- **Push (check first)** (`src/git/safety.ts → safePush`): fetch, then if `HEAD..@{u}` isn't empty don't push;
+  offer "Merge, then push for me" (= PushPal's pull, then push). VS Code's own Push/Sync can't be intercepted
+  *before* pushing (no API for that), so PushPal registers the Git extension's `registerPushErrorHandler`: a
+  rejected push from VS Code's buttons is explained with the same offer. The command is also in the Source
+  Control title bar.
+- **Undo the last merge** (10 minutes): before pulling, `git stash create` records uncommitted work without
+  touching it (kept reachable via `refs/pushpal/undo-stash`), plus HEAD. After a successful pull PushPal stores
+  HEAD and a fingerprint of the working copy (HEAD, index tree, working-tree tree, untracked file names and
+  contents). Undo = `git reset --hard <before>` + `git stash apply --index <stash>`. It refuses — with the reason —
+  if HEAD moved (new commits) or the fingerprint changed (edits, staging, new files), or after 10 minutes.
+  Tested with real repos: clean, staged + unstaged + untracked work, refused cases.
+- **Git errors explained** (`src/core/gitErrors.ts`): rejected, auth, repository not found, no upstream,
+  detached HEAD, merge / rebase in progress, local changes / untracked files in the way, unrelated histories,
+  divergent branches, identity, index.lock, network, not a repo. Each has a plain title and the fix in Thai and
+  English; "Show full message" shows git's original text in a modal.
+- **Do not disturb**: hours (can cross midnight) and "Mute 1 hour" (button on alerts, command). Applies to
+  pop-ups and desktop notifications only; the status bar keeps updating. Push alerts during quiet time aren't
+  *claimed*, so they're announced once the quiet time is over. The snooze is a shared file, so every window and
+  the background worker respect it.
+
+## 18. README (2026-10-22)
+
+- English only, as asked (the bilingual README is gone; the extension itself stays Thai/English). Structure:
+  value in one line → features with screenshots → Pal → install (Marketplace / Open VSX / .vsix) with macOS,
+  Windows and Linux setup → quick start → how-to for every everyday task → settings → privacy → troubleshooting.
+
