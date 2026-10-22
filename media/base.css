@@ -37,7 +37,8 @@
   --pp-body: #3cc4ae;
   --pp-body-shade: #27a892;
   --pp-belly: #c9f3ea;
-  --pp-ink: #18302e;
+  --pp-ink: #15292b;
+  --pp-line: #147565;
   --pp-cheek: #ff9d8c;
   --pp-node: #ff7a59;
 }
@@ -324,30 +325,46 @@ code,
 .mascot {
   display: block;
   overflow: visible;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .mascot .m-part {
   transform-box: fill-box;
-}
-.mascot .m-arm-r {
-  transform-origin: 15% 20%;
-}
-.mascot .m-arm-l {
-  transform-origin: 85% 20%;
-}
-.mascot .m-whole {
-  transform-origin: 50% 100%;
-  transform-box: fill-box;
-}
-.mascot .m-eyes-happy,
-.mascot .m-sweat,
-.mascot .m-shades {
-  opacity: 0;
-}
-.mascot .m-eyes {
   transform-origin: 50% 50%;
 }
-.mascot .m-node {
+.mascot .m-whole,
+.mascot .m-poke {
   transform-origin: 50% 100%;
+}
+.mascot .m-sweat,
+.mascot .m-v {
+  opacity: 0;
+}
+.mascot .m-v {
+  transition: opacity 0.12s var(--pp-ease-out);
+}
+.mascot .m-eyes,
+.mascot .m-cheeks {
+  transition: transform var(--pp-mid, 0.2s) var(--pp-ease-out), opacity var(--pp-mid, 0.2s) var(--pp-ease-out);
+}
+
+/* expression: one variant per feature, picked by data-* attributes (see mascot.js) */
+.mascot[data-eyes='open'] .m-eyes-open,
+.mascot[data-eyes='happy'] .m-eyes-happy,
+.mascot[data-eyes='squeeze'] .m-eyes-squeeze,
+.mascot[data-eyes='dizzy'] .m-eyes-dizzy,
+.mascot[data-brows='calm'] .m-brows-calm,
+.mascot[data-brows='up'] .m-brows-up,
+.mascot[data-brows='worry'] .m-brows-worry,
+.mascot[data-brows='focus'] .m-brows-focus,
+.mascot[data-mouth='smile'] .m-mouth-smile,
+.mascot[data-mouth='grin'] .m-mouth-grin,
+.mascot[data-mouth='o'] .m-mouth-o,
+.mascot[data-mouth='wobble'] .m-mouth-wobble,
+.mascot[data-mouth='flat'] .m-mouth-flat {
+  opacity: 1;
 }
 
 /* idle: slow breathing + blink */
@@ -355,60 +372,30 @@ code,
 .mascot.pose-chill .m-whole {
   animation: pp-breathe 3.6s var(--pp-ease-in-out) infinite;
 }
-.mascot.pose-idle .m-eyes {
+.mascot .m-blink {
   animation: pp-blink 5s step-end infinite;
 }
-.mascot.pose-chill .m-eyes-open {
-  opacity: 0;
-}
-.mascot.pose-chill .m-eyes-happy {
-  opacity: 1;
-}
-.mascot.pose-chill .m-arm-r {
-  transform: rotate(-150deg) translate(2px, -2px);
-}
-.mascot.pose-chill .m-arm-l {
-  transform: rotate(150deg) translate(-2px, -2px);
-}
-.mascot.pose-chill .m-node {
-  animation: pp-sway 3.6s var(--pp-ease-in-out) infinite;
-}
 
-/* wave: right arm waves */
-.mascot.pose-wave .m-arm-r {
-  animation: pp-wave 1.2s var(--pp-ease-in-out) infinite;
-}
+/* wave: happy head tilt side to side */
 .mascot.pose-wave .m-whole {
-  animation: pp-hop 1.2s var(--pp-ease-out) infinite;
-}
-.mascot.pose-wave .m-node {
-  animation: pp-sway 1.2s var(--pp-ease-in-out) infinite;
+  animation: pp-tilt 1.2s var(--pp-ease-in-out) infinite;
 }
 
-/* point: arm points toward the content, gentle nudge */
-.mascot.pose-point .m-arm-r {
-  transform: rotate(-70deg);
-  animation: pp-point 1.1s var(--pp-ease-in-out) infinite;
+/* point: leans and looks toward the content */
+.mascot.pose-point .m-whole {
+  animation: pp-nudge 1.1s var(--pp-ease-in-out) infinite;
 }
-.mascot.pose-point .m-node {
-  animation: pp-ping 1.1s var(--pp-ease-out) infinite;
+.mascot.pose-point .m-eyes {
+  transform: translateX(3px);
 }
 
-/* cheer: jump with both arms up */
-.mascot.pose-cheer .m-eyes-open {
-  opacity: 0;
-}
-.mascot.pose-cheer .m-eyes-happy {
-  opacity: 1;
-}
-.mascot.pose-cheer .m-arm-r {
-  transform: rotate(-135deg);
-}
-.mascot.pose-cheer .m-arm-l {
-  transform: rotate(135deg);
-}
+/* cheer: jump with a big grin and rosy cheeks */
 .mascot.pose-cheer .m-whole {
   animation: pp-jump 0.7s var(--pp-ease-out) 3;
+}
+.mascot.pose-cheer .m-cheeks,
+.mascot.blush .m-cheeks {
+  transform: scale(1.25);
 }
 
 /* worry: sweat drop and a small shake */
@@ -428,10 +415,25 @@ code,
   animation: pp-breathe 1.2s var(--pp-ease-in-out) infinite;
 }
 .mascot.pose-busy .m-eyes {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
-.mascot.pose-busy .m-arm-r {
-  animation: pp-wave 0.8s var(--pp-ease-in-out) infinite;
+
+/* poke: squish while pressed, boing on release, spin when poked too much */
+.mascot .m-poke {
+  transition: transform 0.12s var(--pp-ease-out);
+}
+.mascot.squish .m-poke {
+  transform: scale(1.1, 0.86);
+}
+.mascot.poked .m-poke {
+  animation: pp-boing 0.6s var(--pp-ease-spring);
+}
+.mascot.dizzy .m-poke {
+  animation: pp-dizzy 1.4s var(--pp-ease-in-out);
+}
+.mascot.poked .m-eyes,
+.mascot.dizzy .m-eyes {
+  transform: none;
 }
 
 /* pop-in when it first appears */
@@ -447,27 +449,14 @@ code,
   0%, 94%, 100% { transform: scaleY(1); }
   96% { transform: scaleY(0.1); }
 }
-@keyframes pp-wave {
-  0%, 100% { transform: rotate(-120deg); }
-  25% { transform: rotate(-160deg); }
-  50% { transform: rotate(-115deg); }
-  75% { transform: rotate(-160deg); }
+@keyframes pp-tilt {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  25% { transform: rotate(-7deg) translateY(-2px); }
+  75% { transform: rotate(7deg) translateY(-2px); }
 }
-@keyframes pp-hop {
-  0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-3px); }
-}
-@keyframes pp-sway {
-  0%, 100% { transform: rotate(-6deg); }
-  50% { transform: rotate(6deg); }
-}
-@keyframes pp-point {
-  0%, 100% { transform: rotate(-70deg) translateX(0); }
-  50% { transform: rotate(-70deg) translateX(3px); }
-}
-@keyframes pp-ping {
-  0%, 100% { transform: scale(1); }
-  30% { transform: scale(1.25); }
+@keyframes pp-nudge {
+  0%, 100% { transform: rotate(4deg) translateX(0); }
+  50% { transform: rotate(6deg) translateX(3px); }
 }
 @keyframes pp-jump {
   0%, 100% { transform: translateY(0) scale(1, 1); }
@@ -486,6 +475,19 @@ code,
   75% { transform: translateX(-1.5px); }
   85% { transform: translateX(1.5px); }
   95% { transform: translateX(-1px); }
+}
+@keyframes pp-boing {
+  0% { transform: scale(1.1, 0.86); }
+  35% { transform: scale(0.92, 1.1) translateY(-6px); }
+  65% { transform: scale(1.04, 0.97); }
+  100% { transform: scale(1, 1); }
+}
+@keyframes pp-dizzy {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-14deg); }
+  50% { transform: rotate(12deg); }
+  75% { transform: rotate(-8deg); }
+  100% { transform: rotate(0deg); }
 }
 @keyframes pp-pop-in {
   0% { transform: translateY(18px) scale(0.6); opacity: 0; }

@@ -107,20 +107,27 @@ npx vsce publish                  # สร้างแพ็กเกจแล�
 
 ---
 
-## (ทางเลือก) ให้ CI publish ให้อัตโนมัติ
+## ให้ CI publish ให้อัตโนมัติ (แนะนำ)
 
-ถ้าอยากให้ push tag แล้วขึ้น Marketplace/Open VSX เองด้วย:
+`.github/workflows/ci.yml` มี step publish ขึ้น Marketplace และ Open VSX อยู่แล้ว ทำงานเมื่อ push tag `v*` และมี secret ครบ (ถ้ายังไม่ใส่ secret ขั้นนั้นจะถูกข้าม ไม่ทำให้ CI พัง)
 
-1. GitHub repo → Settings → Secrets and variables → Actions → New repository secret
-   - `VSCE_PAT` = token จากส่วนที่ 2.2
-   - `OVSX_PAT` = token จากส่วนที่ 3
-2. เพิ่ม step ท้าย job `release` ใน `.github/workflows/ci.yml`:
-   ```yaml
-         - run: npx vsce publish --packagePath pushpal-*.vsix
-           env:
-             VSCE_PAT: ${{ secrets.VSCE_PAT }}
-         - run: npx ovsx publish pushpal-*.vsix -p ${{ secrets.OVSX_PAT }}
+ตั้งค่าครั้งเดียว: GitHub repo → Settings → Secrets and variables → Actions → New repository secret
+
+- `VSCE_PAT` = token จากส่วนที่ 2.2
+- `OVSX_PAT` = token จากส่วนที่ 3
+
+### ปล่อยเวอร์ชันใหม่ (ทุกครั้ง)
+
+1. เพิ่มหัวข้อเวอร์ชันใหม่ใน `CHANGELOG.md` แล้ว commit ให้ working tree สะอาด
+2. รัน:
+   ```bash
+   npm run release
    ```
+   คำสั่งนี้ขึ้นเลข `version` (เช่น 1.0.0 → 1.0.1) + commit + สร้าง tag `v1.0.1` + push ขึ้น GitHub
+3. CI รันเทสต์ → แนบ .vsix ใน GitHub Releases → publish ขึ้น Marketplace/Open VSX
+4. คนใช้ได้อัปเดตอัตโนมัติภายในไม่กี่ชั่วโมง ไม่ต้องทำอะไร
+
+> ถ้าเป็นฟีเจอร์ใหม่ใช้ `npm version minor` (1.0.x → 1.1.0) แทน แล้ว `git push --follow-tags`
 
 ---
 
