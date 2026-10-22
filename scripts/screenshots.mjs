@@ -58,7 +58,8 @@ ${sc.kind === 'team' ? `<style>html,body{width:${sc.width}px;overflow-x:hidden}<
 <body class="vscode-${sc.vscode}">
 <div id="app"></div>
 <script type="application/json" id="pp-init">${JSON.stringify(init).replace(/</g, '\\u003c')}</script>
-${['mascot.js', 'icons.js', ...kindFiles.js].map((f) => `<script src="file://${join(media, f)}"></script>`).join('')}
+${['vendor/gsap.min.js', 'vendor/MorphSVGPlugin.min.js', 'mascot.js', 'icons.js', ...kindFiles.js].map((f) => `<script src="file://${join(media, f)}"></script>`).join('')}
+<script>gsap.ticker.lagSmoothing(0); // headless virtual time jumps; don't slow the clock down</script>
 <script>
 ${sc.script ?? ''}
 setTimeout(() => {
@@ -68,7 +69,7 @@ setTimeout(() => {
     else { try { a.finish(); } catch (e) {} }
   }
   ${sc.after ?? ''}
-}, ${sc.wait ?? 1200});
+}, ${sc.wait ?? 2800});
 </script>
 </body></html>`;
 }
@@ -81,7 +82,7 @@ for (const sc of scenarios) {
   const out = join(outDir, `${sc.name}.png`);
   execFileSync(findChrome(), [
     '--headless=new', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files', '--force-device-scale-factor=2',
-    `--window-size=${sc.width},${sc.height}`, `--virtual-time-budget=${sc.budget ?? 4000}`, `--screenshot=${out}`, `file://${html}`,
+    `--window-size=${sc.width},${sc.height}`, `--virtual-time-budget=${sc.budget ?? 5000}`, `--screenshot=${out}`, `file://${html}`,
   ], { stdio: 'ignore' });
   count++;
 }

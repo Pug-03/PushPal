@@ -31,6 +31,8 @@ export class TeamViewProvider implements vscode.WebviewViewProvider {
   private view: vscode.WebviewView | undefined;
   private selected: string | undefined;
   private pending: NodeJS.Timeout | undefined;
+  /** GitHub Actions result per repo, so the pug can react to it. */
+  ciState: ((root: string) => { state: 'running' | 'success' | 'failure' } | undefined) | undefined;
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -80,6 +82,11 @@ export class TeamViewProvider implements vscode.WebviewViewProvider {
     this.post();
   }
 
+  /** Re-send the view data (e.g. GitHub Actions finished). */
+  refresh(): void {
+    this.schedule();
+  }
+
   private schedule(): void {
     clearTimeout(this.pending);
     this.pending = setTimeout(() => this.post(), 40);
@@ -97,7 +104,7 @@ export class TeamViewProvider implements vscode.WebviewViewProvider {
       const rank = (e: RepoEntry) => (e.snapshot?.state === 'conflict' ? 0 : e.snapshot?.state === 'behind' ? 1 : 2);
       selected = entries.reduce((best, e, i) => (rank(e) < rank(entries[best]) ? i : best), 0);
     }
-    return { repos: entries.map(serialize), selected };
+    return { repos: entries.map((e) => ({ ...serialize(e), ci: this.ciState?.(e.root) ?? null })), selected };
   }
 
   private async onMessage(m: FromView): Promise<void> {

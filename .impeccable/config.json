@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "docs/mascot/sheet.html"
+        ],
+        "createdAt": "2026-10-22T07:04:14.376Z",
+        "reason": "Claude decided: internal mascot preview page; its light background mirrors PushPal's existing light theme surface (--pp-bg #f7f5f0 in media/base.css) so the pug is previewed on the real product surface, and the page has a dark-mode toggle"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "docs/mascot/playground.html"
+        ],
+        "createdAt": "2026-10-22T07:04:14.391Z",
+        "reason": "Claude decided: internal mascot preview page; its light background mirrors PushPal's existing light theme surface (--pp-bg #f7f5f0 in media/base.css) so the pug is previewed on the real product surface, and the page has a dark-mode toggle"
+      }
+    ]
+  }
+}

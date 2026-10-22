@@ -77,7 +77,7 @@
     if (r.lastResult && r.lastResult.kind === 'ok' && r.lastResult.at > celebratedAt && Date.now() - r.lastResult.at < 8000) {
       celebratedAt = r.lastResult.at;
       vscode.setState({ celebratedAt: celebratedAt });
-      successUntil = Date.now() + 2600;
+      successUntil = Date.now() + 3600; // long enough for the pug's jump-spin-land
       setTimeout(update, 2650);
       return 'success';
     }
@@ -91,10 +91,20 @@
     return 'upToDate';
   }
 
+  // Pug poses (media/mascot.js) for each hero state.
   var POSE = {
-    empty: 'wave', checking: 'idle', pulling: 'busy', success: 'cheer', conflict: 'worry', mergeReady: 'cheer',
-    behind: 'wave', error: 'worry', noUpstream: 'point', detached: 'point', upToDate: 'chill'
+    empty: 'welcome', checking: 'check', pulling: 'merge', success: 'success', conflict: 'conflict', mergeReady: 'pass',
+    behind: 'alert', error: 'fail', noUpstream: 'check', detached: 'conflict', upToDate: 'sleep'
   };
+  /** Up to date, but GitHub Actions just finished: show how it went. */
+  function poseFor(mode, r) {
+    if (mode === 'upToDate' && r && r.ci) {
+      if (r.ci.state === 'failure') return 'fail';
+      if (r.ci.state === 'success') return 'pass';
+      if (r.ci.state === 'running') return 'check';
+    }
+    return POSE[mode] || 'sit';
+  }
 
   // ---------- Pieces ----------
   function mergeArt() {
@@ -303,7 +313,7 @@
     document.getElementById('repos').innerHTML = reposHtml();
 
     var hero = document.getElementById('hero');
-    var heroKey = mode + '|' + root + '|' + (r ? r.behind + '|' + (r.conflict ? r.conflict.files.length : '') + '|' + (r.error ? r.error.code : '') : '');
+    var heroKey = mode + '|' + root + '|' + (r ? r.behind + '|' + (r.conflict ? r.conflict.files.length : '') + '|' + (r.error ? r.error.code : '') + '|' + (r.ci ? r.ci.state : '') : '');
     if (heroKey !== hero.getAttribute('data-key')) {
       var changed = currentMode && (mode !== currentMode || root !== currentRoot);
       var firstTime = !currentMode;
@@ -311,7 +321,7 @@
       hero.setAttribute('data-mode', mode);
       if (mascotEl && mascotEl.parentNode) mascotEl.parentNode.removeChild(mascotEl);
       hero.innerHTML = heroHtml(mode, r);
-      ensureMascot(POSE[mode] || 'idle', firstTime);
+      ensureMascot(poseFor(mode, r), firstTime);
       if (changed) {
         hero.classList.remove('swap');
         void hero.offsetWidth;

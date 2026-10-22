@@ -48,7 +48,7 @@ for (const [theme, vscode] of [['light', 'light'], ['dark', 'dark']]) {
     if (name === 'test') sc.script = `setTimeout(() => window.postMessage({ type: 'testResult', backend: 'alerter' }, '*'), 50);`;
     if (name === 'done') {
       sc.script = `setTimeout(() => window.postMessage({ type: 'finished', background: 'enabled' }, '*'), 50);`;
-      sc.wait = 500;
+      sc.wait = 2600;
     }
     if (name === 'notify') sc.background = true;
     wizard.push(sc);
@@ -135,7 +135,7 @@ const team = [];
 for (const [theme, vscode] of [['light', 'light'], ['dark', 'dark']]) {
   for (const [name, view] of Object.entries(views)) {
     const sc = { name: `team-${name}-${theme}`, kind: 'team', lang: 'th', theme, vscode, view, ...S };
-    if (name === 'success') Object.assign(sc, { wait: 900, budget: 1600 });
+    if (name === 'success') Object.assign(sc, { wait: 2200, budget: 3400 });
     if (name === 'pulling') sc.freezeAt = 900;
     team.push(sc);
   }

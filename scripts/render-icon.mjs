@@ -14,10 +14,10 @@ writeFileSync(
   html,body{margin:0;background:transparent}
   .tile{width:512px;height:512px;border-radius:116px;display:grid;place-items:center;
     background:radial-gradient(120% 90% at 30% 15%,#fffaf0 0%,#ffeccd 55%,#ffd9a8 100%);}
-  .tile svg{transform:translateY(10px)}
+  .tile svg{transform:translateY(6px)}
   </style><script>${readFileSync(join(media, 'mascot.js'), 'utf8')}</script></head>
   <body><div class="tile" id="t"></div><script>
-  document.getElementById('t').innerHTML = PushPalMascot.svg({pose:'idle',size:390}).replace('pose-idle','');
+  document.getElementById('t').innerHTML = PushPalIconHead(400);
   </script></body></html>`,
 );
 const big = join(dir, 'icon-512.png');

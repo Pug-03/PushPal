@@ -52,6 +52,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const team = new TeamViewProvider(context, repos, actions);
   context.subscriptions.push(vscode.window.registerWebviewViewProvider(TeamViewProvider.id, team));
   actions.revealTeam = (root) => team.reveal(root);
+  team.ciState = (root) => ci.stateFor(root);
+  ci.onDidChange(() => team.refresh());
 
   repos.onDidChange(() => {
     const hasConflict = repos.list().some((e) => e.snapshot?.state === 'conflict');

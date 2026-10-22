@@ -142,6 +142,15 @@ export class CiWatcher implements vscode.Disposable {
     if (choice === open && s.url) void vscode.env.openExternal(vscode.Uri.parse(s.url));
   }
 
+  /** Latest result for one repo (for the mascot): running, or finished within the last few minutes. */
+  stateFor(root: string): { state: 'running' | 'success' | 'failure' } | undefined {
+    const w = this.watches.get(repoKey(root));
+    const s = w?.summary?.state;
+    if (s === 'running') return { state: 'running' };
+    if ((s === 'success' || s === 'failure') && w?.finishedAt && Date.now() - w.finishedAt < 5 * 60_000) return { state: s };
+    return undefined;
+  }
+
   /** For the status bar tooltip and the settings page. */
   running(): Array<{ name: string; done: number; total: number }> {
     return [...this.watches.values()].filter((w) => w.summary?.state === 'running').map((w) => ({ name: w.name, done: w.summary!.done, total: w.summary!.total }));
