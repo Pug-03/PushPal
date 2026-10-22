@@ -90,3 +90,42 @@ Newest sections are appended at the bottom of each topic.
   focuses the window that already has it open. Works the same on every OS.
 - After any successful pull (button, status bar, terminal, Source Control) the next check sees
   `behind` drop to 0 and removes the desktop notification (`alerter --remove`, `History.Remove`, `CloseNotification`).
+
+## 5. Background checking (VS Code closed)
+
+- Off by default; turned on only from the wizard or the `pushpal.notify.background` setting.
+- **Runtime**: VS Code's own Electron binary with `ELECTRON_RUN_AS_NODE=1` — no separate Node install.
+  On macOS the extension host's `process.execPath` is a "Code Helper (Plugin)" binary, so PushPal uses
+  `<App>.app/Contents/MacOS/Code` instead (verified: runs Node 24 headless, no Dock icon).
+- `dist/worker.js` is a single esbuild bundle. It is **copied to globalStorage** and the OS job points at the copy,
+  so an extension update (new folder) never breaks the job. Each activation re-copies it if it changed and
+  re-registers the job only if the plist / launcher differs.
+- **macOS**: `~/Library/LaunchAgents/com.pushpal.watcher.plist`, `StartInterval 60`, `RunAtLoad`,
+  `ProcessType Background`, `LowPriorityIO`, `AbandonProcessGroup` (so the alert child process survives the
+  60-second run exiting). Loaded with `launchctl bootstrap gui/<uid>` (falls back to `load -w`).
+  PATH includes `/opt/homebrew/bin` so git and alerter are found.
+- **Windows**: Task Scheduler task registered from an XML definition (`schtasks /Create /XML`) rather than
+  `/SC MINUTE` flags, because the XML is the only way to turn off "start only on AC power" (laptops on
+  battery would otherwise never get alerts) and to set `Hidden`, `IgnoreNew` and a 5-minute time limit.
+  The action is `wscript.exe //B launcher.vbs`, which sets `ELECTRON_RUN_AS_NODE` and starts the worker
+  with window style 0, so no console window flashes. Task name includes the Windows user name.
+- **Linux**: not offered (setting shows a friendly "macOS and Windows only" message).
+- The worker only runs `git fetch` and read-only commands. It never pulls.
+- Repos watched: only those the extension has seen (`config.json` → `repos`), added as you open them.
+- **No double alerts**: each VS Code window writes `heartbeats/<sessionId>.json` every 30 s; the worker skips
+  (doesn't even fetch) a repo listed in a heartbeat younger than 95 s. Shared `notified.json` remembers the
+  last alerted upstream sha.
+- **Button**: "เปิดใน VS Code / Open in VS Code" opens `vscode://<id>/open?repo=…`. The URI handler opens that
+  folder (or hands the action to the window that already has it through `pending.json`) and shows the
+  My Team view with a fresh check — it does not pull by itself.
+- **macOS click handling**: alerter blocks until clicked, so the worker starts a detached copy of itself
+  (`worker.js --alert payload.json`) and exits immediately; the copy waits for the click and runs `open <uri>`.
+- **Turning off** the setting removes the LaunchAgent / task immediately.
+- **Uninstall**: two layers. (1) `vscode:uninstall` hook removes the job when VS Code finalises the uninstall.
+  (2) Every run, the worker checks that a folder `<publisher>.pushpal-*` still exists in the extensions dir and
+  isn't listed in `.obsolete`; if not, it removes the job and its own files.
+- Known limit: the LaunchAgent label / task name is shared, so VS Code Stable and Insiders on the same
+  machine would share one job (the last one to write config wins).
+- macOS 13+ shows a "Background item added" notice the first time — expected; mentioned in the README FAQ.
+- Tests use a fake command runner (`PUSHPAL_TEST_LOG`) and a temp `HOME`, so running the test suite never
+  touches the real `~/Library/LaunchAgents` or Task Scheduler.

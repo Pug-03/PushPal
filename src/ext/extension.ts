@@ -10,6 +10,13 @@ import { ExtensionDesktopChannel } from './desktopChannel';
 import { sendTestNotification } from './desktopSetup';
 import { PushPalUriHandler, type UriAction } from './uriHandler';
 import { focusThisWindow } from './host';
+import { Background } from './background';
+
+/** The setup wizard announces background changes itself. */
+let suppressBackgroundAnnounce = false;
+export function setSuppressBackgroundAnnounce(v: boolean): void {
+  suppressBackgroundAnnounce = v;
+}
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const log = vscode.window.createOutputChannel('PushPal');
@@ -56,10 +63,33 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   repos.onDidChange(beat);
   context.subscriptions.push({ dispose: () => (clearInterval(hb), store.removeHeartbeat(vscode.env.sessionId)) });
 
+  const background = new Background(context, store, repos, log);
+  const syncBackground = async (announce: boolean) => {
+    try {
+      const r = await background.sync();
+      if (!announce) return;
+      if (r === 'enabled') void vscode.window.showInformationMessage(t('bg.enabled'));
+      else if (r === 'disabled') void vscode.window.showInformationMessage(t('bg.disabled'));
+      else void vscode.window.showWarningMessage(t('bg.unsupported'));
+    } catch (e) {
+      log.appendLine(`[background] ${e}`);
+      void vscode.window.showErrorMessage(t('bg.failed', e instanceof Error ? e.message : String(e)));
+    }
+  };
+  let bgTimer: NodeJS.Timeout | undefined;
+  repos.onDidChange(() => {
+    clearTimeout(bgTimer);
+    bgTimer = setTimeout(() => void syncBackground(false), 3000);
+  });
+
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('pushpal.checkIntervalSeconds')) repos.setInterval(readSettings().intervalSeconds);
-      if (e.affectsConfiguration('pushpal.language')) status.update();
+      if (e.affectsConfiguration('pushpal.language')) {
+        status.update();
+        void syncBackground(false);
+      }
+      if (e.affectsConfiguration('pushpal.notify.background') && !suppressBackgroundAnnounce) void syncBackground(true);
     }),
   );
 
@@ -78,6 +108,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   await repos.init(readSettings().intervalSeconds);
   beat();
+  void syncBackground(false);
   void uriHandler.consumePending();
 }
 
