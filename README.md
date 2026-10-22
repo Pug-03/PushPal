@@ -39,7 +39,8 @@
 - **แถบสถานะ 4 แบบ**: โค้ดล่าสุดแล้ว / เพื่อน push มาใหม่ N (เหลือง คลิกเพื่อดึง) / มีจุดชนรอแก้ (แดง) / เช็กไม่ได้
 - **แจ้งเตือนบนหน้าจอเครื่อง** — macOS (alerter มีปุ่ม), Windows (toast มีปุ่ม ไม่ต้องลงอะไร), Linux (notify-send)
 - **เตือนแม้ปิด VS Code** (เลือกเปิดเอง) — ใช้ LaunchAgent / Task Scheduler ทำแค่ `git fetch` ไม่แก้ไฟล์
-- **หน้า “ทีมของฉัน”** ไทม์ไลน์ commit ของเพื่อน พร้อม Pal มาสคอตที่บอกสถานะด้วยท่าทาง
+- **หน้า “ทีมของฉัน”** ไทม์ไลน์ commit ของเพื่อน พร้อม Pal มาสคอตหน้ากลมที่เปลี่ยนสีหน้าตามสถานะ (คิ้ว ตา ปาก แก้ม)
+  กดจิ้มเล่นได้ — ยุบ เด้ง หัวเราะ และถ้าจิ้มรัวๆ จะตาลาย
 - **ภาษาไทย / English** และ **ธีมสว่าง / มืด / ตามเครื่อง**
 - หลาย repo ใน workspace เดียว, repo ที่ยังไม่มี upstream ก็รองรับ
 - **ไม่มี telemetry** ไม่ส่งข้อมูลออกนอกเครื่องนอกจาก `git fetch` / `git pull` ปกติ
@@ -61,6 +62,9 @@
 - **จาก Marketplace**: ค้นหา “PushPal” ในแถบ Extensions ของ VS Code แล้วกด Install
 - **จากไฟล์ .vsix**: ดาวน์โหลด `pushpal-x.y.z.vsix` จากหน้า Releases บน GitHub
   แล้วใน VS Code กด `⇧⌘P` / `Ctrl+Shift+P` → **Extensions: Install from VSIX…** → เลือกไฟล์
+
+ติดตั้งจาก Marketplace แล้ว **อัปเดตเองอัตโนมัติ** ไม่ต้องทำอะไร (ถ้าปิด auto-update ไว้ จะมีปุ่ม **Update** ในแถบ Extensions)
+ส่วนแบบ .vsix ต้องดาวน์โหลดไฟล์ใหม่มาติดตั้งทับเอง
 
 ติดตั้งเสร็จ หน้าตั้งค่าจะเปิดขึ้นมาเอง 6 ขั้นสั้นๆ (เปิดซ้ำได้ด้วยคำสั่ง **PushPal: ตั้งค่าใหม่**)
 
@@ -136,7 +140,8 @@ and when you finally push — conflicts everywhere. **PushPal tells you the mome
 - Desktop notifications: macOS (alerter with buttons, osascript fallback), Windows (toast with buttons, nothing to install),
   Linux (notify-send). If VS Code is focused you only get the VS Code pop-up, never both.
 - Optional checks while VS Code is closed: LaunchAgent (macOS) / Task Scheduler (Windows), `git fetch` only
-- “My Team” view: teammates' commit timeline with Pal the mascot reacting to what's going on
+- “My Team” view: teammates' commit timeline with Pal, a round-faced mascot whose brows, eyes, mouth and cheeks
+  change with the state. Poke it: it squishes, bounces, giggles, and gets dizzy if you poke too fast
 - Thai / English, Light / Dark / Match VS Code themes, multi-repo workspaces, branches without upstream
 - No telemetry. Nothing leaves your machine except your normal `git fetch` / `git pull`
 
@@ -144,6 +149,9 @@ and when you finally push — conflicts everywhere. **PushPal tells you the mome
 
 - **Marketplace**: search “PushPal” in the Extensions view.
 - **.vsix**: download it from GitHub Releases, then **Extensions: Install from VSIX…** in the Command Palette.
+
+Marketplace installs update automatically (or show an **Update** button if you turned auto-update off).
+A .vsix install doesn't update itself; install the newer file over it.
 
 The setup wizard opens after the first install. Run **PushPal: ตั้งค่าใหม่ · Run Setup Again** to see it again.
 
@@ -164,7 +172,18 @@ npm run build
 npm run smoke       # runs the extension in your local VS Code with an isolated profile (macOS)
 npm run screenshots # renders every screen into docs/screenshots/
 npm run package     # builds pushpal-<version>.vsix
+npm run icon        # re-renders media/icon.png from the mascot
 ```
+
+### Releasing
+
+```bash
+npm run release     # bump patch version, tag vX.Y.Z, push
+```
+
+Pushing the tag makes CI run the tests, attach the .vsix to a GitHub Release, and publish to the VS Code
+Marketplace and Open VSX (when the `VSCE_PAT` / `OVSX_PAT` secrets are set). Users then get the update automatically.
+Commit everything (and add a `CHANGELOG.md` entry) first: `npm version` refuses to run on a dirty working tree.
 
 Design decisions are documented in [DECISIONS.md](DECISIONS.md). Publishing steps: [PUBLISHING.md](PUBLISHING.md).
 

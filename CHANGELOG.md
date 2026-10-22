@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- New mascot: Pal is now a round face whose brows, eyes, mouth and cheeks change with the state
+- Poke Pal: it squishes, bounces and giggles, and gets dizzy if you poke too fast
+- Activity bar icon matches the new face
+- Releases: `npm run release` bumps the version and pushes a tag; CI publishes to the Marketplace and Open VSX
+- Fix: background-worker test no longer expects launchctl/schtasks on Linux
+
 ## 1.0.0 — 2026-10-22
 
 First release.
