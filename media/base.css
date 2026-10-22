@@ -112,7 +112,8 @@
 }
 /* Status colours: VS Code has no exact equivalents, pick ours per light/dark. */
 .theme-system body,
-.theme-system body.vscode-light {
+.theme-system body.vscode-light,
+body.vscode-light .theme-system {
   color-scheme: light;
   --pp-accent-soft: color-mix(in srgb, var(--pp-accent) 14%, transparent);
   --pp-new: #e5603f;
@@ -125,7 +126,8 @@
   --pp-success-soft: color-mix(in srgb, #1f8a54 14%, transparent);
 }
 .theme-system body.vscode-dark,
-.theme-system body.vscode-high-contrast:not(.vscode-high-contrast-light) {
+.theme-system body.vscode-high-contrast:not(.vscode-high-contrast-light),
+body.vscode-dark .theme-system {
   color-scheme: dark;
   --pp-new: #ff8a6b;
   --pp-new-soft: color-mix(in srgb, #ff8a6b 16%, transparent);
@@ -141,6 +143,9 @@
 }
 
 /* ---------- Base ---------- */
+[hidden] {
+  display: none !important;
+}
 * {
   box-sizing: border-box;
 }

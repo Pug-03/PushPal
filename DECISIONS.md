@@ -180,3 +180,23 @@ Newest sections are appended at the bottom of each topic.
   `style=""` attributes (blocked by the policy); dynamic values are set through the CSSOM. Initial data is
   passed in a `<script type="application/json">` block with `<`, `>` and `&` escaped.
 - No framework: plain HTML/CSS/JS. Total webview JS + CSS is a few dozen KB.
+
+## 8. Setup wizard
+
+- Opens automatically once, on the first activation after install (`globalState` flag set as soon as it opens,
+  so closing it half-way doesn't nag on every start). "PushPal: ตั้งค่าใหม่ · Run Setup Again" reopens it.
+- One `WebviewPanel` in the editor area, `retainContextWhenHidden` so switching tabs doesn't lose the step.
+  The current step is also kept with `vscode.setState`.
+- All six steps live in the same CSS grid cell, so the page height never jumps; the active step slides
+  (48 px translate + fade, 380 ms ease-out), direction-aware for Back. The progress bar is a `scaleX` transform.
+- Language and theme are saved to Settings the moment they're picked (the whole wizard re-renders in the
+  new language without a round-trip, and the status bar follows). Notification toggles are saved immediately
+  too, except "even when VS Code is closed": that one is applied when the wizard finishes, so flicking the
+  switch doesn't install and remove a LaunchAgent several times. The result (enabled / failed + reason) is
+  shown on the last step.
+- "Skip setup" on the first step finishes with defaults (in-VS Code + desktop on, background off).
+- The test step sends a real notification through the same code path as real alerts; on macOS it shows
+  whether alerter is present and offers to install it (`brew install vjeantet/tap/alerter` in a visible
+  VS Code terminal; links to brew.sh if Homebrew is missing), plus per-OS "not seeing it?" steps.
+- Keyboard: every control is a real `<button>` with `role=radio/switch` + `aria-checked`; focus moves to
+  the new step's heading; Alt+→ / Alt+← navigate.

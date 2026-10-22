@@ -4,13 +4,14 @@ import { StatusBar } from './statusBar';
 import { Actions } from './actions';
 import { Alerts } from './alerts';
 import { SharedStore, HEARTBEAT_INTERVAL_MS } from '../core/storage';
-import { readSettings } from './settings';
+import { readSettings, saveSettings } from './settings';
 import { t } from './l10n';
 import { ExtensionDesktopChannel } from './desktopChannel';
 import { sendTestNotification } from './desktopSetup';
 import { PushPalUriHandler, type UriAction } from './uriHandler';
 import { focusThisWindow } from './host';
 import { Background } from './background';
+import { SetupWizard, SETUP_SHOWN_KEY } from './wizard';
 
 /** The setup wizard announces background changes itself. */
 let suppressBackgroundAnnounce = false;
@@ -90,6 +91,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         void syncBackground(false);
       }
       if (e.affectsConfiguration('pushpal.notify.background') && !suppressBackgroundAnnounce) void syncBackground(true);
+      if (e.affectsConfiguration('pushpal.theme')) SetupWizard.postTheme(readSettings().theme);
     }),
   );
 
@@ -105,6 +107,24 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (s.focused) void uriHandler.consumePending();
     }),
   );
+
+  const openWizard = () =>
+    SetupWizard.show(
+      context,
+      desktop,
+      async (want) => {
+        suppressBackgroundAnnounce = true;
+        try {
+          if (want !== undefined && want !== readSettings().notifyBackground) await saveSettings({ notifyBackground: want });
+          return await background.sync();
+        } finally {
+          setTimeout(() => (suppressBackgroundAnnounce = false), 500);
+        }
+      },
+      () => actions.revealTeam(),
+    );
+  cmd('pushpal.setup', openWizard);
+  if (!context.globalState.get<boolean>(SETUP_SHOWN_KEY)) openWizard();
 
   await repos.init(readSettings().intervalSeconds);
   beat();

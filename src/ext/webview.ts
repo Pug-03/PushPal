@@ -54,7 +54,7 @@ ${['base.css', ...o.styles].map((s) => `<link rel="stylesheet" href="${media(s)}
 <body>
 <div id="app"></div>
 <script type="application/json" id="pp-init" nonce="${nonce}">${safeJson(o.init)}</script>
-${['mascot.js', ...o.scripts].map((s) => `<script nonce="${nonce}" src="${media(s)}"></script>`).join('\n')}
+${['mascot.js', 'icons.js', ...o.scripts].map((s) => `<script nonce="${nonce}" src="${media(s)}"></script>`).join('\n')}
 </body>
 </html>`;
 }
