@@ -54,7 +54,7 @@ git push origin v1.0.0
 
 รอสักครู่ แล้วดูที่แท็บ **Releases** ของ repo จะมี `pushpug-1.0.0.vsix` ให้ดาวน์โหลด
 
-> รอบถัดไป: แก้ `version` ใน `package.json` + เพิ่มหัวข้อใน `CHANGELOG.md` → commit → `git tag v1.0.1` → push tag
+> รอบถัดไป: ดูหัวข้อ "ปล่อยเวอร์ชันใหม่ (ทุกครั้ง)" ด้านล่าง `main` รับงานผ่าน pull request เท่านั้น เลยต้องขึ้นเลขเวอร์ชันผ่าน pull request ก่อน แล้วค่อย push tag
 
 ---
 
@@ -118,16 +118,24 @@ npx vsce publish                  # สร้างแพ็กเกจแล�
 
 ### ปล่อยเวอร์ชันใหม่ (ทุกครั้ง)
 
-1. เพิ่มหัวข้อเวอร์ชันใหม่ใน `CHANGELOG.md` แล้ว commit ให้ working tree สะอาด
-2. รัน:
+`main` รับงานผ่าน pull request เท่านั้น (ตั้งกฎไว้ใน GitHub → Settings → Rules) เลยแบ่งเป็นสองขั้น:
+
+1. **ขึ้นเลขเวอร์ชันผ่าน pull request**
    ```bash
+   git checkout main && git pull
+   git checkout -b release/1.0.3
+   npm version patch --no-git-tag-version   # 1.0.2 → 1.0.3 (ฟีเจอร์ใหม่ใช้ minor: 1.0.x → 1.1.0)
+   ```
+   เปลี่ยนหัวข้อ `## Unreleased` ใน `CHANGELOG.md` เป็น `## 1.0.3 — <วันที่>` แล้ว commit, push และเปิด pull request
+   (หรือใน VS Code ใช้ **PushPug: ส่งงานให้ทีมดู**) รอเทสผ่านแล้วกด Merge
+2. **ปล่อยเวอร์ชัน**: กลับมาที่ `main` แล้วรัน
+   ```bash
+   git checkout main && git pull
    npm run release
    ```
-   คำสั่งนี้ขึ้นเลข `version` (เช่น 1.0.0 → 1.0.1) + commit + สร้าง tag `v1.0.1` + push ขึ้น GitHub
+   คำสั่งนี้เช็กว่าอยู่บน `main` ที่ตรงกับ GitHub และ CHANGELOG มีหัวข้อเวอร์ชันนี้ แล้วสร้าง tag `v1.0.3` และ push เฉพาะ tag
 3. CI รันเทสต์ → แนบ .vsix ใน GitHub Releases → publish ขึ้น Marketplace/Open VSX
 4. คนใช้ได้อัปเดตอัตโนมัติภายในไม่กี่ชั่วโมง ไม่ต้องทำอะไร
-
-> ถ้าเป็นฟีเจอร์ใหม่ใช้ `npm version minor` (1.0.x → 1.1.0) แทน แล้ว `git push --follow-tags`
 
 ---
 

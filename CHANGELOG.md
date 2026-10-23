@@ -2,6 +2,8 @@
 
 ## 1.0.2 — 2026-10-23
 
+- Pressing **Finish merge** on the "all conflicts fixed" pop-up could hang PushPug for that repository (it waited for itself); checks now run their follow-ups after releasing the repository
+- A push refused by another GitHub rule (e.g. push protection finding a secret) is no longer mistaken for "this branch only accepts pull requests"; it gets its own explanation
 - My Team cards no longer jump or fade in again on every check (they're only redrawn when something changed)
 - Activity Bar icon is now a paw print (clearer at small sizes than the pug head)
 - Pull requests: **Start New Task** makes a branch from the latest main (uncommitted work comes along);

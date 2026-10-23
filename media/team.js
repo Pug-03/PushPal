@@ -556,6 +556,8 @@
     if (undoUntil <= Date.now()) {
       var card = el.closest('.undo-card');
       if (card) card.remove();
+      // The cards on screen no longer match the last render: redraw on the next update.
+      document.getElementById('alerts').removeAttribute('data-key');
       return;
     }
     el.textContent = s('team.undoHint', mmss(undoUntil - Date.now()));

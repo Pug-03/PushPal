@@ -185,8 +185,8 @@ export class RepoManager implements vscode.Disposable {
   async refresh(root: string, opts: { fetch: boolean }): Promise<void> {
     const entry = this.get(root);
     if (!entry) return;
-    await this.withLock(root, async () => {
-      if (!this.get(root)) return;
+    const checked = await this.withLock(root, async () => {
+      if (!this.get(root)) return undefined;
       const showSpinner = !entry.snapshot;
       if (showSpinner) this.setPhase(root, 'checking');
       const previous = entry.snapshot;
@@ -198,14 +198,23 @@ export class RepoManager implements vscode.Disposable {
       if (snap.upstream) entry.recent = await recentCommits(root, '@{u}', 25);
       if (showSpinner) entry.phase = 'idle';
       this.emitter.fire();
-      for (const l of this.checkListeners) {
-        try {
-          await l(entry, previous);
-        } catch (e) {
-          this.log.appendLine(`[listener] ${e}`);
-        }
-      }
+      return { previous };
     });
+    if (!checked) return;
+    // Outside the lock and not awaited: listeners make network calls (GitHub) and wait for
+    // the user's answer to a pop-up, and some answers (Finish merge, Pull) take this lock
+    // themselves, which would deadlock if it were still held.
+    void this.notifyListeners(entry, checked.previous);
+  }
+
+  private async notifyListeners(entry: RepoEntry, previous: RepoSnapshot | null): Promise<void> {
+    for (const l of this.checkListeners) {
+      try {
+        await l(entry, previous);
+      } catch (e) {
+        this.log.appendLine(`[listener] ${e}`);
+      }
+    }
   }
 
   /**

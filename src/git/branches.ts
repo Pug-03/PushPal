@@ -138,9 +138,13 @@ export type PushBranchResult =
   | { kind: 'protected'; message: string }
   | { kind: 'error'; code: ErrorCode; message: string };
 
-/** GitHub / GitLab refusing a push because the branch only accepts pull requests. */
+/**
+ * GitHub / GitLab refusing a push because the branch only accepts pull requests.
+ * GitHub's GH013 alone isn't enough: the same code is used for other rules, e.g.
+ * push protection refusing a commit that contains a password or API key.
+ */
 export function isProtectedRejection(output: string): boolean {
-  return /GH006|GH013|protected branch|repository rule violations|Changes must be made through a pull request|pre-receive hook declined.*protected|not allowed to push code to protected branches/i.test(output);
+  return /GH006|protected branch|Changes must be made through a pull request|not allowed to push code to protected branches/i.test(output);
 }
 
 /** Push the task branch and make it track the remote branch. */
