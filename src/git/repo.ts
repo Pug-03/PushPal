@@ -66,7 +66,7 @@ export async function upstreamOf(root: string, opts?: GitOptions): Promise<strin
   return r.code === 0 ? r.stdout.trim() : null;
 }
 
-async function remoteOfBranch(root: string, branch: string, opts?: GitOptions): Promise<string | null> {
+export async function remoteOfBranch(root: string, branch: string, opts?: GitOptions): Promise<string | null> {
   const r = await runGit(root, ['config', '--get', `branch.${branch}.remote`], opts);
   const remote = r.stdout.trim();
   return r.code === 0 && remote && remote !== '.' ? remote : null;
@@ -266,6 +266,20 @@ export async function pull(root: string, opts: GitOptions = {}): Promise<PullRes
   const before = await revParse(root, 'HEAD', opts);
   const hadLocalChanges = (await workingTreeFiles(root, opts)).length > 0;
   const r = await runGit(root, ['pull', '--no-rebase', '--autostash', '--no-edit'], { timeoutMs: 120_000, ...opts });
+  return interpretMergeOutcome(root, r.code, `${r.stdout}\n${r.stderr}`, before, hadLocalChanges, opts);
+}
+
+/**
+ * Merge another ref (e.g. `origin/main`) into the current branch the same way
+ * `pull` does: uncommitted work is autostashed and conflicts are reported.
+ */
+export async function mergeRef(root: string, ref: string, opts: GitOptions = {}): Promise<PullResult> {
+  const existing = await getConflictState(root, opts);
+  if (existing) return { kind: 'blocked', conflict: existing };
+  if (!(await currentBranch(root, opts))) return { kind: 'detached' };
+  const before = await revParse(root, 'HEAD', opts);
+  const hadLocalChanges = (await workingTreeFiles(root, opts)).length > 0;
+  const r = await runGit(root, ['merge', '--autostash', '--no-edit', ref], { timeoutMs: 120_000, ...opts });
   return interpretMergeOutcome(root, r.code, `${r.stdout}\n${r.stderr}`, before, hadLocalChanges, opts);
 }
 

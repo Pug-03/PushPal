@@ -321,6 +321,49 @@
     return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
   }
 
+  // ---------- task branch and its pull request ----------
+  function prHtml(r, mode) {
+    var p = r && r.pr;
+    if (!p || mode === 'empty' || mode === 'checking') return '';
+    if (p.onBase) {
+      if (p.unpushed > 0) {
+        return '<section class="alert-card warn pr-card">' +
+          '<div class="alert-head">' + I('branch') + '<strong>' + esc(s('team.pr.unsent', p.unpushed, p.base)) + '</strong></div>' +
+          '<p>' + esc(s('team.pr.unsentHint', p.unpushed, p.base)) + '</p>' +
+          '<div class="pr-actions">' + btn('primary sm', 'cloud', s('team.pr.send'), 'pr', 'send') + '</div></section>';
+      }
+      return '<section class="pr-row"><div class="pr-text"><b>' + I('branch') + esc(s('team.pr.onBase', p.base)) + '</b><span>' + esc(s('team.pr.onBaseHint')) + '</span></div>' +
+        btn('sm', 'branch', s('team.pr.start'), 'pr', 'startTask') + '</section>';
+    }
+    var pr = p.pr;
+    var status = pr ? pr.status : 'none';
+    var line;
+    var buttons = '';
+    if (!pr) {
+      line = p.unpushed ? s('team.pr.none', p.unpushed) : s('team.pr.noCommits');
+      if (p.unpushed) buttons = btn('primary sm', 'cloud', s('team.pr.send'), 'pr', 'send');
+    } else if (status === 'merged') {
+      line = s('team.pr.merged', pr.number);
+      buttons = btn('primary sm', 'check', s('team.pr.back', p.base), 'pr', 'finishTask') + btn('sm', 'github', s('team.pr.openPr'), 'pr', 'openPr');
+    } else if (status === 'closed') {
+      line = s('team.pr.closed', pr.number);
+      buttons = btn('sm', 'github', s('team.pr.openPr'), 'pr', 'openPr') + btn('sm', 'check', s('team.pr.back', p.base), 'pr', 'finishTask');
+    } else if (status === 'conflict') {
+      line = s('team.pr.conflict', pr.number, p.base);
+      buttons = btn('primary sm', 'merge', s('team.pr.update', p.base), 'pr', 'updateFromMain') + btn('sm', 'github', s('team.pr.openPr'), 'pr', 'openPr');
+    } else {
+      line = s(status === 'draft' ? 'team.pr.draft' : 'team.pr.open', pr.number);
+      buttons = btn('sm', 'github', s('team.pr.openPr'), 'pr', 'openPr') + (r.ahead > 0 || !r.upstream ? btn('sm', 'cloud', s('team.pr.sendAgain'), 'pr', 'send') : '');
+    }
+    var tone = status === 'conflict' ? ' warn' : status === 'merged' ? ' ok' : '';
+    return '<section class="alert-card pr-card' + tone + '">' +
+      '<div class="alert-head">' + I('branch') + '<strong>' + esc(s('team.pr.task', p.branch)) + '</strong></div>' +
+      '<p class="pr-status" data-status="' + esc(status) + '"><i class="state-dot"></i>' + esc(line) + '</p>' +
+      (pr && pr.title ? '<p class="pr-title">' + esc(pr.title) + '</p>' : '') +
+      (buttons ? '<div class="pr-actions">' + buttons + '</div>' : '') +
+    '</section>';
+  }
+
   function timelineHtml(r, mode) {
     if (!r || mode === 'empty' || mode === 'noUpstream' || mode === 'detached' || mode === 'checking') return '';
     var fresh = r.recent.filter(function (c) { return c.isNew; });
@@ -402,7 +445,7 @@
       if (mode === 'success') setTimeout(function () { M.confetti(hero, 40); }, 260);
     }
     if (r) undoUntil = r.undoLeft ? Date.now() + r.undoLeft * 1000 : 0;
-    document.getElementById('alerts').innerHTML = undoHtml(r) + sameFileHtml(r) + conflictHtml(r, mode);
+    document.getElementById('alerts').innerHTML = undoHtml(r) + prHtml(r, mode) + sameFileHtml(r) + conflictHtml(r, mode);
     renderTimeline(r, mode);
     document.getElementById('foot').innerHTML = footerHtml(r);
     applyHues(app);
@@ -471,6 +514,7 @@
       case 'openUrl': post({ type: 'openUrl', url: arg }); break;
       case 'undo': post({ type: 'undo', root: r.root }); break;
       case 'push': post({ type: 'push', root: r.root }); break;
+      case 'pr': post({ type: 'pr', root: r.root, act: arg }); break;
       case 'fullError': if (r.error) post({ type: 'fullError', text: r.error.raw || r.error.text }); break;
     }
   }

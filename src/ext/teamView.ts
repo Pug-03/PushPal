@@ -8,6 +8,7 @@ import type { RepoEntry, RepoManager } from './repoManager';
 import { repoKey } from '../core/storage';
 import type { CheckBadge } from './checks';
 import type { FailureDetail } from '../core/checks';
+import type { PrView, PullRequests } from './pullRequests';
 
 /** What the page reports about itself: animation library loaded, script errors. */
 export interface WebviewDiag {
@@ -30,6 +31,7 @@ type FromView =
   | { type: 'openUrl'; url: string }
   | { type: 'undo'; root: string }
   | { type: 'push'; root: string }
+  | { type: 'pr'; root: string; act: 'startTask' | 'send' | 'updateFromMain' | 'finishTask' | 'openPr' }
   | { type: 'fullError'; text: string };
 
 const COMMANDS: Record<string, string> = {
@@ -59,6 +61,9 @@ export class TeamViewProvider implements vscode.WebviewViewProvider {
   avatarFor: ((email: string) => string | undefined) | undefined;
   /** GitHub Actions result per repo, so the pug can react to it. */
   ciState: ((root: string) => { state: 'running' | 'success' | 'failure' } | undefined) | undefined;
+  /** The current task and its pull request. */
+  prFor: ((root: string) => PrView | null) | undefined;
+  prs: PullRequests | undefined;
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -77,6 +82,7 @@ export class TeamViewProvider implements vscode.WebviewViewProvider {
       if (view.visible) {
         this.post();
         void this.repos.refreshAll({ fetch: true, minFetchGapMs: 15_000 });
+        for (const e of this.repos.list()) void this.prs?.refresh(e.root);
       }
     });
     view.onDidDispose(() => (this.view = undefined));
@@ -136,7 +142,7 @@ export class TeamViewProvider implements vscode.WebviewViewProvider {
     return {
       repos: entries.map((e) => {
         const r = serialize(e);
-        return { ...r, recent: r.recent.map(decorate), incoming: r.incoming.map(decorate), ci: this.ciState?.(e.root) ?? null, undoLeft: this.undoLeft?.(e.root) ?? 0 };
+        return { ...r, recent: r.recent.map(decorate), incoming: r.incoming.map(decorate), ci: this.ciState?.(e.root) ?? null, pr: this.prFor?.(e.root) ?? null, undoLeft: this.undoLeft?.(e.root) ?? 0 };
       }),
       selected,
     };
@@ -190,6 +196,17 @@ export class TeamViewProvider implements vscode.WebviewViewProvider {
       case 'push':
         await this.actions.push(m.root);
         return;
+      case 'pr': {
+        const p = this.prs;
+        if (!p) return;
+        this.selected = m.root;
+        if (m.act === 'startTask') await p.startTask(m.root);
+        else if (m.act === 'send') await p.sendForReview(m.root);
+        else if (m.act === 'updateFromMain') await p.updateFromMain(m.root);
+        else if (m.act === 'finishTask') await p.finishTask(m.root);
+        else if (m.act === 'openPr') await p.openPullRequest(m.root);
+        return;
+      }
       case 'fullError':
         await vscode.window.showInformationMessage(t('gerr.fullTitle'), { modal: true, detail: m.text });
         return;

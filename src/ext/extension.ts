@@ -16,6 +16,7 @@ import { TeamViewProvider } from './teamView';
 import { ModeController } from './modes';
 import { Scheduler } from './scheduler';
 import { ChecksWatcher } from './checks';
+import { PullRequests } from './pullRequests';
 import { SettingsPage, type FrequencyDeps } from './settingsPage';
 import { Avatars } from './avatars';
 import { MODES, type Mode } from '../core/frequency';
@@ -35,12 +36,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const modes = new ModeController(log);
   const scheduler = new Scheduler(repos, modes, log);
   const ci = new ChecksWatcher(context, repos, scheduler, alerts, log);
+  const prs = new PullRequests(context, repos, actions, alerts, ci, log);
+  actions.onSendForReview = (root) => prs.sendForReview(root);
   const status = new StatusBar(repos, () => ({ mode: modes.mode, effective: scheduler.effective }));
   scheduler.onDidChange(() => status.update());
   modes.onDidChange(() => status.update());
   repos.canAutoFetch = () => !scheduler.paused;
   const freqDeps: FrequencyDeps = { modes, repos, scheduler, ci, ghFound: () => background.ghFound, snoozeUntil: () => store.snoozeUntil() };
-  context.subscriptions.push(log, repos, status, modes, scheduler, ci);
+  context.subscriptions.push(log, repos, status, modes, scheduler, ci, prs);
 
   const desktop = new ExtensionDesktopChannel(context);
   alerts.desktop = desktop;
@@ -63,6 +66,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   repos.onDidCheck((entry) => avatars.refresh(entry));
   avatars.onDidChange(() => team.refresh());
   ci.onDidChange(() => team.refresh());
+  prs.onDidChange(() => team.refresh());
+  team.prFor = (root) => prs.view(root);
+  team.prs = prs;
   ci.onPull = (root) => actions.pull(root);
   ci.onReveal = (root, sha) => team.reveal(root, sha);
   team.checksFor = (sha) => ci.badge(sha);
@@ -82,6 +88,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   cmd('pushpug.finishMerge', () => actions.finishMerge());
   cmd('pushpug.showTeam', () => actions.revealTeam());
   cmd('pushpug.push', (root?: string) => actions.push(typeof root === 'string' ? root : undefined));
+  const rootArg = (root?: unknown) => (typeof root === 'string' ? root : undefined);
+  cmd('pushpug.startTask', (root?: string) => prs.startTask(rootArg(root)));
+  cmd('pushpug.sendForReview', (root?: string) => prs.sendForReview(rootArg(root)));
+  cmd('pushpug.updateFromMain', (root?: string) => prs.updateFromMain(rootArg(root)));
+  cmd('pushpug.finishTask', (root?: string) => prs.finishTask(rootArg(root)));
+  cmd('pushpug.openPullRequest', (root?: string) => prs.openPullRequest(rootArg(root)));
   cmd('pushpug.undoMerge', (root?: string) => actions.undo(typeof root === 'string' ? root : undefined));
   cmd('pushpug.showChecks', (root?: string, sha?: string) => team.reveal(root, sha));
   cmd('pushpug.snooze', () => alerts.snooze());
@@ -152,6 +164,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         bgTimer = setTimeout(() => void syncBackground(false), 300);
       }
       if (e.affectsConfiguration('pushpug.avatars')) team.refresh();
+      if (e.affectsConfiguration('pushpug.pullRequests')) void repos.refreshAll({ fetch: false });
       if (e.affectsConfiguration('pushpug.theme')) {
         SetupWizard.postTheme(readSettings().theme);
         SettingsPage.postTheme(readSettings().theme);

@@ -17,6 +17,10 @@ export interface Settings {
   checksOnPass: boolean;
   /** Whose pushes to report checks for. */
   checksFor: 'all' | 'mine' | 'team';
+  /** Pull request workflow (start task, send for review, follow the pull request). */
+  prEnabled: boolean;
+  /** Tell me when a teammate opens a pull request. */
+  prNotifyTeam: boolean;
   quietEnabled: boolean;
   quietStart: string;
   quietEnd: string;
@@ -33,6 +37,8 @@ const SETTING_KEYS: Record<keyof Settings, string> = {
   avatarsEnabled: 'avatars',
   checksOnPass: 'actions.notifyOnPass',
   checksFor: 'actions.notifyFor',
+  prEnabled: 'pullRequests.enabled',
+  prNotifyTeam: 'pullRequests.notifyTeam',
   quietEnabled: 'quiet.enabled',
   quietStart: 'quiet.start',
   quietEnd: 'quiet.end',
@@ -51,6 +57,8 @@ export function readSettings(): Settings {
     avatarsEnabled: c.get<boolean>('avatars', true),
     checksOnPass: c.get<boolean>('actions.notifyOnPass', true),
     checksFor: c.get<'all' | 'mine' | 'team'>('actions.notifyFor', 'all'),
+    prEnabled: c.get<boolean>('pullRequests.enabled', true),
+    prNotifyTeam: c.get<boolean>('pullRequests.notifyTeam', true),
     quietEnabled: c.get<boolean>('quiet.enabled', false),
     quietStart: c.get<string>('quiet.start', '22:00'),
     quietEnd: c.get<string>('quiet.end', '08:00'),

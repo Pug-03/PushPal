@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Pull requests: **Start New Task** makes a branch from the latest main (uncommitted work comes along);
+  **Send for Review** pushes it and opens the pull request on GitHub (or sends new commits to the open one).
+  Commits made on main by mistake are moved to a task branch, and main is put back in line with the remote.
+  PushPug tells you when your pull request is merged (**Back to main**: switch, pull, delete the finished branch),
+  closed, or conflicts with main (**Get the latest main**), and when a teammate opens one. A card in My Team shows
+  the task and its pull request. A push refused by branch protection / rulesets is explained, with
+  **Send for review instead**. Settings `pullRequests.enabled`, `pullRequests.notifyTeam`
 - Renamed to PushPug (was PushPal); the mascot is now called Pug. The old background job is removed on first run;
   settings saved under `pushpal.*` need to be set again
 - GitHub checks: after your pushes and your teammates', PushPug follows the commit's check runs and statuses

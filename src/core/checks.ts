@@ -38,7 +38,7 @@ export interface ApiResponse {
   remaining?: number;
   resetAt?: number;
 }
-export type Requester = (path: string, opts?: { raw?: boolean }) => Promise<ApiResponse>;
+export type Requester = (path: string, opts?: { raw?: boolean; method?: 'GET' | 'POST'; body?: unknown }) => Promise<ApiResponse>;
 
 const PENDING_RUN = new Set(['queued', 'in_progress', 'waiting', 'requested', 'pending']);
 

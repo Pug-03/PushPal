@@ -1,12 +1,13 @@
 import * as vscode from 'vscode';
 import { join } from 'node:path';
-import { pull, finishMerge, type PullResult, type ErrorCode } from '../git/repo';
+import { pull, mergeRef, finishMerge, type PullResult, type ErrorCode } from '../git/repo';
 import { listFiles } from '../core/messages';
 import type { RepoEntry, RepoManager } from './repoManager';
 import type { Alerts } from './alerts';
 import { t, currentLang } from './l10n';
 import { explainGitError } from '../core/gitErrors';
 import { captureBeforePull, finishUndoRecord, undoMerge, safePush, isRejected, UNDO_WINDOW_MS, type PushResult } from '../git/safety';
+import { isProtectedRejection } from '../git/branches';
 
 /** Plain-language text for a git failure: the matching explanation + how to fix it. */
 export function errorText(code: ErrorCode, message: string): string {
@@ -27,6 +28,8 @@ export async function showGitError(message: string, code: ErrorCode = 'other'): 
 export class Actions {
   /** Webview / commands can ask to reveal the team view focused on one repo. */
   revealTeam: (root?: string) => void = () => undefined;
+  /** The branch only accepts pull requests: send the work for review instead. */
+  onSendForReview: (root: string) => Promise<unknown> = async () => undefined;
 
   constructor(
     private readonly repos: RepoManager,
@@ -71,6 +74,27 @@ export class Actions {
     await this.repos.refresh(target, { fetch: false });
     if (result.kind === 'ok' || result.kind === 'upToDate') this.alerts.clear(target);
     await this.report(entry, result);
+    return result;
+  }
+
+  /** Merge another ref (the latest main) into the current branch, reported like a pull. */
+  async mergeFrom(root: string, ref: string): Promise<PullResult | undefined> {
+    const entry = this.repos.get(root);
+    if (!entry || entry.phase === 'pulling') return undefined;
+    const result = await this.repos.withLock(root, async () => {
+      this.repos.setPhase(root, 'pulling');
+      try {
+        return await mergeRef(root, ref);
+      } finally {
+        this.repos.setPhase(root, 'idle');
+      }
+    });
+    this.log.appendLine(`[merge] ${entry.name} ← ${ref}: ${result.kind}`);
+    if (result.kind === 'autostashConflict') await this.repos.rememberAutostash(root, result.stashSha);
+    this.repos.setLastResult(root, result);
+    await this.repos.refresh(root, { fetch: false });
+    // Success is announced by the caller, which knows what comes next.
+    if (result.kind !== 'ok') await this.report(entry, result);
     return result;
   }
 
@@ -237,6 +261,9 @@ export class Actions {
       case 'rejected':
         await this.offerMergeThenPush(entry, t('push.rejected'), r.message);
         return;
+      case 'protected':
+        await this.offerSendForReview(entry, r.message);
+        return;
       case 'noUpstream':
         void vscode.window.showInformationMessage(t('pull.noUpstream'));
         return;
@@ -265,11 +292,23 @@ export class Actions {
     return true;
   }
 
+  /** The branch only accepts pull requests: offer to send the commits for review instead. */
+  async offerSendForReview(entry: RepoEntry, full: string): Promise<void> {
+    const send = t('pr.btn.sendInstead');
+    const choice = await vscode.window.showWarningMessage(t('push.protected'), send, t('btn.fullMessage'));
+    if (choice === send) await this.onSendForReview(entry.root);
+    else if (choice === t('btn.fullMessage')) await vscode.window.showInformationMessage(t('gerr.fullTitle'), { modal: true, detail: full });
+  }
+
   /** For VS Code's own Push / Sync: explain a rejected push and offer to fix it. */
   async handlePushError(root: string, stderr: string): Promise<boolean> {
-    if (!isRejected(stderr)) return false;
     const entry = this.repos.get(root);
     if (!entry) return false;
+    if (isProtectedRejection(stderr)) {
+      void this.offerSendForReview(entry, stderr);
+      return true;
+    }
+    if (!isRejected(stderr)) return false;
     void this.offerMergeThenPush(entry, t('push.rejected'), stderr);
     return true;
   }

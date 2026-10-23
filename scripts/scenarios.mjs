@@ -143,6 +143,11 @@ const views = {
   checks: { repos: [repo({ recent: withChecks(recent.map((r) => ({ ...r, isNew: false }))) })], selected: 0 },
   undo: { repos: [repo({ undoLeft: 512, recent: withChecks(recent.map((r) => ({ ...r, isNew: false }))) })], selected: 0 },
   noUpstream: { repos: [repo({ state: 'noUpstream', upstream: null, branch: 'feature/cart', recent: [] })], selected: 0 },
+  // Pull request workflow (PullRequests.view()).
+  prUnsent: { repos: [repo({ ahead: 2, pr: { base: 'main', branch: 'main', onBase: true, unpushed: 2, github: true, pr: null } })], selected: 0 },
+  prOpen: { repos: [repo({ branch: 'task/fix-login', upstream: 'origin/task/fix-login', recent: [], pr: { base: 'main', branch: 'task/fix-login', onBase: false, unpushed: 3, github: true, pr: { number: 42, title: 'แก้หน้า login ให้รับรหัสผ่านภาษาไทย', url: 'https://github.com/shop/web/pull/42', status: 'open' } } })], selected: 0 },
+  prConflict: { repos: [repo({ branch: 'task/fix-login', upstream: 'origin/task/fix-login', recent: [], pr: { base: 'main', branch: 'task/fix-login', onBase: false, unpushed: 3, github: true, pr: { number: 42, title: 'แก้หน้า login ให้รับรหัสผ่านภาษาไทย', url: 'https://github.com/shop/web/pull/42', status: 'conflict' } } })], selected: 0 },
+  prMerged: { repos: [repo({ branch: 'task/fix-login', upstream: 'origin/task/fix-login', recent: [], pr: { base: 'main', branch: 'task/fix-login', onBase: false, unpushed: 3, github: true, pr: { number: 42, title: 'แก้หน้า login ให้รับรหัสผ่านภาษาไทย', url: 'https://github.com/shop/web/pull/42', status: 'merged' } } })], selected: 0 },
   error: { repos: [repo({ state: 'error', error: { code: 'network', text: 'ตอนนี้ติดต่อ remote ไม่ได้ (เน็ตหลุดหรือเปล่า?) เดี๋ยว PushPug ลองใหม่ให้เอง' } })], selected: 0 },
 };
 
@@ -170,6 +175,7 @@ const EN = {
   'อัปเดต README วิธีรันโปรเจกต์': 'Update README: how to run the project',
   'ตั้งค่า ESLint + Prettier': 'Set up ESLint + Prettier',
   'นก ศรีสุข': 'Nok Srisuk',
+  'แก้หน้า login ให้รับรหัสผ่านภาษาไทย': 'Login page accepts Thai passwords',
   'ตอนนี้เช็กทุก 1 นาที เพราะแบตเหลือ 15%': 'Checking every 1 min right now because the battery is at 15%',
   'เช็กทุก 30 วิ': 'Checking every 30 s',
   'ตอนนี้ติดต่อ remote ไม่ได้ (เน็ตหลุดหรือเปล่า?) เดี๋ยว PushPug ลองใหม่ให้เอง': "Can't reach the remote right now. Check your internet connection; PushPug will retry by itself.",
@@ -182,17 +188,17 @@ const english = (sc) => {
   if (out.view) out.view = JSON.parse(JSON.stringify(out.view));
   return out;
 };
-const README_SHOTS = ['team-upToDate', 'team-behind', 'team-pulling', 'team-success', 'team-undo', 'team-conflictMerge', 'team-conflictAutostash', 'team-mergeReady', 'team-checks', 'team-error', 'team-noUpstream', 'team-noRepo', 'wizard-1-welcome', 'wizard-5-frequency', 'wizard-6-github', 'settings-frequency', 'settings-notify'];
+const README_SHOTS = ['team-upToDate', 'team-behind', 'team-pulling', 'team-success', 'team-undo', 'team-conflictMerge', 'team-conflictAutostash', 'team-mergeReady', 'team-checks', 'team-error', 'team-noUpstream', 'team-noRepo', 'team-prUnsent', 'team-prOpen', 'team-prConflict', 'team-prMerged', 'wizard-1-welcome', 'wizard-5-frequency', 'wizard-6-github', 'settings-frequency', 'settings-notify'];
 const readme = [...wizard, ...settingsPage, ...team]
   .filter((sc) => sc.lang === 'th' && README_SHOTS.some((n) => sc.name === `${n}-light` || sc.name === `${n}-dark`))
   .map((sc) => ({ ...english(sc), name: `en/${sc.name}` }))
   .map((sc) => {
     // README crops: just the part of My Team that matters for that situation.
-    const crop = { upToDate: 470, behind: 860, pulling: 470, success: 470, undo: 640, conflictMerge: 1000, conflictAutostash: 980, mergeReady: 440, checks: 760, error: 500, noUpstream: 470, noRepo: 560 };
+    const crop = { upToDate: 470, behind: 860, pulling: 470, success: 470, undo: 640, conflictMerge: 1000, conflictAutostash: 980, mergeReady: 440, checks: 760, error: 500, noUpstream: 470, noRepo: 560, prUnsent: 260, prOpen: 250, prConflict: 250, prMerged: 250 };
     const key = sc.name.replace(/^en\/team-/, '').replace(/-(light|dark)$/, '');
     if (sc.kind !== 'team' || !crop[key]) return sc;
     const out = { ...sc, height: crop[key] };
-    if (key === 'checks') out.script = (sc.script || '') + `setTimeout(() => { document.getElementById('hero').style.display = 'none'; }, 50);`;
+    if (key === 'checks' || key.startsWith('pr')) out.script = (sc.script || '') + `setTimeout(() => { document.getElementById('hero').style.display = 'none'; }, 50);`;
     return out;
   });
 
