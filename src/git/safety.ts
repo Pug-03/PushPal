@@ -3,6 +3,7 @@
 //   - push only after checking the remote, and explain a rejected push
 import { createHash } from 'node:crypto';
 import { runGit, splitZ, type GitOptions } from './exec';
+import { isProtectedRejection } from './branches';
 import { currentBranch, fetchUpstream, revParse, commitsBetween, upstreamOf, type Commit } from './repo';
 
 export const UNDO_WINDOW_MS = 10 * 60_000;
@@ -100,6 +101,8 @@ export type PushResult =
   | { kind: 'nothing' }
   | { kind: 'behind'; behind: number; incoming: Commit[] }
   | { kind: 'rejected'; message: string }
+  /** The branch only accepts pull requests (GitHub branch protection / rulesets). */
+  | { kind: 'protected'; message: string }
   | { kind: 'noUpstream' }
   | { kind: 'detached' }
   | { kind: 'error'; message: string };
@@ -123,6 +126,7 @@ export async function safePush(root: string, opts: GitOptions = {}): Promise<Pus
   const r = await runGit(root, ['push'], { timeoutMs: 120_000, ...opts });
   if (r.code === 0) return { kind: 'ok', pushed: ahead };
   const out = `${r.stdout}\n${r.stderr}`.trim();
+  if (isProtectedRejection(out)) return { kind: 'protected', message: out };
   if (isRejected(out)) return { kind: 'rejected', message: out };
   return { kind: 'error', message: out };
 }

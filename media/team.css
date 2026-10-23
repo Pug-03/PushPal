@@ -814,3 +814,81 @@
   display: inline-flex;
   gap: 2px;
 }
+
+/* ---------- task branch and its pull request ---------- */
+.pr-card {
+  margin-bottom: var(--pp-s3);
+}
+.pr-card.ok {
+  background: var(--pp-success-soft);
+  border-color: color-mix(in srgb, var(--pp-success) 35%, transparent);
+}
+.pr-card .alert-head strong {
+  overflow-wrap: anywhere;
+}
+.pr-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pr-status .state-dot {
+  flex: none;
+  background: var(--pp-accent);
+}
+.pr-status[data-status='none'] .state-dot,
+.pr-status[data-status='draft'] .state-dot,
+.pr-status[data-status='closed'] .state-dot {
+  background: var(--pp-text-muted);
+}
+.pr-status[data-status='conflict'] .state-dot {
+  background: var(--pp-warn);
+}
+.pr-status[data-status='merged'] .state-dot {
+  background: var(--pp-success);
+}
+.alert-card p.pr-title {
+  color: var(--pp-text-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.pr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pp-s2);
+  margin-top: var(--pp-s3);
+}
+.pr-row {
+  display: flex;
+  align-items: center;
+  gap: var(--pp-s3);
+  margin-bottom: var(--pp-s3);
+  padding: var(--pp-s2) var(--pp-s3);
+  border-radius: var(--pp-r-md);
+  border: 1px dashed var(--pp-border);
+}
+.pr-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  font-size: 12px;
+}
+.pr-text b {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pr-text span {
+  color: var(--pp-text-muted);
+  font-size: 11px;
+}
+.pr-actions .btn-primary {
+  background: var(--pp-accent);
+  border-color: transparent;
+}
+.pr-actions .btn-primary:hover {
+  background: var(--pp-accent-hover);
+}
+.pr-card:not(.warn) .alert-head {
+  color: var(--pp-text);
+}

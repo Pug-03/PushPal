@@ -124,6 +124,36 @@
         "title": "%cmd.unsnooze%",
         "category": "PushPug",
         "icon": "$(bell)"
+      },
+      {
+        "command": "pushpug.startTask",
+        "title": "%cmd.startTask%",
+        "category": "PushPug",
+        "icon": "$(git-branch)"
+      },
+      {
+        "command": "pushpug.sendForReview",
+        "title": "%cmd.sendForReview%",
+        "category": "PushPug",
+        "icon": "$(git-pull-request-create)"
+      },
+      {
+        "command": "pushpug.updateFromMain",
+        "title": "%cmd.updateFromMain%",
+        "category": "PushPug",
+        "icon": "$(git-merge)"
+      },
+      {
+        "command": "pushpug.finishTask",
+        "title": "%cmd.finishTask%",
+        "category": "PushPug",
+        "icon": "$(check)"
+      },
+      {
+        "command": "pushpug.openPullRequest",
+        "title": "%cmd.openPullRequest%",
+        "category": "PushPug",
+        "icon": "$(git-pull-request)"
       }
     ],
     "menus": {
@@ -155,6 +185,16 @@
           "command": "pushpug.push",
           "when": "scmProvider == git",
           "group": "navigation@0"
+        },
+        {
+          "command": "pushpug.sendForReview",
+          "when": "scmProvider == git && config.pushpug.pullRequests.enabled",
+          "group": "navigation@1"
+        },
+        {
+          "command": "pushpug.startTask",
+          "when": "scmProvider == git && config.pushpug.pullRequests.enabled",
+          "group": "pushpug@1"
         }
       ]
     },
@@ -420,6 +460,18 @@
           "patternErrorMessage": "HH:MM",
           "markdownDescription": "%cfg.quiet.end%",
           "order": 29
+        },
+        "pushpug.pullRequests.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "%cfg.pullRequests.enabled%",
+          "order": 30
+        },
+        "pushpug.pullRequests.notifyTeam": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "%cfg.pullRequests.notifyTeam%",
+          "order": 31
         }
       }
     }

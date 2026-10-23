@@ -54,5 +54,12 @@
   "cfg.actions.for.team": "Only teammates' pushes",
   "cfg.quiet.enabled": "Do not disturb between `#pushpug.quiet.start#` and `#pushpug.quiet.end#`: no pop-ups or desktop notifications (the status bar keeps updating).",
   "cfg.quiet.start": "Start of the quiet hours (HH:MM).",
-  "cfg.quiet.end": "End of the quiet hours (HH:MM). Can be earlier than the start for overnight."
+  "cfg.quiet.end": "End of the quiet hours (HH:MM). Can be earlier than the start for overnight.",
+  "cmd.startTask": "Start New Task · เริ่มงานใหม่",
+  "cmd.sendForReview": "Send for Review (Pull Request) · ส่งงานให้ทีมดู",
+  "cmd.updateFromMain": "Get the Latest Main into My Branch · ดึง main ล่าสุดเข้ามา",
+  "cmd.finishTask": "Back to Main (Task Done) · กลับไป main",
+  "cmd.openPullRequest": "Open My Pull Request · เปิด pull request",
+  "cfg.pullRequests.enabled": "Pull request workflow: **Start New Task** makes a branch from the latest main, **Send for Review** pushes it and opens the pull request, and PushPug tells you when it's merged, closed or conflicts with main. Uses VS Code's GitHub sign-in.",
+  "cfg.pullRequests.notifyTeam": "Tell me when a teammate opens a pull request."
 }

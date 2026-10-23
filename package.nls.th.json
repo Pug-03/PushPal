@@ -54,5 +54,12 @@
   "cfg.actions.for.team": "เฉพาะของเพื่อน",
   "cfg.quiet.enabled": "ห้ามรบกวนช่วง `#pushpug.quiet.start#` ถึง `#pushpug.quiet.end#` ไม่เด้งแจ้งเตือน (แถบสถานะยังอัปเดตปกติ)",
   "cfg.quiet.start": "เวลาเริ่มห้ามรบกวน (HH:MM)",
-  "cfg.quiet.end": "เวลาสิ้นสุดห้ามรบกวน (HH:MM) ตั้งให้น้อยกว่าเวลาเริ่มได้ถ้าข้ามคืน"
+  "cfg.quiet.end": "เวลาสิ้นสุดห้ามรบกวน (HH:MM) ตั้งให้น้อยกว่าเวลาเริ่มได้ถ้าข้ามคืน",
+  "cmd.startTask": "เริ่มงานใหม่",
+  "cmd.sendForReview": "ส่งงานให้ทีมดู (pull request)",
+  "cmd.updateFromMain": "ดึง main ล่าสุดเข้า branch",
+  "cmd.finishTask": "กลับไป main (งานเสร็จแล้ว)",
+  "cmd.openPullRequest": "เปิด pull request",
+  "cfg.pullRequests.enabled": "ทำงานแบบ pull request: **เริ่มงานใหม่** แยก branch จาก main ล่าสุด **ส่งงานให้ทีมดู** push แล้วเปิด pull request ให้ และ PushPug จะบอกเมื่อถูก merge ถูกปิด หรือชนกับ main ใช้ระบบล็อกอิน GitHub ของ VS Code",
+  "cfg.pullRequests.notifyTeam": "บอกเมื่อเพื่อนเปิด pull request ใหม่"
 }

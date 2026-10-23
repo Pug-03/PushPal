@@ -500,3 +500,49 @@ Newest sections are appended at the bottom of each topic.
   D macOS, E Windows, F Linux, G wizard, H open project, update / uninstall) with no emoji. Its pictures are
   drawings, not screenshots, so Windows can be shown from a Mac and they can be redrawn when the UI changes
   (`node scripts/guide-illustrations.mjs` → `docs/guide/`); red numbered call-outs match the numbered steps.
+
+## 20. Pull requests (2026-10-23)
+
+- **Why:** PushPug's first answer to "everything conflicts" was to warn early on a shared `main`. Most teams avoid the
+  problem differently: each task on its own branch, merged through a pull request. PushPug now supports that flow
+  for beginners without them having to learn branch commands.
+- **Git side** (`src/git/branches.ts`, no `vscode`, tested with real repos):
+  - The base is the remote's default branch: `refs/remotes/<remote>/HEAD`, else `main` / `master`. The remote is the
+    current branch's remote, else `origin`, else the first one.
+  - **Start New Task**: fetch, then `git checkout --no-track -b <name> <remote>/<main>`. From the *remote* main, so a
+    stale local main doesn't matter; `--no-track` so the first push goes to its own branch, not to main. Uncommitted
+    work comes along; if git refuses (it would be overwritten) nothing changes and the files are listed.
+  - Branch names come from a short description (`task/แก้หน้า-login`): letters, marks and digits of any script are
+    kept, everything else becomes `-`, max 40 chars; `git check-ref-format --branch` has the final word; a taken
+    name gets `-2`, `-3`…
+  - **Commits on main by mistake** (or refused by a ruleset): `git checkout -b <task>` at HEAD, then
+    `git branch -f main <remote>/main`. Safe because the commits are on the new branch and main isn't checked out.
+  - **Back to main**: checkout main, PushPug's normal pull (autostash, undo), then delete the task branch only if
+    its tip is the commit the pull request merged (squash merges leave it "unmerged" for git) or is part of HEAD.
+    `git branch -d` alone isn't used: it accepts any branch that is merged into its *upstream*, i.e. any pushed one.
+  - **Get the latest main** = `git merge --autostash --no-edit <remote>/<main>`, reported exactly like a pull
+    (same conflict detection and Merge Editor flow).
+  - A push refused by branch protection / rulesets (`GH006`, `GH013`, "Changes must be made through a pull request")
+    is its own result (`protected`) and error explanation, checked before the generic "rejected". It's offered
+    as **Send for review instead**, for PushPug's push and for VS Code's own Push / Sync.
+- **GitHub side** (`src/core/pullRequests.ts`, tested against a fake GitHub): the pull request of a branch is
+  `GET /pulls?head=owner:branch&state=all` (an open one wins over older closed ones); conflict state needs the
+  single-pull endpoint (`mergeable_state: dirty`), asked only for open pull requests. Creating: `POST /pulls`;
+  `422 already exists` → the existing one; `422 No commits between` → "nothing to send". The requester now sends
+  POST bodies and keeps GitHub's error message. Same VS Code GitHub sign-in as checks (`repo` scope); without it,
+  or when creating fails, GitHub's compare page opens so the user can press "Create pull request" there.
+  Non-GitHub remotes: the branch is pushed and the user is told to open the pull request on their host.
+- **Following it** (`src/ext/pullRequests.ts`): after a repo check, the current branch's pull request is looked up at
+  most once a minute (right away after PushPug's own actions and when My Team becomes visible); teammates' new
+  pull requests at most every 2 minutes. Announcements go through `Alerts.announce` (quiet hours, desktop when
+  unfocused) and happen once each, remembered in `globalState`: merged and closed per pull request, conflict per
+  pull request *and* head commit (so it comes back if a later push conflicts again). The first look at a repo only
+  records the open pull requests, so installing PushPug doesn't announce every old one.
+- **The PR title** is the description typed in Start New Task (kept in `workspaceState` per branch), else the only
+  commit's subject, else the branch name made readable. The body lists the commit subjects, oldest first.
+- **My Team** gets one card above the timeline: on main with unsent commits (warning + Send for review), on main
+  otherwise (a quiet dashed row with Start New Task), or on a task branch (status dot + the action that fits:
+  Send / Open / Get the latest main / Back to main). `.btn-sm` overrides the primary colour, so the card restores it.
+- Not done: reviews and comments (approved / changes requested), pull requests from forks, choosing a different base
+  branch, draft pull requests from PushPug, and the background worker (pull request alerts need VS Code open).
+

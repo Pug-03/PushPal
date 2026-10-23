@@ -23,7 +23,7 @@ async function steps(log) {
   await ext.activate();
   log.push('activated');
   const cmds = await vscode.commands.getCommands(true);
-  for (const c of ['pushpug.pull', 'pushpug.checkNow', 'pushpug.setup', 'pushpug.showTeam', 'pushpug.testNotification', 'pushpug.switchMode', 'pushpug.openSettings', 'pushpug.push', 'pushpug.undoMerge', 'pushpug.snooze']) assert(cmds.includes(c), c);
+  for (const c of ['pushpug.pull', 'pushpug.checkNow', 'pushpug.setup', 'pushpug.showTeam', 'pushpug.testNotification', 'pushpug.switchMode', 'pushpug.openSettings', 'pushpug.push', 'pushpug.undoMerge', 'pushpug.snooze', 'pushpug.startTask', 'pushpug.sendForReview', 'pushpug.updateFromMain', 'pushpug.finishTask', 'pushpug.openPullRequest']) assert(cmds.includes(c), c);
   log.push('commands ok');
 
   await sleep(1500);

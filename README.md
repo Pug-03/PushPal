@@ -41,6 +41,8 @@ to fix it. It's made for people who are new to Git, and for everyone who'd rathe
 - **Conflicts and Git errors explained** — in plain words, with the fix
 - **GitHub test results for every commit** — yours and your teammates'
 - **Push without surprises** — PushPug checks the remote first
+- **Pull requests made easy** — start a task on its own branch, send it for review in one click, and hear when
+  it's merged or conflicts with main
 - **Fast or frugal** — from every 10 s to battery saver, plus do-not-disturb hours
 
 ---
@@ -597,6 +599,88 @@ remote before pushing. VS Code's own **Push** / **Sync** get the same help when 
 
 </td>
 </tr>
+<tr><td colspan="2"><h3>Working with pull requests</h3></td></tr>
+<tr>
+<td valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-prOpen-dark.png">
+  <img src="docs/screenshots/en/team-prOpen-light.png" width="230" alt="Task branch with an open pull request">
+</picture>
+</td>
+<td valign="top">
+
+**What it means:** many teams don't push to `main` directly. Each task gets its own branch, and the work goes
+into `main` through a pull request that the team can look at first. That way two people's work doesn't collide
+on `main`.
+
+**What to do:**
+1. Run **PushPug: Start New Task** (also in the Source Control `…` menu, or the button in My Team) and type
+   a few words about the task. PushPug makes a branch from the latest `main`; uncommitted work comes along.
+2. Work and commit as usual.
+3. Press **Send for review**. PushPug pushes the branch and opens the pull request on GitHub (using VS Code's
+   GitHub sign-in). Pressing it again later sends your new commits to the same pull request.
+
+PushPug also tells you when a teammate opens a pull request.
+
+</td>
+</tr>
+
+<tr><td colspan="2"><h3>Committed on main by mistake</h3></td></tr>
+<tr>
+<td valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-prUnsent-dark.png">
+  <img src="docs/screenshots/en/team-prUnsent-light.png" width="230" alt="Two commits on main not sent yet">
+</picture>
+</td>
+<td valign="top">
+
+**What it means:** you have commits on `main` that aren't pushed. If `main` only accepts pull requests,
+pushing them is refused (GitHub says *"Changes must be made through a pull request"*).
+
+**What to do:** press **Send for review** (or **Send for review instead** on the push error). PushPug moves
+the commits to a new branch, puts your `main` back in line with the team's, and opens the pull request.
+Nothing is lost.
+
+</td>
+</tr>
+
+<tr><td colspan="2"><h3>Your pull request conflicts with main</h3></td></tr>
+<tr>
+<td valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-prConflict-dark.png">
+  <img src="docs/screenshots/en/team-prConflict-light.png" width="230" alt="Pull request conflicts with main">
+</picture>
+</td>
+<td valign="top">
+
+**What it means:** someone changed the same lines on `main` after you started.
+
+**What to do:** press **Get the latest main**. PushPug merges `main` into your branch; fix any conflicts the
+usual way, then **Send new commits** and the pull request is fixed.
+
+</td>
+</tr>
+
+<tr><td colspan="2"><h3>Your pull request was merged</h3></td></tr>
+<tr>
+<td valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-prMerged-dark.png">
+  <img src="docs/screenshots/en/team-prMerged-light.png" width="230" alt="Pull request merged">
+</picture>
+</td>
+<td valign="top">
+
+**What it means:** your work is in `main`. 🎉
+
+**What to do:** press **Back to main**. PushPug switches to `main`, pulls the latest code, and deletes the
+finished branch (only if every commit on it is merged, so nothing gets lost). Then start your next task.
+
+</td>
+</tr>
+
 </table>
 
 ---
@@ -651,14 +735,16 @@ notifications meanwhile; the status bar keeps updating and anything you missed i
 | `pushpug.actions.notifyOnPass` | on | also tell me when tests pass |
 | `pushpug.actions.notifyFor` | `all` | `all`, `mine`, `team` |
 | `pushpug.avatars` | on | commit authors' GitHub profile pictures |
+| `pushpug.pullRequests.enabled` | on | Start New Task / Send for Review, pull request alerts |
+| `pushpug.pullRequests.notifyTeam` | on | tell me when a teammate opens a pull request |
 | `pushpug.language` / `pushpug.theme` | auto · system | Thai or English; light, dark or match VS Code |
 
 ## Privacy
 
 - **No telemetry.** Nothing about you or your code is collected.
 - Your normal `git fetch` / `pull` / `push` go to your own remote.
-- For **github.com** projects only, and only if enabled: test results and profile pictures are read from
-  GitHub's API with **VS Code's built-in GitHub sign-in**. PushPug never asks you to paste a token and never
+- For **github.com** projects only, and only if enabled: test results, profile pictures and pull requests
+  go through GitHub's API with **VS Code's built-in GitHub sign-in**. PushPug never asks you to paste a token and never
   saves one. While tests are running it asks every 20–30 s, stops when they're done, and slows down by itself
   near GitHub's rate limit.
 - The optional background task only runs `git fetch` (and `gh api` for test results if you use the GitHub

@@ -36,21 +36,25 @@ async function session(interactive: boolean): Promise<vscode.AuthenticationSessi
   }
 }
 
-function fetchRequester(token: string): Requester {
+export function fetchRequester(token: string): Requester {
   return async (path, opts) => {
     const res = await fetch(`https://api.github.com${path}`, {
+      method: opts?.method ?? 'GET',
       headers: {
         Accept: 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
         'User-Agent': 'PushPug-VSCode',
         Authorization: `Bearer ${token}`,
+        ...(opts?.body === undefined ? {} : { 'Content-Type': 'application/json' }),
       },
+      body: opts?.body === undefined ? undefined : JSON.stringify(opts.body),
       signal: AbortSignal.timeout(20_000),
     });
     const remaining = res.headers.get('x-ratelimit-remaining');
     const reset = res.headers.get('x-ratelimit-reset');
     const base = { status: res.status, remaining: remaining === null ? undefined : Number(remaining), resetAt: reset === null ? undefined : Number(reset) * 1000 };
-    if (!res.ok) return base;
+    // Error bodies carry GitHub's reason (e.g. "A pull request already exists").
+    if (!res.ok) return { ...base, json: await res.json().catch(() => undefined) };
     return opts?.raw ? { ...base, text: await res.text() } : { ...base, json: await res.json() };
   };
 }
