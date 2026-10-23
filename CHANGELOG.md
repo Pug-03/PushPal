@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.2 — 2026-10-23
 
 - Activity Bar icon is now a paw print (clearer at small sizes than the pug head)
 - Pull requests: **Start New Task** makes a branch from the latest main (uncommitted work comes along);
