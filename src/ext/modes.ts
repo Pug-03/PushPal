@@ -4,7 +4,7 @@ import { FREQUENCY_SETTING_IDS, readFrequency, readMode, readRawFrequency, setFi
 import { t } from './l10n';
 
 /**
- * Keeps `pushpal.mode` and the individual values in step, in both directions:
+ * Keeps `pushpug.mode` and the individual values in step, in both directions:
  *  - picking a preset writes its values into the settings,
  *  - editing any value by hand (Settings UI, settings.json, the settings page)
  *    turns the mode into "custom",
@@ -64,7 +64,7 @@ export class ModeController implements vscode.Disposable {
   }
 
   private async onConfig(e: vscode.ConfigurationChangeEvent): Promise<void> {
-    const modeChanged = e.affectsConfiguration('pushpal.mode');
+    const modeChanged = e.affectsConfiguration('pushpug.mode');
     const valuesChanged = FREQUENCY_SETTING_IDS.some((id) => e.affectsConfiguration(id));
     if (!modeChanged && !valuesChanged) return;
     if (this.applying > 0) return;

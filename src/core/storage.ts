@@ -21,7 +21,7 @@ export interface WorkerConfig {
   version: 1;
   lang: Lang;
   repos: string[];
-  /** e.g. "pushpal.pushpal" — used to build vscode:// links. */
+  /** e.g. "pushpug.pushpug" — used to build vscode:// links. */
   extensionId: string;
   /** "vscode", "vscode-insiders", "cursor"… */
   uriScheme: string;
@@ -52,7 +52,7 @@ export function repoKey(root: string): string {
 
 /** Stable id for one repo, used as notification group / toast tag. */
 export function repoGroupId(root: string): string {
-  return 'pushpal-' + createHash('sha1').update(repoKey(root)).digest('hex').slice(0, 12);
+  return 'pushpug-' + createHash('sha1').update(repoKey(root)).digest('hex').slice(0, 12);
 }
 
 export function readJson<T>(file: string, fallback: T): T {

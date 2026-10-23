@@ -64,7 +64,7 @@ type FromPage =
   | { type: 'snooze' }
   | { type: 'unsnooze' };
 
-/** "ตั้งค่า PushPal / PushPal Settings": one page with every setting, live both ways. */
+/** "ตั้งค่า PushPug / PushPug Settings": one page with every setting, live both ways. */
 export class SettingsPage {
   private static current: SettingsPage | undefined;
   private readonly disposables: vscode.Disposable[] = [];
@@ -96,7 +96,7 @@ export class SettingsPage {
     private readonly section: string | undefined,
   ) {
     const lang = currentLang();
-    this.panel = vscode.window.createWebviewPanel('pushpal.settings', title(lang), vscode.ViewColumn.Active, {
+    this.panel = vscode.window.createWebviewPanel('pushpug.settings', title(lang), vscode.ViewColumn.Active, {
       enableScripts: true,
       retainContextWhenHidden: true,
       localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media')],
@@ -107,8 +107,8 @@ export class SettingsPage {
     this.panel.webview.onDidReceiveMessage((m: FromPage) => void this.onMessage(m), null, this.disposables);
     this.disposables.push(
       vscode.workspace.onDidChangeConfiguration((e) => {
-        if (!e.affectsConfiguration('pushpal')) return;
-        if (e.affectsConfiguration('pushpal.language')) return this.render(currentLang());
+        if (!e.affectsConfiguration('pushpug')) return;
+        if (e.affectsConfiguration('pushpug.language')) return this.render(currentLang());
         this.schedulePost();
       }),
       deps.modes.onDidChange(() => this.schedulePost()),
@@ -169,10 +169,10 @@ export class SettingsPage {
         await this.deps.modes.init();
         return this.post({ notice: t('settings.resetDone') });
       case 'snooze':
-        await vscode.commands.executeCommand('pushpal.snooze');
+        await vscode.commands.executeCommand('pushpug.snooze');
         return this.post();
       case 'unsnooze':
-        await vscode.commands.executeCommand('pushpal.unsnooze');
+        await vscode.commands.executeCommand('pushpug.unsnooze');
         return this.post();
       case 'openVsSettings':
         await vscode.commands.executeCommand('workbench.action.openSettings', '@ext:' + this.context.extension.id);
@@ -201,5 +201,5 @@ export class SettingsPage {
 }
 
 function title(lang: Lang): string {
-  return lang === 'th' ? 'ตั้งค่า PushPal' : 'PushPal Settings';
+  return lang === 'th' ? 'ตั้งค่า PushPug' : 'PushPug Settings';
 }

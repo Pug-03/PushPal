@@ -14,12 +14,12 @@ interface Pending {
 const PENDING_MAX_AGE_MS = 3 * 60_000;
 
 /**
- * Handles vscode://<publisher>.pushpal/<action>?repo=<path> links coming from
+ * Handles vscode://<publisher>.pushpug/<action>?repo=<path> links coming from
  * desktop notifications (Windows toast buttons, the background worker).
  * If the repo isn't open in this window, the folder is opened and the action
  * is handed to that window through a small "pending" file.
  */
-export class PushPalUriHandler implements vscode.UriHandler {
+export class PushPugUriHandler implements vscode.UriHandler {
   constructor(
     private readonly store: SharedStore,
     private readonly repos: RepoManager,

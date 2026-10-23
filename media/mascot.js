@@ -1,12 +1,12 @@
-// "Pal", PushPal's pug — a flat-style head whose expressions tell the story.
+// "Pal", PushPug's pug — a flat-style head whose expressions tell the story.
 // Every part is its own layer (ears, brows, eyes, eyelids, mouth shapes,
 // blush, props), animated with GSAP from its real pivot. Without GSAP, or
 // with reduced motion, each expression is still drawn correctly.
 //
-//   PushPalMascot.svg({ pose, size, label, enter })  → markup
-//   PushPalMascot.setPose(svgEl, pose)                → animate to a pose
-//   PushPalMascot.confetti(hostEl, count)
-//   PushPalIconHead(size)                            → simplified head for icons
+//   PushPugMascot.svg({ pose, size, label, enter })  → markup
+//   PushPugMascot.setPose(svgEl, pose)                → animate to a pose
+//   PushPugMascot.confetti(hostEl, count)
+//   PushPugIconHead(size)                            → simplified head for icons
 (function () {
   'use strict';
 
@@ -133,7 +133,7 @@
     var pose = o.pose || 'sit';
     var u = 'pal' + ++uid + '-';
     var s = [];
-    s.push('<svg class="mascot pug' + (o.enter ? ' enter' : '') + '" data-pose="' + pose + '" viewBox="0 -24 200 220" width="' + size + '" height="' + Math.round(size * 1.1) + '" role="img" aria-label="' + (o.label || 'PushPal') + '">');
+    s.push('<svg class="mascot pug' + (o.enter ? ' enter' : '') + '" data-pose="' + pose + '" viewBox="0 -24 200 220" width="' + size + '" height="' + Math.round(size * 1.1) + '" role="img" aria-label="' + (o.label || 'PushPug') + '">');
     s.push('<defs><clipPath id="' + u + 'head"><path d="' + P.head + '"/></clipPath><clipPath id="' + u + 'muzzle"><path d="' + P.muzzle + '"/></clipPath></defs>');
     s.push('<path class="p-shadow" d="' + oval(100, 184, 46, 5) + '" fill="#2a1a20" opacity=".14"/>');
     s.push('<g class="p-root"><g class="p-poke"><g class="p-spin"><g class="p-tilt">');
@@ -182,7 +182,7 @@
     var tiny = size <= 20;
     var w = tiny ? 6 : W;
     var s = [];
-    s.push('<svg viewBox="16 26 168 144" width="' + size + '" height="' + size + '" role="img" aria-label="' + (opts.label || 'PushPal') + '">');
+    s.push('<svg viewBox="16 26 168 144" width="' + size + '" height="' + size + '" role="img" aria-label="' + (opts.label || 'PushPug') + '">');
     s.push('<defs><clipPath id="' + u + 'h"><path d="' + P.head + '"/></clipPath><clipPath id="' + u + 'm"><path d="' + P.muzzle + '"/></clipPath></defs>');
     s.push(shape(P.earL.rest, K.dark, w) + shape(P.earR.rest, K.dark, w) + shape(P.head, K.fur, w));
     s.push('<g clip-path="url(#' + u + 'h)">' + flat(P.headShade, K.furShade) + (tiny ? '' : flat(P.headLight, K.furLight) + flat(oval(54, 124, 8, 4.6), K.blush, ' opacity=".5"') + flat(oval(146, 124, 8, 4.6), K.blush, ' opacity=".5"')) + '</g>');
@@ -722,6 +722,6 @@
     setTimeout(function () { layer.remove(); }, 1800);
   }
 
-  window.PushPalIconHead = iconSvg;
-  window.PushPalMascot = { svg: mascotSvg, setPose: setPose, confetti: confetti, mount: mountAll, poses: Object.keys(FACES), colors: K };
+  window.PushPugIconHead = iconSvg;
+  window.PushPugMascot = { svg: mascotSvg, setPose: setPose, confetti: confetti, mount: mountAll, poses: Object.keys(FACES), colors: K };
 })();

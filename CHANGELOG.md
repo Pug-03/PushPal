@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- GitHub checks: after your pushes and your teammates', PushPal follows the commit's check runs and statuses
+- GitHub checks: after your pushes and your teammates', PushPug follows the commit's check runs and statuses
   and tells you how it went ("✅ All checks passed (4/4)" / "❌ Checks failed: 1 of 4 — Test (ubuntu-latest)").
   A teammate's failing push says "maybe don't pull it yet" (See what broke / Pull anyway / Later); you're told
   when it's fixed. Status bar ✓ / ✗ / ⏳; a badge on every commit in My Team that opens the list of checks,
@@ -15,7 +15,7 @@
 - Git errors explained in plain language with the fix, plus "Show full message"
 - Do-not-disturb hours and "Mute 1 hour" (status bar keeps updating; missed alerts come afterwards)
 - README rewritten (English) with install steps for macOS and Windows and a how-to section
-- My Team timeline shows commit authors' GitHub profile pictures (initials when there's none); setting `pushpal.avatars`
+- My Team timeline shows commit authors' GitHub profile pictures (initials when there's none); setting `pushpug.avatars`
 - New mascot: Pal is a flat-style pug head whose expressions follow what's going on — asleep when you're up
   to date, sniffing while checking, startled and barking when a teammate pushes, tugging a two-colour rope
   while merging, jump-spinning on success, puzzled at conflicts, teary when GitHub Actions fail, winking when
@@ -29,10 +29,10 @@
 - Checking hours (e.g. 08:00–23:00), honoured by the background job too
 - Separate background interval (60–3600 s); the background job re-reads its settings on every run
 - GitHub Actions watcher: status bar progress while tests run, a message when they pass or fail
-- New “PushPal Settings” page (Notifications / Frequency & battery / Language & theme / GitHub), live two-way sync with
-  VS Code Settings, Restore defaults; new command “PushPal: Switch Check Mode”
+- New “PushPug Settings” page (Notifications / Frequency & battery / Language & theme / GitHub), live two-way sync with
+  VS Code Settings, Restore defaults; new command “PushPug: Switch Check Mode”
 - Values outside their range are pulled back in and you're told what changed
-- `pushpal.checkIntervalSeconds` now allows 10–300 s (default 30). An explicit value from 1.0.0 is kept and the mode becomes Custom
+- `pushpug.checkIntervalSeconds` now allows 10–300 s (default 30). An explicit value from 1.0.0 is kept and the mode becomes Custom
 - New mascot: Pal is now a round face whose brows, eyes, mouth and cheeks change with the state
 - Poke Pal: it squishes, bounces and giggles, and gets dizzy if you poke too fast
 - Activity bar icon matches the new face

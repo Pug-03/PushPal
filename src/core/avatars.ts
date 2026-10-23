@@ -30,7 +30,7 @@ export async function fetchCommitAvatars(
   const headers: Record<string, string> = {
     Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
-    'User-Agent': 'PushPal-VSCode',
+    'User-Agent': 'PushPug-VSCode',
   };
   if (opts.token) headers.Authorization = `Bearer ${opts.token}`;
   const out = new Map<string, string>();

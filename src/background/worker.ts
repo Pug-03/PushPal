@@ -1,4 +1,4 @@
-// PushPal background worker — one self-contained Node script, started every
+// PushPug background worker — one self-contained Node script, started every
 // minute by launchd / Task Scheduler with VS Code's own Electron binary
 // (ELECTRON_RUN_AS_NODE=1), so users don't need Node installed.
 //
@@ -31,7 +31,7 @@ const SCHEDULE_SLACK_MS = 10_000;
 const LOG_MAX_BYTES = 256 * 1024;
 
 /** Tests set this to capture notifications / launchctl calls instead of running them. */
-const TEST_LOG = process.env.PUSHPAL_TEST_LOG;
+const TEST_LOG = process.env.PUSHPUG_TEST_LOG;
 
 function testRecord(entry: unknown): void {
   if (TEST_LOG) appendFileSync(TEST_LOG, JSON.stringify(entry) + '\n');
@@ -122,7 +122,7 @@ async function runAlert(payloadFile: string): Promise<void> {
 }
 
 async function readPower(): Promise<PowerState> {
-  if (process.env.PUSHPAL_TEST_POWER) return JSON.parse(process.env.PUSHPAL_TEST_POWER) as PowerState;
+  if (process.env.PUSHPUG_TEST_POWER) return JSON.parse(process.env.PUSHPUG_TEST_POWER) as PowerState;
   return probePower();
 }
 

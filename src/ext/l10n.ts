@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { resolveLang, translate, englishSource, type Lang, type MessageKey } from '../i18n';
 import { readSettings } from './settings';
 
-/** The language PushPal shows, from the setting or VS Code / OS locale. */
+/** The language PushPug shows, from the setting or VS Code / OS locale. */
 export function currentLang(): Lang {
   const osLocale = Intl.DateTimeFormat().resolvedOptions().locale || process.env.LANG;
   return resolveLang(readSettings().language, vscode.env.language, osLocale);

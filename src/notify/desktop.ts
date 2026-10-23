@@ -88,8 +88,8 @@ export function buildToastScript(xml: string, tag: string, appId: string): strin
     `$doc.LoadXml(${psLiteral(xml)})`,
     '$toast = [Windows.UI.Notifications.ToastNotification]::new($doc)',
     `$toast.Tag = ${psLiteral(tag)}`,
-    `$toast.Group = 'pushpal'`,
-    `try { [Windows.UI.Notifications.ToastNotificationManager]::History.Remove(${psLiteral(tag)}, 'pushpal', ${psLiteral(appId)}) } catch {}`,
+    `$toast.Group = 'pushpug'`,
+    `try { [Windows.UI.Notifications.ToastNotificationManager]::History.Remove(${psLiteral(tag)}, 'pushpug', ${psLiteral(appId)}) } catch {}`,
     `[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier(${psLiteral(appId)}).Show($toast)`,
   ].join('\n');
 }
@@ -205,7 +205,7 @@ export class DesktopNotifier {
 
   private showNotifySend(n: DesktopNote): Promise<Outcome> {
     const body = n.subtitle ? `${n.subtitle}\n${n.message}` : n.message;
-    const base = ['--app-name=PushPal', '--urgency=critical'];
+    const base = ['--app-name=PushPug', '--urgency=critical'];
     if (this.opts.iconPath) base.push(`--icon=${this.opts.iconPath}`);
     if (!this.notifySendActions) {
       return run('notify-send', [...base, n.title, body]).then(() => 'none');
@@ -250,8 +250,8 @@ export class DesktopNotifier {
       await runPowerShell(
         [
           '[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null',
-          `try { [Windows.UI.Notifications.ToastNotificationManager]::History.Remove(${psLiteral(group.slice(0, 64))}, 'pushpal', ${psLiteral(appId)}) } catch {}`,
-          `try { [Windows.UI.Notifications.ToastNotificationManager]::History.Remove(${psLiteral(group.slice(0, 64))}, 'pushpal', ${psLiteral(POWERSHELL_APP_ID)}) } catch {}`,
+          `try { [Windows.UI.Notifications.ToastNotificationManager]::History.Remove(${psLiteral(group.slice(0, 64))}, 'pushpug', ${psLiteral(appId)}) } catch {}`,
+          `try { [Windows.UI.Notifications.ToastNotificationManager]::History.Remove(${psLiteral(group.slice(0, 64))}, 'pushpug', ${psLiteral(POWERSHELL_APP_ID)}) } catch {}`,
         ].join('\n'),
       );
     } else if (backend === 'notifySend') {

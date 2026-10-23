@@ -12,7 +12,7 @@ import type { RepoEntry, RepoManager } from './repoManager';
 import type { Scheduler } from './scheduler';
 import type { Alerts } from './alerts';
 
-const AUTH_ASKED_KEY = 'pushpal.checksAuthAsked';
+const AUTH_ASKED_KEY = 'pushpug.checksAuthAsked';
 /** Timeline rows whose checks are looked up (newest first). */
 const TIMELINE_DEPTH = 8;
 /** A passing result keeps the mascot cheerful this long. */
@@ -42,7 +42,7 @@ function fetchRequester(token: string): Requester {
       headers: {
         Accept: 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
-        'User-Agent': 'PushPal-VSCode',
+        'User-Agent': 'PushPug-VSCode',
         Authorization: `Bearer ${token}`,
       },
       signal: AbortSignal.timeout(20_000),
@@ -61,7 +61,7 @@ interface RepoInfo {
 }
 
 /**
- * GitHub checks for the commits PushPal shows: the tip of each branch (alerts,
+ * GitHub checks for the commits PushPug shows: the tip of each branch (alerts,
  * status bar, mascot) and the newest timeline rows (badges). Polls only while
  * something is pending; says how it went.
  */
@@ -69,7 +69,7 @@ export class ChecksWatcher implements vscode.Disposable {
   private readonly tracker: ChecksTracker;
   private readonly info = new Map<string, RepoInfo>();
   private readonly heads = new Map<string, { sha: string; finishedAt?: number }>();
-  private readonly item = vscode.window.createStatusBarItem('pushpal.checks', vscode.StatusBarAlignment.Left, 49);
+  private readonly item = vscode.window.createStatusBarItem('pushpug.checks', vscode.StatusBarAlignment.Left, 49);
   private readonly emitter = new vscode.EventEmitter<void>();
   readonly onDidChange = this.emitter.event;
   private timer: NodeJS.Timeout | undefined;
@@ -86,7 +86,7 @@ export class ChecksWatcher implements vscode.Disposable {
     private readonly alerts: Alerts,
     private readonly log: vscode.OutputChannel,
   ) {
-    this.item.name = 'PushPal · GitHub checks';
+    this.item.name = 'PushPug · GitHub checks';
     this.tracker = new ChecksTracker(null, Date.now, () => this.pollMs());
     repos.onDidCheck((entry) => this.onCheck(entry));
     void this.refreshAuth();
@@ -355,7 +355,7 @@ export class ChecksWatcher implements vscode.Disposable {
     }
     this.item.tooltip = md;
     this.item.backgroundColor = s.state === 'failure' ? new vscode.ThemeColor('statusBarItem.errorBackground') : undefined;
-    this.item.command = { title: 'Show', command: 'pushpal.showChecks', arguments: [withHead!.e.root, withHead!.h!.sha] };
+    this.item.command = { title: 'Show', command: 'pushpug.showChecks', arguments: [withHead!.e.root, withHead!.h!.sha] };
     this.item.show();
   }
 

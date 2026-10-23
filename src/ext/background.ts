@@ -3,7 +3,7 @@ import { basename, dirname, join } from 'node:path';
 import { copyFileSync, existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { SharedStore, type WorkerConfig } from '../core/storage';
-import { installAgent, uninstallAgent, isAgentInstalled, isBackgroundSupported, buildPlist, plistPath, buildVbs, type AgentPaths } from '../background/agent';
+import { installAgent, uninstallAgent, removeLegacyAgent, isAgentInstalled, isBackgroundSupported, buildPlist, plistPath, buildVbs, type AgentPaths } from '../background/agent';
 import { findAlerter } from '../notify/desktop';
 import { electronNodePath, productJson } from './host';
 import { iconPath } from './desktopChannel';
@@ -65,7 +65,9 @@ export class Background {
     };
   }
 
-  /** Called on activation, on any PushPal settings change and when repos are discovered. The worker re-reads config.json on every run. */
+  private legacyChecked = false;
+
+  /** Called on activation, on any PushPug settings change and when repos are discovered. The worker re-reads config.json on every run. */
   async sync(): Promise<'enabled' | 'disabled' | 'unsupported'> {
     const enabled = readSettings().notifyBackground;
     this.store.addRepos(
@@ -73,6 +75,10 @@ export class Background {
       this.baseConfig(enabled && isBackgroundSupported(process.platform)),
     );
     const p = this.paths();
+    if (!this.legacyChecked) {
+      this.legacyChecked = true;
+      if (await removeLegacyAgent(p)) this.log.appendLine('[background] removed the old PushPal job');
+    }
     if (!enabled) {
       if (isAgentInstalled(p)) {
         await uninstallAgent(p);

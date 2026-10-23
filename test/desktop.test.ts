@@ -5,16 +5,16 @@ import { summarizeIncoming } from '../src/core/messages';
 
 test('toast XML escapes user text and keeps buttons as protocol links', () => {
   const xml = buildToastXml({
-    group: 'pushpal-abc',
+    group: 'pushpug-abc',
     title: 'Alice <script> & co',
     message: 'msg "quoted"',
     primaryLabel: 'ดึงโค้ดมารวม',
     laterLabel: 'ไว้ทีหลัง',
-    primaryUri: 'vscode://pushpal.pushpal/pull?repo=C%3A%5Cwork&x=1',
+    primaryUri: 'vscode://pushpug.pushpug/pull?repo=C%3A%5Cwork&x=1',
   });
   assert.match(xml, /scenario="reminder"/);
   assert.match(xml, /Alice &lt;script&gt; &amp; co/);
-  assert.match(xml, /activationType="protocol" arguments="vscode:\/\/pushpal\.pushpal\/pull\?repo=C%3A%5Cwork&amp;x=1"/);
+  assert.match(xml, /activationType="protocol" arguments="vscode:\/\/pushpug\.pushpug\/pull\?repo=C%3A%5Cwork&amp;x=1"/);
   assert.match(xml, /content="ไว้ทีหลัง" activationType="system" arguments="dismiss"/);
 });
 

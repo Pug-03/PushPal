@@ -57,10 +57,10 @@ async function stills() {
   // Normal page (GSAP's clock running), dressed like the recording page.
   await page.goto(pathToFileURL(resolve('docs/mascot/playground.html')).href);
   await page.evaluate(() => document.body.classList.add('record'));
-  for (const pose of await page.evaluate(() => window.PushPalMascot.poses)) {
+  for (const pose of await page.evaluate(() => window.PushPugMascot.poses)) {
     await page.evaluate((p) => {
       const stage = document.getElementById('stage');
-      stage.innerHTML = window.PushPalMascot.svg({ pose: p, size: 290 });
+      stage.innerHTML = window.PushPugMascot.svg({ pose: p, size: 290 });
     }, pose);
     await page.waitForTimeout(500);
     await page.locator('#stage').screenshot({ path: `docs/mascot/still/${pose}.png`, omitBackground: true });

@@ -1,6 +1,6 @@
-# วิธีเอา PushPal ขึ้น GitHub, VS Code Marketplace และ Open VSX
+# วิธีเอา PushPug ขึ้น GitHub, VS Code Marketplace และ Open VSX
 
-คู่มือนี้เขียนสำหรับมือใหม่ ทำตามทีละขั้นได้เลย คำสั่งทั้งหมดให้รันในโฟลเดอร์ `pushpal/`
+คู่มือนี้เขียนสำหรับมือใหม่ ทำตามทีละขั้นได้เลย คำสั่งทั้งหมดให้รันในโฟลเดอร์ `pushpug/`
 
 > สิ่งที่ต้องมี: บัญชี GitHub, Node.js 20 ขึ้นไป (`node -v`), git
 
@@ -11,7 +11,7 @@
 ```bash
 npm ci
 npm test          # ต้องผ่านทั้งหมด
-npm run package   # ได้ไฟล์ pushpal-1.0.0.vsix
+npm run package   # ได้ไฟล์ pushpug-1.0.0.vsix
 ```
 
 ลองติดตั้งไฟล์ .vsix ในเครื่องตัวเองก่อน: VS Code → `⇧⌘P` → **Extensions: Install from VSIX…**
@@ -20,25 +20,25 @@ npm run package   # ได้ไฟล์ pushpal-1.0.0.vsix
 
 | ช่อง | ตอนนี้ | ต้องเป็น |
 |---|---|---|
-| `publisher` | `pushpal` | **Publisher ID ของคุณ** ที่จะสร้างในส่วนที่ 2 |
+| `publisher` | `pushpug` | **Publisher ID ของคุณ** ที่จะสร้างในส่วนที่ 2 |
 | `repository.url`, `bugs.url`, `homepage` | `github.com/Pug-03/PushPug` | URL repo จริงของคุณ |
 
 และแก้ชื่อใน `LICENSE` ถ้าต้องการ (ตอนนี้ใส่ `Pug-03`)
 
-> ID ของส่วนขยายจะเป็น `<publisher>.pushpal` โค้ดอ่านค่านี้ตอนรันเอง ไม่ต้องแก้ที่อื่น
+> ID ของส่วนขยายจะเป็น `<publisher>.pushpug` โค้ดอ่านค่านี้ตอนรันเอง ไม่ต้องแก้ที่อื่น
 
 ---
 
 ## ส่วนที่ 1 — ขึ้น GitHub
 
 1. ไปที่ <https://github.com/new>
-   - Repository name: `pushpal`
+   - Repository name: `pushpug`
    - เลือก **Public**
    - **ไม่ต้อง** ติ๊ก Add README / .gitignore / license (เรามีแล้ว)
    - กด **Create repository**
-2. ในเทอร์มินัล (โฟลเดอร์ `pushpal/`):
+2. ในเทอร์มินัล (โฟลเดอร์ `pushpug/`):
    ```bash
-   git remote add origin https://github.com/<ชื่อคุณ>/pushpal.git
+   git remote add origin https://github.com/<ชื่อคุณ>/pushpug.git
    git push -u origin main
    ```
 3. เปิดแท็บ **Actions** ใน GitHub จะเห็น CI รันเทสต์บน Ubuntu, macOS, Windows รอให้เป็นสีเขียว
@@ -52,7 +52,7 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-รอสักครู่ แล้วดูที่แท็บ **Releases** ของ repo จะมี `pushpal-1.0.0.vsix` ให้ดาวน์โหลด
+รอสักครู่ แล้วดูที่แท็บ **Releases** ของ repo จะมี `pushpug-1.0.0.vsix` ให้ดาวน์โหลด
 
 > รอบถัดไป: แก้ `version` ใน `package.json` + เพิ่มหัวข้อใน `CHANGELOG.md` → commit → `git tag v1.0.1` → push tag
 
@@ -102,7 +102,7 @@ npx vsce publish                  # สร้างแพ็กเกจแล�
    ```
 5. Publish ไฟล์ .vsix ที่สร้างไว้:
    ```bash
-   npx ovsx publish pushpal-1.0.0.vsix -p <open-vsx-token>
+   npx ovsx publish pushpug-1.0.0.vsix -p <open-vsx-token>
    ```
 
 ---

@@ -1,5 +1,5 @@
 // Installs / removes the background job that runs worker.js every minute:
-//   macOS   ~/Library/LaunchAgents/com.pushpal.watcher.plist (launchd, StartInterval 60)
+//   macOS   ~/Library/LaunchAgents/com.pushpug.watcher.plist (launchd, StartInterval 60)
 //   Windows Task Scheduler task (repeats every minute, hidden, via wscript launcher)
 // No `vscode` import: shared by the extension, the worker (self-removal) and
 // the uninstall hook. Commands go through an injectable runner for tests.
@@ -8,7 +8,8 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir, userInfo } from 'node:os';
 
-export const MAC_LABEL = 'com.pushpal.watcher';
+export const MAC_LABEL = 'com.pushpug.watcher';
+const LEGACY_MAC_LABEL = 'com.pushpal.watcher';
 
 export interface AgentPaths {
   platform: NodeJS.Platform;
@@ -45,7 +46,7 @@ export function windowsTaskName(): string {
   } catch {
     /* ignore */
   }
-  return `PushPal Watcher - ${user}`;
+  return `PushPug Watcher - ${user}`;
 }
 
 function xml(s: string): string {
@@ -107,7 +108,7 @@ export function buildTaskXml(vbsPath: string): string {
   return `<?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
-    <Description>PushPal: checks your git projects for teammates' new commits every minute (git fetch only, never changes your files).</Description>
+    <Description>PushPug: checks your git projects for teammates' new commits every minute (git fetch only, never changes your files).</Description>
   </RegistrationInfo>
   <Triggers>
     <TimeTrigger>
@@ -190,6 +191,22 @@ export async function uninstallAgent(p: Pick<AgentPaths, 'platform' | 'home' | '
     await run('schtasks.exe', ['/Delete', '/F', '/TN', windowsTaskName()]);
     for (const f of ['launcher.vbs', 'task.xml', 'agent-installed']) rmSync(join(p.storageDir, f), { force: true });
   }
+}
+
+/** Removes the job installed by versions named PushPal (label com.pushpal.watcher / task "PushPal Watcher"). */
+export async function removeLegacyAgent(p: Pick<AgentPaths, 'platform' | 'home'>, run: Runner = realRunner): Promise<boolean> {
+  if (p.platform === 'darwin') {
+    const file = join(p.home, 'Library', 'LaunchAgents', `${LEGACY_MAC_LABEL}.plist`);
+    if (!existsSync(file)) return false;
+    await run('launchctl', ['bootout', `${guiDomain()}/${LEGACY_MAC_LABEL}`]);
+    rmSync(file, { force: true });
+    return true;
+  }
+  if (p.platform === 'win32') {
+    const r = await run('schtasks.exe', ['/Delete', '/F', '/TN', windowsTaskName().replace('PushPug', 'PushPal')]);
+    return r.code === 0;
+  }
+  return false;
 }
 
 export function isAgentInstalled(p: Pick<AgentPaths, 'platform' | 'home' | 'storageDir'>): boolean {

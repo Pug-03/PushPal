@@ -48,11 +48,11 @@ What was still wrong:
   turned and shrunk, body offset the other way.
 - Side view: rounder, wider skull; flat face at the front; the ear now folds at the back of the
   skull instead of standing on top.
-- New simplified icon head (`PushPalIconHead`): head + ears + mask + big eyes + nose only, thicker
+- New simplified icon head (`PushPugIconHead`): head + ears + mask + big eyes + nose only, thicker
   ink, no wrinkles, collar or blush below 20 px. Readable at 16 px; the full-body pug isn't, so
   every small surface uses the icon head.
 - Checked in dark mode: cream fur and the warm ink stay clear on dark surfaces; the collar teal
-  and tag coral match the PushPal accents in both themes.
+  and tag coral match the PushPug accents in both themes.
 
 Known compromises:
 

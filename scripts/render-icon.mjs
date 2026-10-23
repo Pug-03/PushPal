@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path';
 import { findChrome } from './chrome.mjs';
 
 const media = resolve('media');
-const dir = mkdtempSync(join(tmpdir(), 'pushpal-icon-'));
+const dir = mkdtempSync(join(tmpdir(), 'pushpug-icon-'));
 const html = join(dir, 'icon.html');
 writeFileSync(
   html,
@@ -17,7 +17,7 @@ writeFileSync(
   .tile svg{transform:translateY(6px)}
   </style><script>${readFileSync(join(media, 'mascot.js'), 'utf8')}</script></head>
   <body><div class="tile" id="t"></div><script>
-  document.getElementById('t').innerHTML = PushPalIconHead(400);
+  document.getElementById('t').innerHTML = PushPugIconHead(400);
   </script></body></html>`,
 );
 const big = join(dir, 'icon-512.png');

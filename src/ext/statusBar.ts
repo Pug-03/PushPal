@@ -14,13 +14,13 @@ type Aggregate = 'pulling' | 'conflict' | 'behind' | 'error' | 'upToDate' | 'noU
 
 /** One status bar item summarising every repo in the window. */
 export class StatusBar implements vscode.Disposable {
-  private readonly item = vscode.window.createStatusBarItem('pushpal.status', vscode.StatusBarAlignment.Left, 50);
+  private readonly item = vscode.window.createStatusBarItem('pushpug.status', vscode.StatusBarAlignment.Left, 50);
 
   constructor(
     private readonly repos: RepoManager,
     private readonly schedule: () => ScheduleInfo | undefined = () => undefined,
   ) {
-    this.item.name = 'PushPal';
+    this.item.name = 'PushPug';
     repos.onDidChange(() => this.update());
     this.update();
   }
@@ -48,47 +48,47 @@ export class StatusBar implements vscode.Disposable {
         return;
       case 'pulling':
         item.text = t('status.pulling');
-        item.command = 'pushpal.showTeam';
+        item.command = 'pushpug.showTeam';
         break;
       case 'checking':
         item.text = t('status.checking');
-        item.command = 'pushpal.showTeam';
+        item.command = 'pushpug.showTeam';
         break;
       case 'conflict':
         item.text = t('status.conflict');
         item.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
         item.color = new vscode.ThemeColor('statusBarItem.errorForeground');
-        item.command = 'pushpal.showConflicts';
+        item.command = 'pushpug.showConflicts';
         break;
       case 'behind': {
         const n = entries.reduce((sum, e) => sum + (e.snapshot?.state === 'behind' ? e.snapshot.behind : 0), 0);
         item.text = t('status.behind', n);
         item.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
         item.color = new vscode.ThemeColor('statusBarItem.warningForeground');
-        item.command = 'pushpal.pull';
+        item.command = 'pushpug.pull';
         break;
       }
       case 'error':
         item.text = t('status.error');
-        item.command = 'pushpal.checkNow';
+        item.command = 'pushpug.checkNow';
         break;
       case 'upToDate':
         item.text = t('status.upToDate');
-        item.command = 'pushpal.showTeam';
+        item.command = 'pushpug.showTeam';
         break;
       case 'noUpstream':
         item.text = t('status.noUpstream');
-        item.command = 'pushpal.showTeam';
+        item.command = 'pushpug.showTeam';
         break;
     }
     item.tooltip = this.tooltip(entries);
-    item.accessibilityInformation = { label: `PushPal: ${item.text.replace(/\$\([^)]+\)\s*/g, '')}` };
+    item.accessibilityInformation = { label: `PushPug: ${item.text.replace(/\$\([^)]+\)\s*/g, '')}` };
     item.show();
   }
 
   private tooltip(entries: RepoEntry[]): vscode.MarkdownString {
     const md = new vscode.MarkdownString(undefined, true);
-    md.isTrusted = { enabledCommands: ['pushpal.switchMode', 'pushpal.openSettings'] };
+    md.isTrusted = { enabledCommands: ['pushpug.switchMode', 'pushpug.openSettings'] };
     md.appendMarkdown(`$(account) ${t('tip.header')}\n\n`);
     let newest = 0;
     for (const e of entries) {
@@ -123,7 +123,7 @@ export class StatusBar implements vscode.Disposable {
     const info = this.schedule();
     if (info) {
       md.appendMarkdown(`\n\n---\n\n${scheduleLine(info)}\n\n`);
-      md.appendMarkdown(`${t(`mode.icon.${info.mode}` as 'mode.icon.fast')} ${t('tip.mode', t(`mode.${info.mode}` as 'mode.fast'))} · [${t('tip.switchMode')}](command:pushpal.switchMode) · [${t('tip.settings')}](command:pushpal.openSettings)`);
+      md.appendMarkdown(`${t(`mode.icon.${info.mode}` as 'mode.icon.fast')} ${t('tip.mode', t(`mode.${info.mode}` as 'mode.fast'))} · [${t('tip.switchMode')}](command:pushpug.switchMode) · [${t('tip.settings')}](command:pushpug.openSettings)`);
     }
     return md;
   }

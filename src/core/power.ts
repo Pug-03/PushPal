@@ -42,9 +42,9 @@ export const WINDOWS_SCRIPT = [
   '"supply=$($p::PowerSupplyStatus)"',
   '"battery=$($p::BatteryStatus)"',
   '"saver=$($p::EnergySaverStatus)"',
-  "Add-Type -Namespace PushPal -Name Idle -MemberDefinition '[StructLayout(LayoutKind.Sequential)] public struct L { public uint s; public uint t; } [DllImport(\"user32.dll\")] public static extern bool GetLastInputInfo(ref L l);'",
-  '$l=New-Object PushPal.Idle+L; $l.s=8',
-  'if([PushPal.Idle]::GetLastInputInfo([ref]$l)){ $n=[BitConverter]::ToUInt32([BitConverter]::GetBytes([Environment]::TickCount),0); $d=[double]$n-[double]$l.t; if($d -lt 0){$d+=4294967296}; "idleMs=$d" }',
+  "Add-Type -Namespace PushPug -Name Idle -MemberDefinition '[StructLayout(LayoutKind.Sequential)] public struct L { public uint s; public uint t; } [DllImport(\"user32.dll\")] public static extern bool GetLastInputInfo(ref L l);'",
+  '$l=New-Object PushPug.Idle+L; $l.s=8',
+  'if([PushPug.Idle]::GetLastInputInfo([ref]$l)){ $n=[BitConverter]::ToUInt32([BitConverter]::GetBytes([Environment]::TickCount),0); $d=[double]$n-[double]$l.t; if($d -lt 0){$d+=4294967296}; "idleMs=$d" }',
 ].join('\n');
 
 export function parseWindows(out: string): PowerState {

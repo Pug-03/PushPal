@@ -1,21 +1,21 @@
-# PushPal — Design decisions
+# PushPug — Design decisions
 
-Decisions made while building PushPal on my own, with the reasoning behind each one.
+Decisions made while building PushPug on my own, with the reasoning behind each one.
 Newest sections are appended at the bottom of each topic.
 
 ## 0. Name check (2026-10-22)
 
-- **VS Code Marketplace**: searched the public gallery API for "PushPal" — **0 results**. Open VSX — **0 results**.
-- **GitHub**: ~218 repositories match "pushpal", almost all are people named Pushpal / Pushpalatha.
+- **VS Code Marketplace**: searched the public gallery API for "PushPug" — **0 results**. Open VSX — **0 results**.
+- **GitHub**: ~218 repositories match "pushpug", almost all are people named Pushpug / Pushpugatha.
   Two are in a similar space:
-  - `Bostigger/pushpal` — scans local repos for uncommitted/unpushed changes (4 stars)
-  - `amkumirab/pushpal` — "publish local projects to GitHub safely without learning Git"
+  - `Bostigger/pushpug` — scans local repos for uncommitted/unpushed changes (4 stars)
+  - `amkumirab/pushpug` — "publish local projects to GitHub safely without learning Git"
   Neither is a VS Code extension, so there is no Marketplace collision, but the name is not unique on GitHub.
 - **Backup names** (checked on the Marketplace: no extension uses them):
   1. **PullPal** — same friendly tone, emphasises "pull in your friends' code"
   2. **SyncNudge** — describes the nudge when the remote moves
   3. **MergeMate** — friendly, emphasises the one-click merge
-- Continued with **PushPal** as instructed. The extension id is read at runtime (`context.extension.id`),
+- Continued with **PushPug** as instructed. The extension id is read at runtime (`context.extension.id`),
   so renaming later only touches `package.json`, the README and the icon text.
 
 ## 1. Git logic
@@ -29,12 +29,12 @@ Newest sections are appended at the bottom of each topic.
   and in the tests.
 - **Detecting the two conflict kinds** (verified by experiment with git 2.54 before writing code):
   - Conflict with *our commits*: `git pull` exits 1, `MERGE_HEAD` exists. Git also writes `MERGE_AUTOSTASH`
-    and re-applies the uncommitted work by itself when the merge commit is made. PushPal therefore only
+    and re-applies the uncommitted work by itself when the merge commit is made. PushPug therefore only
     has to help the user resolve and then run `git commit --no-edit` ("Finish merge").
   - Conflict with *uncommitted work*: `git pull` **exits 0**, no `MERGE_HEAD`, files are `UU`, and the top
-    stash entry's reflog subject (`%gs`) is exactly `autostash`. That is how PushPal recognises it.
+    stash entry's reflog subject (`%gs`) is exactly `autostash`. That is how PushPug recognises it.
 - **Auto `git stash drop`** happens only when *all* of these hold: no unmerged files, no `MERGE_HEAD`,
-  the top stash subject is `autostash`, and (when PushPal saw the conflict happen) its sha equals the sha
+  the top stash subject is `autostash`, and (when PushPug saw the conflict happen) its sha equals the sha
   recorded at conflict time. If the user stashed something else on top, nothing is dropped (tested).
 - **No double pull**: `pull()` checks `getConflictState()` first and returns `blocked` without running git.
 - Untracked files that would be overwritten by the incoming commit are reported as their own result
@@ -65,7 +65,7 @@ Newest sections are appended at the bottom of each topic.
 - **Conflicts** open the conflicted files (max 5) and the first one in VS Code's Merge Editor
   (`git.openMergeEditor`, falls back to a normal editor). A "Finish merge" action runs `git commit --no-edit`
   when every file is staged; git then restores any autostashed work by itself.
-- After PushPal's own pull hits an autostash conflict, the stash sha is stored in `workspaceState`, so the
+- After PushPug's own pull hits an autostash conflict, the stash sha is stored in `workspaceState`, so the
   automatic `git stash drop` survives a VS Code restart and drops exactly that entry.
 
 ## 4. Desktop notifications
@@ -93,14 +93,14 @@ Newest sections are appended at the bottom of each topic.
 
 ## 5. Background checking (VS Code closed)
 
-- Off by default; turned on only from the wizard or the `pushpal.notify.background` setting.
+- Off by default; turned on only from the wizard or the `pushpug.notify.background` setting.
 - **Runtime**: VS Code's own Electron binary with `ELECTRON_RUN_AS_NODE=1` — no separate Node install.
-  On macOS the extension host's `process.execPath` is a "Code Helper (Plugin)" binary, so PushPal uses
+  On macOS the extension host's `process.execPath` is a "Code Helper (Plugin)" binary, so PushPug uses
   `<App>.app/Contents/MacOS/Code` instead (verified: runs Node 24 headless, no Dock icon).
 - `dist/worker.js` is a single esbuild bundle. It is **copied to globalStorage** and the OS job points at the copy,
   so an extension update (new folder) never breaks the job. Each activation re-copies it if it changed and
   re-registers the job only if the plist / launcher differs.
-- **macOS**: `~/Library/LaunchAgents/com.pushpal.watcher.plist`, `StartInterval 60`, `RunAtLoad`,
+- **macOS**: `~/Library/LaunchAgents/com.pushpug.watcher.plist`, `StartInterval 60`, `RunAtLoad`,
   `ProcessType Background`, `LowPriorityIO`, `AbandonProcessGroup` (so the alert child process survives the
   60-second run exiting). Loaded with `launchctl bootstrap gui/<uid>` (falls back to `load -w`).
   PATH includes `/opt/homebrew/bin` so git and alerter are found.
@@ -122,12 +122,12 @@ Newest sections are appended at the bottom of each topic.
   (`worker.js --alert payload.json`) and exits immediately; the copy waits for the click and runs `open <uri>`.
 - **Turning off** the setting removes the LaunchAgent / task immediately.
 - **Uninstall**: two layers. (1) `vscode:uninstall` hook removes the job when VS Code finalises the uninstall.
-  (2) Every run, the worker checks that a folder `<publisher>.pushpal-*` still exists in the extensions dir and
+  (2) Every run, the worker checks that a folder `<publisher>.pushpug-*` still exists in the extensions dir and
   isn't listed in `.obsolete`; if not, it removes the job and its own files.
 - Known limit: the LaunchAgent label / task name is shared, so VS Code Stable and Insiders on the same
   machine would share one job (the last one to write config wins).
 - macOS 13+ shows a "Background item added" notice the first time — expected; mentioned in the README FAQ.
-- Tests use a fake command runner (`PUSHPAL_TEST_LOG`) and a temp `HOME`, so running the test suite never
+- Tests use a fake command runner (`PUSHPUG_TEST_LOG`) and a temp `HOME`, so running the test suite never
   touches the real `~/Library/LaunchAgents` or Task Scheduler.
 
 ## 6. Language system
@@ -135,16 +135,16 @@ Newest sections are appended at the bottom of each topic.
 - Catalogs: `src/i18n/locales/en.json` and `th.json` (one key per message). Keys starting with `wv.` are the
   webviews' own translation file; they are sent to the page as JSON, so switching language in the wizard
   is instant (both languages are sent to the wizard up front).
-- **Why not only `vscode.l10n`**: `vscode.l10n` always follows VS Code's display language, but PushPal lets
+- **Why not only `vscode.l10n`**: `vscode.l10n` always follows VS Code's display language, but PushPug lets
   the user pick Thai/English independently — and Microsoft ships no official Thai language pack, so for
   almost every Thai user VS Code itself is in English. So:
-  - `pushpal.language = auto`: Thai if VS Code's UI language **or the OS locale** is Thai. When VS Code
+  - `pushpug.language = auto`: Thai if VS Code's UI language **or the OS locale** is Thai. When VS Code
     itself is Thai (community pack), messages go through `vscode.l10n.t` using `l10n/bundle.l10n.th.json`,
     which the build generates from `th.json` (it fails the build if a Thai key is missing).
   - `th` / `en`: our catalog directly.
   - Manifest strings (command titles, settings) use `package.nls.json` / `package.nls.th.json`, which can
     only follow VS Code's language. Command titles are therefore **bilingual** in the default file
-    (e.g. "ตั้งค่าใหม่ · Run Setup Again") so "PushPal: ตั้งค่าใหม่" is findable in the Command Palette
+    (e.g. "ตั้งค่าใหม่ · Run Setup Again") so "PushPug: ตั้งค่าใหม่" is findable in the Command Palette
     whatever language VS Code runs in.
 - Thai copy is written to sound like a friend talking ("ดึงโค้ดมารวม", "ไว้ทีหลัง", "ไม่ต้องห่วง งานคุณมีสำรองไว้")
   rather than translated word-for-word. Git terms (commit, push, stash, branch) stay in English because
@@ -155,12 +155,12 @@ Newest sections are appended at the bottom of each topic.
 
 - `media/base.css` defines tokens (`--pp-bg`, `--pp-surface`, `--pp-text`, `--pp-accent`, status colours…)
   for three themes set by a class on `<html>`:
-  - `theme-light`, `theme-dark`: PushPal's own palettes (warm paper / deep slate, teal accent, coral "new").
+  - `theme-light`, `theme-dark`: PushPug's own palettes (warm paper / deep slate, teal accent, coral "new").
     Text colours were chosen for ≥ 4.5:1 contrast on their surfaces.
   - `theme-system`: surfaces, text, buttons and focus ring come from `--vscode-*` variables, so any VS Code
     theme (including high contrast) is followed **live** — VS Code updates those variables and the body
     class in the webview when the user switches theme, no reload or message needed. Status colours
-    (new/warn/danger/success) have no VS Code equivalents, so PushPal picks its light or dark variant from
+    (new/warn/danger/success) have no VS Code equivalents, so PushPug picks its light or dark variant from
     the `vscode-light` / `vscode-dark` body class.
 - Changing the setting posts a message to open webviews, which swap the class instantly.
 - Fonts: system UI font for Latin, then Sukhumvit Set (macOS), Noto Sans Thai, Leelawadee UI (Windows).
@@ -184,7 +184,7 @@ Newest sections are appended at the bottom of each topic.
 ## 8. Setup wizard
 
 - Opens automatically once, on the first activation after install (`globalState` flag set as soon as it opens,
-  so closing it half-way doesn't nag on every start). "PushPal: ตั้งค่าใหม่ · Run Setup Again" reopens it.
+  so closing it half-way doesn't nag on every start). "PushPug: ตั้งค่าใหม่ · Run Setup Again" reopens it.
 - One `WebviewPanel` in the editor area, `retainContextWhenHidden` so switching tabs doesn't lose the step.
   The current step is also kept with `vscode.setState`.
 - All seven steps (a "how often" step was added in section 12) live in the same CSS grid cell, so the page height never jumps; the active step slides
@@ -203,7 +203,7 @@ Newest sections are appended at the bottom of each topic.
 
 ## 9. My Team view
 
-- `WebviewViewProvider` in PushPal's own Activity Bar container. It picks the repo that needs attention most
+- `WebviewViewProvider` in PushPug's own Activity Bar container. It picks the repo that needs attention most
   (conflict > behind > others) unless the user selected one; multi-repo workspaces get a row of pills with a
   coloured state dot and the "behind" count.
 - The page keeps its DOM between updates: the mascot element is re-used and only its pose class changes;
@@ -234,7 +234,7 @@ Newest sections are appended at the bottom of each topic.
 
 - `README.md` is bilingual in one file (Thai first, then English) because the Marketplace only renders
   `README.md`. Images use repo-relative paths, which `vsce` rewrites to GitHub URLs from `repository.url`.
-- `publisher` is a placeholder (`pushpal`) and the repo URL assumes `github.com/Pug-03/pushpal` (from the
+- `publisher` is a placeholder (`pushpug`) and the repo URL assumes `github.com/Pug-03/pushpug` (from the
   local git user name). PUBLISHING.md says to replace both before publishing.
 - CI: tests + typecheck + build on Ubuntu, macOS and Windows (Node 22) on every push; on a `v*` tag it packages
   the .vsix and attaches it to a GitHub Release (`softprops/action-gh-release`), then publishes to the Marketplace /
@@ -249,7 +249,7 @@ Newest sections are appended at the bottom of each topic.
 
 ## 12. Check frequency, battery saving and GitHub Actions (2026-10-22)
 
-- **One source of truth: the individual settings.** `pushpal.mode` is a label for a set of values. Picking a preset
+- **One source of truth: the individual settings.** `pushpug.mode` is a label for a set of values. Picking a preset
   (wizard, settings page, quick pick or the Settings UI) writes the preset's values into the individual settings;
   editing any value by hand while a preset is active switches the mode to `custom`. Logic lives in
   `src/core/frequency.ts` (`reconcileMode`, pure + tested) and `src/ext/modes.ts` (applies it to VS Code settings,
@@ -269,7 +269,7 @@ Newest sections are appended at the bottom of each topic.
   field, the bad value, the range and the value used. Malformed times fall back to 08:00 / 23:00.
 - **Battery rules only slow down.** When several apply the slowest wins, and a rule faster than the normal interval is
   ignored. "Plugged in → normal" overrides every rule (it says "always"). A rule whose input is unknown
-  (no battery, probe failed) doesn't apply — PushPal never guesses "on battery".
+  (no battery, probe failed) doesn't apply — PushPug never guesses "on battery".
 - **Reading the power state** (`src/core/power.ts`, no `vscode`, shared with the worker):
   macOS `pmset -g batt`, `pmset -g` (lowpowermode), `ioreg` HIDIdleTime; Windows one PowerShell call reading WinRT
   `PowerManager` (charge, supply, battery status, Energy Saver) and `GetLastInputInfo`; Linux `/sys/class/power_supply`,
@@ -286,20 +286,20 @@ Newest sections are appended at the bottom of each topic.
   (VS Code or background); the status bar tooltip says when checks resume.
 - **Background job**: the OS schedule stays a fixed 1-minute tick; the worker decides whether a check is due from
   `config.json` (`frequency`) and `worker-state.json` (`lastCheckAt`), with 10 s slack for launchd/Task Scheduler jitter.
-  The extension rewrites `config.json` within 300 ms of any PushPal setting change, so the very next tick uses the new
+  The extension rewrites `config.json` within 300 ms of any PushPug setting change, so the very next tick uses the new
   values — no re-registration of the LaunchAgent / task. The battery is probed only when the normal interval has
   already passed (rules can only make it later). Configs written by 1.0.0 have no `frequency` and keep running every tick.
 - **Status bar**: the existing item's tooltip gains "why" (e.g. "Checking every 1 min right now because the battery is
   at 15%") and the mode with "Switch mode" / "Settings" command links. **Right-click isn't possible**: VS Code's API has
   no context-menu contribution point for an extension's status bar item, so quick switching is the
-  "PushPal: Switch Check Mode" command plus the tooltip link.
-- **Estimates are measured, not guessed.** `scripts/measure-fetch.mjs` sends PushPal's exact fetch command through a
+  "PushPug: Switch Check Mode" command plus the tooltip link.
+- **Estimates are measured, not guessed.** `scripts/measure-fetch.mjs` sends PushPug's exact fetch command through a
   local CONNECT proxy that counts every byte both ways (TLS included). Against github.com: 5,457 B for a 1-ref remote;
   `ls-refs` grows ≈ 58 B per branch/tag (28,030 B at 372 refs, 120,019 B at 2,032 refs). So one check ≈
   5,400 + 58 × refs bytes, with refs counted from the repo's own remote-tracking refs + tags. One Actions API call
   ≈ 7,300 B (gzip), a 304 ≈ 5,200 B. SSH wasn't measured (no key on the test machine); the HTTPS figure is used for all.
 - **GitHub Actions** (`src/core/ciRuns.ts`, `src/ext/ciWatcher.ts`): when a repo's upstream sha changes (anyone's push,
-  including your own), PushPal asks once for runs of that commit, keeps asking for up to 3 minutes until runs appear,
+  including your own), PushPug asks once for runs of that commit, keeps asking for up to 3 minutes until runs appear,
   then polls only while a run is queued / in progress, and announces pass/fail (only for runs it saw running, so old
   results aren't announced on startup). Auth uses VS Code's built-in GitHub sign-in silently (`repo` scope); without it
   public repos still work, but polling is held to ≥ 60 s because GitHub allows 60 unauthenticated requests per hour.
@@ -312,12 +312,12 @@ Newest sections are appended at the bottom of each topic.
 - Tests: `test/frequency.test.ts` (modes, clamping, each battery rule, plugged in, slowest wins, checking hours across
   midnight, estimates, power-output parsers, Actions parsing/fetch with a fake `fetch`) and new worker cases in
   `test/background.test.ts` (due / not due, new config applied on the next run, outside hours, battery rules through
-  `PUSHPAL_TEST_POWER`). The smoke test also switches modes in a real VS Code and checks the sync, the clamping,
+  `PUSHPUG_TEST_POWER`). The smoke test also switches modes in a real VS Code and checks the sync, the clamping,
   `config.json` and the settings page.
 
 ## 13. Pal becomes a pug (2026-10-22)
 
-- **Name**: the request calls the product "PushPug". I kept the extension name **PushPal** (id, publisher,
+- **Name**: the request calls the product "PushPug". I kept the extension name **PushPug** (id, publisher,
   URI handler, LaunchAgent label, settings keys all depend on it) and made the mascot a pug called Pal.
   Renaming the product is a separate, breaking change and wasn't asked for explicitly.
 - **Drawing** (`media/mascot.js`): every shape is a bezier `path`; a small `blob()` helper draws organic,
@@ -329,7 +329,7 @@ Newest sections are appended at the bottom of each topic.
   ink copy of each shape 1.8 units lower: thick along the bottom where the weight is, thin on top.
   Cel shading = one flat shade band + one flat highlight per part, clipped to the part (no gradients).
   Palette: cream fur `#f3ddb6` / shade `#e0bf8e` / light `#fcf1dd`, mask `#655149`, blush `#f39a92`,
-  collar `#1f9e89` and arrow-tag `#ff7a59` (PushPal's teal and coral). Checked on light and dark.
+  collar `#1f9e89` and arrow-tag `#ff7a59` (PushPug's teal and coral). Checked on light and dark.
 - **Eyes**: dark eye, warm iris crescent, light lower-lid crescent, two highlights (big + small); the
   eyelid is a separate layer scaled from the top, so blinks, sleepy and sad eyes are the same part.
 - **Layers and pivots**: root, spin, body, head, ears (from the ear root), eyes + lids, brows,
@@ -339,7 +339,7 @@ Newest sections are appended at the bottom of each topic.
 - **Static first**: the markup without any script is already the resting "sit" face (lids pre-scaled
   open, mouth closed). That's what `npm run icon`, previews and reduced motion fall back to.
 - **Small sizes**: the full body isn't readable at 32/16 px, so there's a separate simplified head
-  (`PushPalIconHead`): ears, mask, eyes, nose; mouth/wrinkle/blush only above 20 px; thicker ink. Used for
+  (`PushPugIconHead`): ears, mask, eyes, nose; mouth/wrinkle/blush only above 20 px; thicker ink. Used for
   the extension icon and the wizard's top bar. The Activity Bar icon is a one-colour pug-head
   silhouette with cut-out eyes, nose and a wrinkle, as VS Code requires.
 - **GSAP**: version 3.15.0 (April 2026, older than two weeks), bundled as files in `media/vendor/`
@@ -394,7 +394,7 @@ Newest sections are appended at the bottom of each topic.
 - **Brows**: line brows made Pal look human (user feedback). Replaced with dog-style brow spots (small dark
   ovals above the eyes, like tan points); they move up, together or apart with the mood. Chosen by the user
   over a no-brow, forehead-wrinkle version.
-- **Icon**: `PushPalIconHead` draws the same head with brows, blush and mouth dropped at ≤ 20 px.
+- **Icon**: `PushPugIconHead` draws the same head with brows, blush and mouth dropped at ≤ 20 px.
 
 ## 15. Profile pictures in the timeline (2026-10-22)
 
@@ -405,9 +405,9 @@ Newest sections are appended at the bottom of each topic.
 - The webview loads the images from `avatars.githubusercontent.com` / `github.com` (added to `img-src` in the CSP).
   The coloured initials stay underneath and remain if the picture can't load (offline, blocked, no GitHub account).
 - This is a second kind of traffic to GitHub besides `git fetch` (after the Actions watcher), so it's a setting
-  (`pushpal.avatars`, on by default, also on the settings page) and the README's privacy answer says so.
-- The team view now reports back whether GSAP loaded and any script errors (PushPal output + a hidden
-  `pushpal._diag` command the smoke test checks). Found while debugging: a webview page from before a reload keeps
+  (`pushpug.avatars`, on by default, also on the settings page) and the README's privacy answer says so.
+- The team view now reports back whether GSAP loaded and any script errors (PushPug output + a hidden
+  `pushpug._diag` command the smoke test checks). Found while debugging: a webview page from before a reload keeps
   running the old scripts — "Developer: Reload Window" after installing a new build.
 
 ## 16. GitHub checks (2026-10-22)
@@ -435,10 +435,10 @@ Newest sections are appended at the bottom of each topic.
 - **The push alert itself** waits up to 3 s for one quick look so it can say "⏳ checks still running" / "❌ …";
   when the checks finish, the desktop notification is replaced in place (same group / toast tag).
 - **Sign-in:** `vscode.authentication.getSession('github', ['repo'])` — silent first; when checks are needed
-  and there's no session, PushPal asks **once**; "No thanks" turns the feature off (setting), nothing else is
+  and there's no session, PushPug asks **once**; "No thanks" turns the feature off (setting), nothing else is
   affected. The token lives in memory only. The extension-wide anonymous fallback of section 12 is gone (logs
   need auth anyway, and 60 requests/hour isn't enough).
-- **Why it failed:** for GitHub Actions jobs (check run id = job id) PushPal reads the job's steps (failed
+- **Why it failed:** for GitHub Actions jobs (check run id = job id) PushPug reads the job's steps (failed
   step name) and its log (`/actions/jobs/{id}/logs`), strips timestamps / colour codes and shows the last 30
   lines, plus a hint when it recognises the case: failing tests, dependency install, lint, timeout, build/type
   errors. Loaded only when the user clicks "Why did it fail?".
@@ -450,12 +450,12 @@ Newest sections are appended at the bottom of each topic.
 ## 17. Safety nets (2026-10-22)
 
 - **Push (check first)** (`src/git/safety.ts → safePush`): fetch, then if `HEAD..@{u}` isn't empty don't push;
-  offer "Merge, then push for me" (= PushPal's pull, then push). VS Code's own Push/Sync can't be intercepted
-  *before* pushing (no API for that), so PushPal registers the Git extension's `registerPushErrorHandler`: a
+  offer "Merge, then push for me" (= PushPug's pull, then push). VS Code's own Push/Sync can't be intercepted
+  *before* pushing (no API for that), so PushPug registers the Git extension's `registerPushErrorHandler`: a
   rejected push from VS Code's buttons is explained with the same offer. The command is also in the Source
   Control title bar.
 - **Undo the last merge** (10 minutes): before pulling, `git stash create` records uncommitted work without
-  touching it (kept reachable via `refs/pushpal/undo-stash`), plus HEAD. After a successful pull PushPal stores
+  touching it (kept reachable via `refs/pushpug/undo-stash`), plus HEAD. After a successful pull PushPug stores
   HEAD and a fingerprint of the working copy (HEAD, index tree, working-tree tree, untracked file names and
   contents). Undo = `git reset --hard <before>` + `git stash apply --index <stash>`. It refuses — with the reason —
   if HEAD moved (new commits) or the fingerprint changed (edits, staging, new files), or after 10 minutes.

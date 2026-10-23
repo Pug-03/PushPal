@@ -5,7 +5,7 @@ import { upstreamRemoteUrl } from '../git/repo';
 import { repoKey } from '../core/storage';
 import type { RepoEntry } from './repoManager';
 
-const CACHE_KEY = 'pushpal.avatars';
+const CACHE_KEY = 'pushpug.avatars';
 
 /**
  * Remembers each author's GitHub profile picture. Asks GitHub once per new
@@ -26,7 +26,7 @@ export class Avatars implements vscode.Disposable {
   }
 
   get enabled(): boolean {
-    return vscode.workspace.getConfiguration('pushpal').get<boolean>('avatars', true);
+    return vscode.workspace.getConfiguration('pushpug').get<boolean>('avatars', true);
   }
 
   urlFor(email: string): string | undefined {

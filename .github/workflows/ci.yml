@@ -47,14 +47,14 @@ jobs:
       - run: npm ci
       - name: Check tag matches package.json version
         run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
-      - run: npx vsce package --no-dependencies -o pushpal-${GITHUB_REF_NAME#v}.vsix
+      - run: npx vsce package --no-dependencies -o pushpug-${GITHUB_REF_NAME#v}.vsix
       - uses: softprops/action-gh-release@v2
         with:
-          files: pushpal-*.vsix
+          files: pushpug-*.vsix
           generate_release_notes: true
       - name: Publish to VS Code Marketplace
         if: env.VSCE_PAT != ''
-        run: npx vsce publish --packagePath pushpal-*.vsix
+        run: npx vsce publish --packagePath pushpug-*.vsix
       - name: Publish to Open VSX
         if: env.OVSX_PAT != ''
-        run: npx ovsx publish pushpal-*.vsix -p "$OVSX_PAT"
+        run: npx ovsx publish pushpug-*.vsix -p "$OVSX_PAT"

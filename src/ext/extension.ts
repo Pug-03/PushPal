@@ -8,7 +8,7 @@ import { readSettings, saveSettings } from './settings';
 import { t } from './l10n';
 import { ExtensionDesktopChannel } from './desktopChannel';
 import { sendTestNotification } from './desktopSetup';
-import { PushPalUriHandler, type UriAction } from './uriHandler';
+import { PushPugUriHandler, type UriAction } from './uriHandler';
 import { focusThisWindow } from './host';
 import { Background } from './background';
 import { SetupWizard, SETUP_SHOWN_KEY } from './wizard';
@@ -27,7 +27,7 @@ export function setSuppressBackgroundAnnounce(v: boolean): void {
 }
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-  const log = vscode.window.createOutputChannel('PushPal');
+  const log = vscode.window.createOutputChannel('PushPug');
   const store = new SharedStore(context.globalStorageUri.fsPath);
   const repos = new RepoManager(context, log);
   const alerts = new Alerts(store, log);
@@ -72,25 +72,25 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   repos.onDidChange(() => {
     const hasConflict = repos.list().some((e) => e.snapshot?.state === 'conflict');
-    void vscode.commands.executeCommand('setContext', 'pushpal.hasConflict', hasConflict);
+    void vscode.commands.executeCommand('setContext', 'pushpug.hasConflict', hasConflict);
   });
 
   const cmd = (id: string, fn: (...args: any[]) => unknown) => context.subscriptions.push(vscode.commands.registerCommand(id, fn));
-  cmd('pushpal.pull', (root?: string) => actions.pull(typeof root === 'string' ? root : undefined));
-  cmd('pushpal.checkNow', () => repos.refreshAll({ fetch: true }));
-  cmd('pushpal.showConflicts', () => actions.showConflicts());
-  cmd('pushpal.finishMerge', () => actions.finishMerge());
-  cmd('pushpal.showTeam', () => actions.revealTeam());
-  cmd('pushpal.push', (root?: string) => actions.push(typeof root === 'string' ? root : undefined));
-  cmd('pushpal.undoMerge', (root?: string) => actions.undo(typeof root === 'string' ? root : undefined));
-  cmd('pushpal.showChecks', (root?: string, sha?: string) => team.reveal(root, sha));
-  cmd('pushpal.snooze', () => alerts.snooze());
-  cmd('pushpal.unsnooze', () => alerts.unsnooze());
-  cmd('pushpal.testNotification', () => sendTestNotification(desktop));
+  cmd('pushpug.pull', (root?: string) => actions.pull(typeof root === 'string' ? root : undefined));
+  cmd('pushpug.checkNow', () => repos.refreshAll({ fetch: true }));
+  cmd('pushpug.showConflicts', () => actions.showConflicts());
+  cmd('pushpug.finishMerge', () => actions.finishMerge());
+  cmd('pushpug.showTeam', () => actions.revealTeam());
+  cmd('pushpug.push', (root?: string) => actions.push(typeof root === 'string' ? root : undefined));
+  cmd('pushpug.undoMerge', (root?: string) => actions.undo(typeof root === 'string' ? root : undefined));
+  cmd('pushpug.showChecks', (root?: string, sha?: string) => team.reveal(root, sha));
+  cmd('pushpug.snooze', () => alerts.snooze());
+  cmd('pushpug.unsnooze', () => alerts.unsnooze());
+  cmd('pushpug.testNotification', () => sendTestNotification(desktop));
   // Not in the Command Palette: lets the smoke test see what the team view reported.
-  cmd('pushpal._diag', () => team.diag);
-  cmd('pushpal.openSettings', (section?: string) => SettingsPage.show(context, freqDeps, desktop, typeof section === 'string' ? section : undefined));
-  cmd('pushpal.switchMode', async () => {
+  cmd('pushpug._diag', () => team.diag);
+  cmd('pushpug.openSettings', (section?: string) => SettingsPage.show(context, freqDeps, desktop, typeof section === 'string' ? section : undefined));
+  cmd('pushpug.switchMode', async () => {
     const current = modes.mode;
     const items = MODES.map((m) => ({
       label: `${t(`mode.icon.${m}` as 'mode.icon.fast')} ${t(`mode.${m}` as 'mode.fast')}`,
@@ -139,20 +139,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (!e.affectsConfiguration('pushpal')) return;
-      if (e.affectsConfiguration('pushpal.language')) {
+      if (!e.affectsConfiguration('pushpug')) return;
+      if (e.affectsConfiguration('pushpug.language')) {
         status.update();
         team.render();
       }
-      if (e.affectsConfiguration('pushpal.notify.background') && !suppressBackgroundAnnounce) void syncBackground(true);
+      if (e.affectsConfiguration('pushpug.notify.background') && !suppressBackgroundAnnounce) void syncBackground(true);
       else {
         // Any other change (interval, battery rules, active hours, language…) goes
         // into config.json right away; the worker reads it on its next run.
         clearTimeout(bgTimer);
         bgTimer = setTimeout(() => void syncBackground(false), 300);
       }
-      if (e.affectsConfiguration('pushpal.avatars')) team.refresh();
-      if (e.affectsConfiguration('pushpal.theme')) {
+      if (e.affectsConfiguration('pushpug.avatars')) team.refresh();
+      if (e.affectsConfiguration('pushpug.theme')) {
         SetupWizard.postTheme(readSettings().theme);
         SettingsPage.postTheme(readSettings().theme);
         team.setTheme();
@@ -165,7 +165,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     if (action === 'pull') await actions.pull(root);
     else await repos.refresh(root, { fetch: true });
   };
-  const uriHandler = new PushPalUriHandler(store, repos, runUriAction);
+  const uriHandler = new PushPugUriHandler(store, repos, runUriAction);
   context.subscriptions.push(
     vscode.window.registerUriHandler(uriHandler),
     vscode.window.onDidChangeWindowState((s) => {
@@ -189,7 +189,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       () => actions.revealTeam(),
       freqDeps,
     );
-  cmd('pushpal.setup', openWizard);
+  cmd('pushpug.setup', openWizard);
   if (!context.globalState.get<boolean>(SETUP_SHOWN_KEY)) openWizard();
 
   await modes.init();

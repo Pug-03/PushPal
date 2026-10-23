@@ -1,13 +1,13 @@
-// "ตั้งค่า PushPal / PushPal Settings" page. Plain JS, no framework.
+// "ตั้งค่า PushPug / PushPug Settings" page. Plain JS, no framework.
 // The page is rendered once; later updates from the extension patch values in
 // place so focus, slider drags and the mode-card animation are never interrupted.
 (function () {
   'use strict';
   var vscode = acquireVsCodeApi();
   var init = JSON.parse(document.getElementById('pp-init').textContent);
-  var M = window.PushPalMascot;
-  var I = window.PushPalIcon;
-  var Modes = window.PushPalModes;
+  var M = window.PushPugMascot;
+  var I = window.PushPugIcon;
+  var Modes = window.PushPugModes;
   var esc = Modes.esc;
   var app = document.getElementById('app');
   var state = { settings: null, freq: null };

@@ -39,7 +39,7 @@ const SETTING_KEYS: Record<keyof Settings, string> = {
 };
 
 export function readSettings(): Settings {
-  const c = vscode.workspace.getConfiguration('pushpal');
+  const c = vscode.workspace.getConfiguration('pushpug');
   return {
     language: c.get<LangSetting>('language', 'auto'),
     theme: c.get<ThemeSetting>('theme', 'system'),
@@ -58,7 +58,7 @@ export function readSettings(): Settings {
 }
 
 export async function saveSettings(patch: Partial<Settings>): Promise<void> {
-  const c = vscode.workspace.getConfiguration('pushpal');
+  const c = vscode.workspace.getConfiguration('pushpug');
   for (const [k, v] of Object.entries(patch) as Array<[keyof Settings, unknown]>) {
     await c.update(SETTING_KEYS[k], v, vscode.ConfigurationTarget.Global);
   }
@@ -66,7 +66,7 @@ export async function saveSettings(patch: Partial<Settings>): Promise<void> {
 
 // ---------- Frequency & battery ----------
 
-/** Setting key (under "pushpal.") for every field of FrequencyConfig. */
+/** Setting key (under "pushpug.") for every field of FrequencyConfig. */
 export const FREQUENCY_KEYS = {
   checkSeconds: 'checkIntervalSeconds',
   actionsSeconds: 'actions.intervalSeconds',
@@ -85,7 +85,7 @@ export const FREQUENCY_KEYS = {
   'activeHours.end': 'activeHours.end',
 } as const;
 export type FrequencyField = keyof typeof FREQUENCY_KEYS;
-export const FREQUENCY_SETTING_IDS = Object.values(FREQUENCY_KEYS).map((k) => `pushpal.${k}`);
+export const FREQUENCY_SETTING_IDS = Object.values(FREQUENCY_KEYS).map((k) => `pushpug.${k}`);
 
 export function getField(c: FrequencyConfig, field: FrequencyField): unknown {
   const [a, b] = field.split('.');
@@ -101,13 +101,13 @@ export function setField(c: FrequencyConfig, field: FrequencyField, value: unkno
 }
 
 export function readMode(): Mode {
-  const m = vscode.workspace.getConfiguration('pushpal').get<string>('mode', DEFAULT_MODE);
+  const m = vscode.workspace.getConfiguration('pushpug').get<string>('mode', DEFAULT_MODE);
   return (MODES as string[]).includes(m) ? (m as Mode) : DEFAULT_MODE;
 }
 
 /** Values as stored, before clamping. */
 export function readRawFrequency(): FrequencyConfig {
-  const c = vscode.workspace.getConfiguration('pushpal');
+  const c = vscode.workspace.getConfiguration('pushpug');
   const out: FrequencyConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
   for (const [field, key] of Object.entries(FREQUENCY_KEYS) as Array<[FrequencyField, string]>) {
     const v = c.get(key);
@@ -122,7 +122,7 @@ export function readFrequency(): { config: FrequencyConfig; adjustments: Adjustm
 
 /** Write only the fields that differ from what is stored now. */
 export async function writeFrequency(next: FrequencyConfig): Promise<void> {
-  const c = vscode.workspace.getConfiguration('pushpal');
+  const c = vscode.workspace.getConfiguration('pushpug');
   const current = readRawFrequency();
   for (const [field, key] of Object.entries(FREQUENCY_KEYS) as Array<[FrequencyField, string]>) {
     const v = getField(next, field);
@@ -131,12 +131,12 @@ export async function writeFrequency(next: FrequencyConfig): Promise<void> {
 }
 
 export async function writeMode(mode: Mode): Promise<void> {
-  if (readMode() !== mode) await vscode.workspace.getConfiguration('pushpal').update('mode', mode, vscode.ConfigurationTarget.Global);
+  if (readMode() !== mode) await vscode.workspace.getConfiguration('pushpug').update('mode', mode, vscode.ConfigurationTarget.Global);
 }
 
-/** Every PushPal setting back to its default (removed from User settings). */
+/** Every PushPug setting back to its default (removed from User settings). */
 export async function resetAllSettings(): Promise<void> {
-  const c = vscode.workspace.getConfiguration('pushpal');
+  const c = vscode.workspace.getConfiguration('pushpug');
   const keys = ['mode', ...Object.values(SETTING_KEYS), ...Object.values(FREQUENCY_KEYS)];
   for (const k of keys) {
     if (c.inspect(k)?.globalValue !== undefined) await c.update(k, undefined, vscode.ConfigurationTarget.Global);

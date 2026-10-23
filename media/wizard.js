@@ -1,10 +1,10 @@
-// PushPal setup wizard. Plain JS, no framework.
+// PushPug setup wizard. Plain JS, no framework.
 (function () {
   'use strict';
   var vscode = acquireVsCodeApi();
   var init = JSON.parse(document.getElementById('pp-init').textContent);
-  var M = window.PushPalMascot;
-  var I = window.PushPalIcon;
+  var M = window.PushPugMascot;
+  var I = window.PushPugIcon;
 
   var saved = vscode.getState() || {};
   var state = {
@@ -17,7 +17,7 @@
     finished: null
   };
   var STEPS = ['welcome', 'lang', 'theme', 'notify', 'frequency', 'github', 'test', 'done'];
-  var Modes = window.PushPalModes;
+  var Modes = window.PushPugModes;
   state.freq = init.freq;
   state.quiet = init.quiet || { enabled: false, start: '22:00', end: '08:00' };
   state.github = init.github || { signedIn: false, gh: false, onPass: true, for: 'all' };
@@ -215,7 +215,7 @@
     app.innerHTML =
       '<div class="wz">' +
         '<header class="wz-top">' +
-          '<div class="wz-brand">' + window.PushPalIconHead(28) + '<span>PushPal</span></div>' +
+          '<div class="wz-brand">' + window.PushPugIconHead(28) + '<span>PushPug</span></div>' +
           '<div class="wz-progress" aria-hidden="true"><div class="wz-bar"><i id="bar"></i></div></div>' +
           '<div class="wz-steplabel" id="stepLabel"></div>' +
         '</header>' +

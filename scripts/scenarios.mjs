@@ -73,7 +73,7 @@ for (const [theme, vscode] of [['light', 'light'], ['dark', 'dark']]) {
 }
 settingsPage.push({
   name: 'settings-clamped-en-system-light', kind: 'settings', lang: 'en', theme: 'system', vscode: 'light', width: 1100, height: 1640,
-  script: postState({ ...settingsOn, language: 'en', theme: 'system' }, { ...customModel, nowText: 'Checking every 1 min right now because the battery is at 15%' }, { notice: 'Check interval (s): 5 is outside 10–300, so PushPal uses 10.', adjusted: ['checkSeconds'] }, ['frequency']),
+  script: postState({ ...settingsOn, language: 'en', theme: 'system' }, { ...customModel, nowText: 'Checking every 1 min right now because the battery is at 15%' }, { notice: 'Check interval (s): 5 is outside 10–300, so PushPug uses 10.', adjusted: ['checkSeconds'] }, ['frequency']),
 });
 
 const people = {
@@ -143,7 +143,7 @@ const views = {
   checks: { repos: [repo({ recent: withChecks(recent.map((r) => ({ ...r, isNew: false }))) })], selected: 0 },
   undo: { repos: [repo({ undoLeft: 512, recent: withChecks(recent.map((r) => ({ ...r, isNew: false }))) })], selected: 0 },
   noUpstream: { repos: [repo({ state: 'noUpstream', upstream: null, branch: 'feature/cart', recent: [] })], selected: 0 },
-  error: { repos: [repo({ state: 'error', error: { code: 'network', text: 'ตอนนี้ติดต่อ remote ไม่ได้ (เน็ตหลุดหรือเปล่า?) เดี๋ยว PushPal ลองใหม่ให้เอง' } })], selected: 0 },
+  error: { repos: [repo({ state: 'error', error: { code: 'network', text: 'ตอนนี้ติดต่อ remote ไม่ได้ (เน็ตหลุดหรือเปล่า?) เดี๋ยว PushPug ลองใหม่ให้เอง' } })], selected: 0 },
 };
 
 const team = [];
@@ -172,7 +172,7 @@ const EN = {
   'นก ศรีสุข': 'Nok Srisuk',
   'ตอนนี้เช็กทุก 1 นาที เพราะแบตเหลือ 15%': 'Checking every 1 min right now because the battery is at 15%',
   'เช็กทุก 30 วิ': 'Checking every 30 s',
-  'ตอนนี้ติดต่อ remote ไม่ได้ (เน็ตหลุดหรือเปล่า?) เดี๋ยว PushPal ลองใหม่ให้เอง': "Can't reach the remote right now. Check your internet connection; PushPal will retry by itself.",
+  'ตอนนี้ติดต่อ remote ไม่ได้ (เน็ตหลุดหรือเปล่า?) เดี๋ยว PushPug ลองใหม่ให้เอง': "Can't reach the remote right now. Check your internet connection; PushPug will retry by itself.",
 };
 const english = (sc) => {
   let json = JSON.stringify(sc);

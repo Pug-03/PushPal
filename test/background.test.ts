@@ -22,7 +22,7 @@ function fakeRunner() {
 describe('background job registration', () => {
   let dir: string;
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'pushpal-agent-'));
+    dir = mkdtempSync(join(tmpdir(), 'pushpug-agent-'));
   });
   afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -91,17 +91,17 @@ describe('background worker', () => {
     extensionsDir = join(t.dir, 'extensions');
     home = join(t.dir, 'home');
     logFile = join(t.dir, 'worker-test.log');
-    mkdirSync(join(extensionsDir, 'pushpal.pushpal-1.0.0'), { recursive: true });
+    mkdirSync(join(extensionsDir, 'pushpug.pushpug-1.0.0'), { recursive: true });
     mkdirSync(home, { recursive: true });
     const store = new SharedStore(storage);
     const cfg: WorkerConfig = {
       version: 1,
       lang: 'th',
       repos: [t.bob],
-      extensionId: 'pushpal.pushpal',
+      extensionId: 'pushpug.pushpug',
       uriScheme: 'vscode',
       extensionsDir,
-      extensionDirPrefix: 'pushpal.pushpal-',
+      extensionDirPrefix: 'pushpug.pushpug-',
       enabled: true,
     };
     store.writeConfig(cfg);
@@ -111,7 +111,7 @@ describe('background worker', () => {
 
   function runWorker(env: Record<string, string> = {}) {
     execFileSync(process.execPath, [workerBundle, storage], {
-      env: { ...process.env, PUSHPAL_TEST_LOG: logFile, HOME: home, USERPROFILE: home, ...env },
+      env: { ...process.env, PUSHPUG_TEST_LOG: logFile, HOME: home, USERPROFILE: home, ...env },
       timeout: 60_000,
     });
   }
@@ -170,7 +170,7 @@ describe('background worker', () => {
   });
 
   test('removes itself when the extension was uninstalled', async () => {
-    rmSync(join(extensionsDir, 'pushpal.pushpal-1.0.0'), { recursive: true });
+    rmSync(join(extensionsDir, 'pushpug.pushpug-1.0.0'), { recursive: true });
     runWorker();
     assert.equal(events('selfDestruct').length, 1);
     if (isBackgroundSupported(process.platform)) {
@@ -181,7 +181,7 @@ describe('background worker', () => {
   });
 
   test('treats an extension marked obsolete (pending uninstall) as removed', async () => {
-    writeFileSync(join(extensionsDir, '.obsolete'), JSON.stringify({ 'pushpal.pushpal-1.0.0': true }));
+    writeFileSync(join(extensionsDir, '.obsolete'), JSON.stringify({ 'pushpug.pushpug-1.0.0': true }));
     runWorker();
     assert.equal(events('selfDestruct').length, 1);
   });
@@ -252,14 +252,14 @@ describe('background worker', () => {
       const f = { ...presetConfig('balanced'), lowBattery: { enabled: true, percent: 20, seconds: 600 }, lowPowerMode: { enabled: true, seconds: 900 } };
       setFrequency(f);
       lastCheck(130_000);
-      runWorker({ PUSHPAL_TEST_POWER: JSON.stringify({ onAC: false, percent: 10 }) });
+      runWorker({ PUSHPUG_TEST_POWER: JSON.stringify({ onAC: false, percent: 10 }) });
       assert.deepEqual(last(), { type: 'skip', reason: 'lowBattery' });
-      runWorker({ PUSHPAL_TEST_POWER: JSON.stringify({ onAC: true, percent: 10 }) });
+      runWorker({ PUSHPUG_TEST_POWER: JSON.stringify({ onAC: true, percent: 10 }) });
       assert.deepEqual(last(), { type: 'run', reason: 'pluggedIn' }, 'plugged in → normal interval');
       lastCheck(130_000);
-      runWorker({ PUSHPAL_TEST_POWER: JSON.stringify({ onAC: false, lowPowerMode: true }) });
+      runWorker({ PUSHPUG_TEST_POWER: JSON.stringify({ onAC: false, lowPowerMode: true }) });
       assert.deepEqual(last(), { type: 'skip', reason: 'lowPowerMode' });
-      runWorker({ PUSHPAL_TEST_POWER: JSON.stringify({ onAC: false, percent: 90, lowPowerMode: false }) });
+      runWorker({ PUSHPUG_TEST_POWER: JSON.stringify({ onAC: false, percent: 90, lowPowerMode: false }) });
       assert.deepEqual(last(), { type: 'run', reason: 'normal' });
     });
 
@@ -272,7 +272,7 @@ describe('background worker', () => {
 });
 
 test('shared storage recreates its folder if it was deleted while running', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'pushpal-store-'));
+  const dir = mkdtempSync(join(tmpdir(), 'pushpug-store-'));
   const store = new SharedStore(join(dir, 'storage'));
   rmSync(store.dir, { recursive: true, force: true });
   store.writeHeartbeat('w1', ['/tmp/repo']);

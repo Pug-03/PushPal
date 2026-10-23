@@ -1,4 +1,4 @@
-// Pure git logic for PushPal. No `vscode` imports here so it can be tested
+// Pure git logic for PushPug. No `vscode` imports here so it can be tested
 // against real temporary repositories and reused by the background worker.
 import { git, runGit, splitZ, type GitOptions } from './exec';
 
@@ -15,7 +15,7 @@ export interface ConflictState {
   /**
    * merge     – our commits and theirs touch the same lines (MERGE_HEAD exists)
    * autostash – the merge was fine but re-applying uncommitted work conflicted
-   * other     – unmerged files from something PushPal didn't start
+   * other     – unmerged files from something PushPug didn't start
    */
   kind: 'merge' | 'autostash' | 'other';
   /** Files that still contain unresolved conflicts. */

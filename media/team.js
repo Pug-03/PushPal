@@ -4,8 +4,8 @@
   'use strict';
   var vscode = acquireVsCodeApi();
   var init = JSON.parse(document.getElementById('pp-init').textContent);
-  var M = window.PushPalMascot;
-  var I = window.PushPalIcon;
+  var M = window.PushPugMascot;
+  var I = window.PushPugIcon;
   var S = init.strings;
   var lang = init.lang;
   var view = init.view;
@@ -522,7 +522,7 @@
 
   shell();
   update();
-  // Tell the extension whether the animation library loaded (shown in the PushPal output).
+  // Tell the extension whether the animation library loaded (shown in the PushPug output).
   post({ type: 'ready', diag: { gsap: !!window.gsap, morph: !!window.MorphSVGPlugin, errors: window.__ppErrors || [] } });
   window.addEventListener('error', function (e) { post({ type: 'error', message: String(e.message) + ' @ ' + String(e.filename || '').split('/').pop() + ':' + e.lineno }); });
 })();

@@ -1,4 +1,4 @@
-// How often PushPal checks, and when it slows down to save battery.
+// How often PushPug checks, and when it slows down to save battery.
 // Pure logic (no `vscode`, no OS calls): shared by the extension, the
 // background worker and the tests.
 

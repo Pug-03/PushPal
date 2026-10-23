@@ -24,7 +24,7 @@
 <script src="../../media/mascot.js"></script>
 </head>
 <body>
-<h1>Pal — the PushPal pug</h1>
+<h1>Pal — the PushPug pug</h1>
 <p class="sub">Flat graphic style: one ink colour and stroke weight, two flat tones per material. Only the head — expressions carry the story.</p>
 <h2>Expressions</h2>
 <div class="row" id="faces"></div>
@@ -34,7 +34,7 @@
 <div class="pal" id="pal"></div>
 <script>
 (function () {
-  var M = window.PushPalMascot;
+  var M = window.PushPugMascot;
   var NOTES = { sit: 'idle', sleep: 'up to date · โค้ดล่าสุดแล้ว', check: 'checking · กำลังเช็ก', alert: 'teammate pushed · เพื่อน push มา', merge: 'pulling · กำลังรวมโค้ด',
     success: 'merged · รวมเสร็จ', conflict: 'conflict · เจอจุดชน', fail: 'tests failed · เทสต์ไม่ผ่าน', pass: 'tests passed · เทสต์ผ่าน', welcome: 'welcome · ต้อนรับ', love: 'clicked · ถูกคลิก' };
   var faces = document.getElementById('faces');
@@ -49,7 +49,7 @@
     var d = document.createElement('div');
     d.className = 'cell';
     d.style.minWidth = '0';
-    d.innerHTML = window.PushPalIconHead(s) + '<span>' + s + 'px</span>';
+    d.innerHTML = window.PushPugIconHead(s) + '<span>' + s + 'px</span>';
     small.appendChild(d);
   });
   var pal = document.getElementById('pal');

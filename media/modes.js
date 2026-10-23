@@ -1,7 +1,7 @@
 // Mode cards and number formatting, shared by the setup wizard and the settings page.
 (function () {
   'use strict';
-  var I = window.PushPalIcon;
+  var I = window.PushPugIcon;
   var ICONS = { fast: 'zap', balanced: 'scale', batterySaver: 'battery', custom: 'sliders' };
   var ORDER = ['fast', 'balanced', 'batterySaver', 'custom'];
 
@@ -63,5 +63,5 @@
     btn.classList.add('picked');
   }
 
-  window.PushPalModes = { cards: cards, pick: pick, fmtSeconds: fmtSeconds, fmtBytes: fmtBytes, estimateLine: estimateLine, esc: esc };
+  window.PushPugModes = { cards: cards, pick: pick, fmtSeconds: fmtSeconds, fmtBytes: fmtBytes, estimateLine: estimateLine, esc: esc };
 })();

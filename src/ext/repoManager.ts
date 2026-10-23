@@ -34,7 +34,7 @@ interface GitAPI {
 
 export type CheckListener = (entry: RepoEntry, previous: RepoSnapshot | null) => void | Promise<void>;
 
-const AUTOSTASH_KEY = 'pushpal.autostash';
+const AUTOSTASH_KEY = 'pushpug.autostash';
 
 export class RepoManager implements vscode.Disposable {
   private readonly entries = new Map<string, RepoEntry>();
@@ -237,7 +237,7 @@ export class RepoManager implements vscode.Disposable {
 
   onAutostashDropped: ((root: string) => void) | undefined;
 
-  /** Record the stash sha right after PushPal's own pull hit an autostash conflict. */
+  /** Record the stash sha right after PushPug's own pull hit an autostash conflict. */
   async rememberAutostash(root: string, sha: string): Promise<void> {
     const all = this.context.workspaceState.get<Record<string, string>>(AUTOSTASH_KEY, {});
     all[repoKey(root)] = sha;

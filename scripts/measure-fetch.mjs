@@ -1,4 +1,4 @@
-// Measures how many bytes one PushPal check really costs on the network, so the
+// Measures how many bytes one PushPug check really costs on the network, so the
 // "≈ X KB/hour" numbers in the UI come from measurements, not guesses.
 //
 //   node scripts/measure-fetch.mjs [repoDir] [runs]
@@ -66,7 +66,7 @@ async function measure(name, fn) {
   results[name] = { avgBytes: avg(totals), min: Math.min(...totals), max: Math.max(...totals) };
 }
 
-// Same command PushPal runs (src/git/repo.ts → fetchUpstream), over HTTPS.
+// Same command PushPug runs (src/git/repo.ts → fetchUpstream), over HTTPS.
 await measure('httpsFetch', () =>
   run('git', ['-C', repo, '-c', `http.proxy=${url}`, 'fetch', '--quiet', '--no-write-fetch-head', httpsUrl], { GIT_TERMINAL_PROMPT: '0' }),
 );

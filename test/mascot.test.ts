@@ -14,7 +14,7 @@ function loadMascot() {
 
 test('Pal is drawn only with paths, as separate animatable layers', () => {
   const w = loadMascot();
-  const svg: string = w.PushPalMascot.svg({ pose: 'sit', size: 120 });
+  const svg: string = w.PushPugMascot.svg({ pose: 'sit', size: 120 });
   assert.doesNotMatch(svg, /<(circle|ellipse|rect)\b/, 'no stock shapes: everything is a bezier path');
   for (const part of ['root', 'tilt', 'earL', 'earR', 'eyeL', 'eyeR', 'openL', 'lookL', 'lidL', 'closedL', 'happyL', 'heartL', 'browL', 'browR', 'blush', 'muzzle', 'mouth', 'smile', 'bark', 'tongue', 'zzz', 'quest', 'tear']) {
     assert.match(svg, new RegExp(`class="p-${part}"`), `layer ${part}`);
@@ -23,7 +23,7 @@ test('Pal is drawn only with paths, as separate animatable layers', () => {
 });
 
 test('the static drawing (no animation script) already shows the resting face', () => {
-  const svg: string = loadMascot().PushPalMascot.svg({ pose: 'sit' });
+  const svg: string = loadMascot().PushPugMascot.svg({ pose: 'sit' });
   assert.match(svg, /class="p-lidL" opacity="0"/, 'no heavy eyelid');
   assert.match(svg, /class="p-closedL" opacity="0"/, 'eyes open');
   assert.match(svg, /class="p-smile" opacity="0"/, 'resting mouth, not the big smile');
@@ -31,14 +31,14 @@ test('the static drawing (no animation script) already shows the resting face', 
 });
 
 test('every requested pose exists', () => {
-  const M = loadMascot().PushPalMascot;
+  const M = loadMascot().PushPugMascot;
   for (const p of ['sleep', 'check', 'alert', 'merge', 'success', 'conflict', 'fail', 'pass', 'welcome', 'love']) assert.ok(M.poses.includes(p), p);
 });
 
 test('the small icon head stays simple', () => {
   const w = loadMascot();
-  const tiny: string = w.PushPalIconHead(16);
-  const big: string = w.PushPalIconHead(128);
+  const tiny: string = w.PushPugIconHead(16);
+  const big: string = w.PushPugIconHead(128);
   assert.doesNotMatch(tiny, /<(circle|ellipse|rect)\b/);
   assert.ok(tiny.length < big.length, 'details (brows, mouth, blush) are dropped at 16 px');
 });

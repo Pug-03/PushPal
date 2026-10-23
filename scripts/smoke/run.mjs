@@ -10,7 +10,7 @@ rmSync(base, { recursive: true, force: true });
 const ws = join(base, 'team');
 const userDir = join(base, 'user');
 mkdirSync(join(userDir, 'User'), { recursive: true });
-writeFileSync(join(userDir, 'User', 'settings.json'), JSON.stringify({ 'pushpal.notify.desktop': false, 'security.workspace.trust.enabled': false }));
+writeFileSync(join(userDir, 'User', 'settings.json'), JSON.stringify({ 'pushpug.notify.desktop': false, 'security.workspace.trust.enabled': false }));
 mkdirSync(ws, { recursive: true });
 const env = { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: join(base, 'gitconfig') };
 writeFileSync(env.GIT_CONFIG_GLOBAL, '[user]\n\tname = Smoke\n\temail = smoke@example.com\n[init]\n\tdefaultBranch = main\n');
@@ -35,7 +35,7 @@ try {
     '--disable-extensions',
     '--skip-welcome', '--skip-release-notes', '--disable-workspace-trust',
     join(ws, 'bob'),
-  ], { env: { ...env, PUSHPAL_SMOKE_RESULT: result, PUSHPAL_SMOKE_USERDIR: userDir }, stdio: 'inherit', timeout: 120_000 });
+  ], { env: { ...env, PUSHPUG_SMOKE_RESULT: result, PUSHPUG_SMOKE_USERDIR: userDir }, stdio: 'inherit', timeout: 120_000 });
 } catch (e) {
   console.error('VS Code exited with error', e.status);
 }

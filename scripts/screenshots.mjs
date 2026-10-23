@@ -1,4 +1,4 @@
-// Renders every PushPal screen in headless Chrome with a mocked webview API
+// Renders every PushPug screen in headless Chrome with a mocked webview API
 // and VS Code's Dark Modern / Light Modern theme variables, then saves PNGs
 // to docs/screenshots/. Usage: node scripts/screenshots.mjs [filter]
 import { mkdirSync, writeFileSync, readFileSync, mkdtempSync } from 'node:fs';
@@ -11,7 +11,7 @@ import { scenarios } from './scenarios.mjs';
 const media = resolve('media');
 const outDir = resolve('docs/screenshots');
 mkdirSync(outDir, { recursive: true });
-const tmp = mkdtempSync(join(tmpdir(), 'pushpal-shots-'));
+const tmp = mkdtempSync(join(tmpdir(), 'pushpug-shots-'));
 const filter = process.argv[2];
 
 const en = JSON.parse(readFileSync('src/i18n/locales/en.json', 'utf8'));

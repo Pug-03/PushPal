@@ -48,8 +48,8 @@ export async function captureBeforePull(root: string, opts: GitOptions = {}): Pr
   const stash = (await runGit(root, ['stash', 'create'], opts)).stdout.trim();
   // Keep the object reachable so nothing prunes it during the undo window;
   // a clean working copy needs nothing, so drop any ref from an earlier pull.
-  if (stash) await runGit(root, ['update-ref', 'refs/pushpal/undo-stash', stash], opts);
-  else await runGit(root, ['update-ref', '-d', 'refs/pushpal/undo-stash'], opts);
+  if (stash) await runGit(root, ['update-ref', 'refs/pushpug/undo-stash', stash], opts);
+  else await runGit(root, ['update-ref', '-d', 'refs/pushpug/undo-stash'], opts);
   return { preHead, preStash: stash || null };
 }
 
@@ -89,7 +89,7 @@ export async function undoMerge(rec: UndoRecord, now = Date.now(), opts: GitOpti
     const apply = await runGit(rec.root, ['stash', 'apply', '--index', rec.preStash], opts);
     if (apply.code !== 0) return { kind: 'error', message: apply.stderr.trim() || apply.stdout.trim() };
   }
-  await runGit(rec.root, ['update-ref', '-d', 'refs/pushpal/undo-stash'], opts);
+  await runGit(rec.root, ['update-ref', '-d', 'refs/pushpug/undo-stash'], opts);
   return { kind: 'ok' };
 }
 

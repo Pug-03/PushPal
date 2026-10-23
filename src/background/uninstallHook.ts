@@ -11,7 +11,7 @@ function extensionId(): string {
     const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf8')) as { publisher: string; name: string };
     return `${pkg.publisher}.${pkg.name}`.toLowerCase();
   } catch {
-    return 'pushpal.pushpal';
+    return 'pushpug.pushpug';
   }
 }
 

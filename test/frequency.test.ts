@@ -232,7 +232,7 @@ describe('power state parsing', () => {
   });
 
   test('Linux /sys/class/power_supply', () => {
-    const base = mkdtempSync(join(tmpdir(), 'pushpal-ps-'));
+    const base = mkdtempSync(join(tmpdir(), 'pushpug-ps-'));
     const dev = (name: string, files: Record<string, string>) => {
       mkdirSync(join(base, name));
       for (const [f, v] of Object.entries(files)) writeFileSync(join(base, name, f), v + '\n');
@@ -262,7 +262,7 @@ describe('power state parsing', () => {
 
 describe('GitHub Actions', () => {
   test('repo slug from remote URLs', () => {
-    assert.equal(githubSlug('https://github.com/Pug-03/PushPal.git'), 'Pug-03/PushPal');
+    assert.equal(githubSlug('https://github.com/Pug-03/PushPug.git'), 'Pug-03/PushPug');
     assert.equal(githubSlug('https://user@github.com/a/b'), 'a/b');
     assert.equal(githubSlug('git@github.com:a/b.git'), 'a/b');
     assert.equal(githubSlug('ssh://git@github.com/a/b.git'), 'a/b');

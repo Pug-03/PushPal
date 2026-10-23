@@ -16,7 +16,7 @@ export async function sendTestNotification(desktop: ExtensionDesktopChannel): Pr
     return backend;
   }
   void desktop.notifier.show({
-    group: 'pushpal-test',
+    group: 'pushpug-test',
     title: t('test.title'),
     message: t('test.body'),
     primaryLabel: t('btn.ok'),
@@ -38,7 +38,7 @@ export function installAlerter(desktop: ExtensionDesktopChannel): void {
     });
     return;
   }
-  const term = vscode.window.createTerminal({ name: 'PushPal: alerter', shellPath: brew, shellArgs: ['install', 'vjeantet/tap/alerter'] });
+  const term = vscode.window.createTerminal({ name: 'PushPug: alerter', shellPath: brew, shellArgs: ['install', 'vjeantet/tap/alerter'] });
   term.show();
   void vscode.window.showInformationMessage(t('alerter.installing'));
   const sub = vscode.window.onDidCloseTerminal((closed) => {

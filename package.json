@@ -1,9 +1,9 @@
 {
-  "name": "pushpal",
-  "displayName": "PushPal",
+  "name": "pushpug",
+  "displayName": "PushPug",
   "description": "%ext.description%",
   "version": "1.0.0",
-  "publisher": "pushpal",
+  "publisher": "pushpug",
   "license": "MIT",
   "icon": "media/icon.png",
   "galleryBanner": {
@@ -52,107 +52,107 @@
   "contributes": {
     "commands": [
       {
-        "command": "pushpal.pull",
+        "command": "pushpug.pull",
         "title": "%cmd.pull%",
-        "category": "PushPal",
+        "category": "PushPug",
         "icon": "$(cloud-download)"
       },
       {
-        "command": "pushpal.checkNow",
+        "command": "pushpug.checkNow",
         "title": "%cmd.checkNow%",
-        "category": "PushPal",
+        "category": "PushPug",
         "icon": "$(refresh)"
       },
       {
-        "command": "pushpal.setup",
+        "command": "pushpug.setup",
         "title": "%cmd.setup%",
-        "category": "PushPal",
+        "category": "PushPug",
         "icon": "$(rocket)"
       },
       {
-        "command": "pushpal.showTeam",
+        "command": "pushpug.showTeam",
         "title": "%cmd.showTeam%",
-        "category": "PushPal"
+        "category": "PushPug"
       },
       {
-        "command": "pushpal.showConflicts",
+        "command": "pushpug.showConflicts",
         "title": "%cmd.showConflicts%",
-        "category": "PushPal"
+        "category": "PushPug"
       },
       {
-        "command": "pushpal.finishMerge",
+        "command": "pushpug.finishMerge",
         "title": "%cmd.finishMerge%",
-        "category": "PushPal"
+        "category": "PushPug"
       },
       {
-        "command": "pushpal.testNotification",
+        "command": "pushpug.testNotification",
         "title": "%cmd.testNotification%",
-        "category": "PushPal"
+        "category": "PushPug"
       },
       {
-        "command": "pushpal.openSettings",
+        "command": "pushpug.openSettings",
         "title": "%cmd.openSettings%",
-        "category": "PushPal",
+        "category": "PushPug",
         "icon": "$(settings-gear)"
       },
       {
-        "command": "pushpal.switchMode",
+        "command": "pushpug.switchMode",
         "title": "%cmd.switchMode%",
-        "category": "PushPal",
+        "category": "PushPug",
         "icon": "$(dashboard)"
       },
       {
-        "command": "pushpal.push",
+        "command": "pushpug.push",
         "title": "%cmd.push%",
-        "category": "PushPal",
+        "category": "PushPug",
         "icon": "$(cloud-upload)"
       },
       {
-        "command": "pushpal.undoMerge",
+        "command": "pushpug.undoMerge",
         "title": "%cmd.undoMerge%",
-        "category": "PushPal",
+        "category": "PushPug",
         "icon": "$(discard)"
       },
       {
-        "command": "pushpal.snooze",
+        "command": "pushpug.snooze",
         "title": "%cmd.snooze%",
-        "category": "PushPal",
+        "category": "PushPug",
         "icon": "$(bell-slash)"
       },
       {
-        "command": "pushpal.unsnooze",
+        "command": "pushpug.unsnooze",
         "title": "%cmd.unsnooze%",
-        "category": "PushPal",
+        "category": "PushPug",
         "icon": "$(bell)"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "pushpal.checkNow",
-          "when": "view == pushpal.team",
+          "command": "pushpug.checkNow",
+          "when": "view == pushpug.team",
           "group": "navigation@1"
         },
         {
-          "command": "pushpal.setup",
-          "when": "view == pushpal.team",
+          "command": "pushpug.setup",
+          "when": "view == pushpug.team",
           "group": "navigation@2"
         },
         {
-          "command": "pushpal.openSettings",
-          "when": "view == pushpal.team",
+          "command": "pushpug.openSettings",
+          "when": "view == pushpug.team",
           "group": "navigation@3"
         }
       ],
       "commandPalette": [
         {
-          "command": "pushpal.finishMerge",
-          "when": "pushpal.hasConflict"
+          "command": "pushpug.finishMerge",
+          "when": "pushpug.hasConflict"
         }
       ],
       "scm/title": [
         {
-          "command": "pushpal.push",
+          "command": "pushpug.push",
           "when": "scmProvider == git",
           "group": "navigation@0"
         }
@@ -161,27 +161,27 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "pushpal",
-          "title": "PushPal",
+          "id": "pushpug",
+          "title": "PushPug",
           "icon": "media/activity.svg"
         }
       ]
     },
     "views": {
-      "pushpal": [
+      "pushpug": [
         {
           "type": "webview",
-          "id": "pushpal.team",
+          "id": "pushpug.team",
           "name": "%view.team%",
           "icon": "media/activity.svg",
-          "contextualTitle": "PushPal"
+          "contextualTitle": "PushPug"
         }
       ]
     },
     "configuration": {
-      "title": "PushPal",
+      "title": "PushPug",
       "properties": {
-        "pushpal.language": {
+        "pushpug.language": {
           "type": "string",
           "enum": [
             "auto",
@@ -197,7 +197,7 @@
           "order": 1,
           "description": "%cfg.language%"
         },
-        "pushpal.theme": {
+        "pushpug.theme": {
           "type": "string",
           "enum": [
             "system",
@@ -213,7 +213,7 @@
           "order": 2,
           "description": "%cfg.theme%"
         },
-        "pushpal.mode": {
+        "pushpug.mode": {
           "type": "string",
           "enum": [
             "fast",
@@ -231,7 +231,7 @@
           "markdownDescription": "%cfg.mode%",
           "order": 3
         },
-        "pushpal.checkIntervalSeconds": {
+        "pushpug.checkIntervalSeconds": {
           "type": "number",
           "default": 30,
           "minimum": 10,
@@ -239,7 +239,7 @@
           "order": 4,
           "markdownDescription": "%cfg.interval%"
         },
-        "pushpal.background.intervalSeconds": {
+        "pushpug.background.intervalSeconds": {
           "type": "number",
           "default": 120,
           "minimum": 60,
@@ -247,13 +247,13 @@
           "markdownDescription": "%cfg.background.interval%",
           "order": 5
         },
-        "pushpal.battery.idle.enabled": {
+        "pushpug.battery.idle.enabled": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "%cfg.battery.idle.enabled%",
           "order": 6
         },
-        "pushpal.battery.idle.minutes": {
+        "pushpug.battery.idle.minutes": {
           "type": "number",
           "default": 10,
           "minimum": 1,
@@ -261,7 +261,7 @@
           "markdownDescription": "%cfg.battery.idle.minutes%",
           "order": 7
         },
-        "pushpal.battery.idle.intervalSeconds": {
+        "pushpug.battery.idle.intervalSeconds": {
           "type": "number",
           "default": 60,
           "minimum": 10,
@@ -269,13 +269,13 @@
           "markdownDescription": "%cfg.battery.idle.interval%",
           "order": 8
         },
-        "pushpal.battery.lowBattery.enabled": {
+        "pushpug.battery.lowBattery.enabled": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "%cfg.battery.low.enabled%",
           "order": 9
         },
-        "pushpal.battery.lowBattery.percent": {
+        "pushpug.battery.lowBattery.percent": {
           "type": "number",
           "default": 20,
           "minimum": 5,
@@ -283,7 +283,7 @@
           "markdownDescription": "%cfg.battery.low.percent%",
           "order": 10
         },
-        "pushpal.battery.lowBattery.intervalSeconds": {
+        "pushpug.battery.lowBattery.intervalSeconds": {
           "type": "number",
           "default": 60,
           "minimum": 10,
@@ -291,13 +291,13 @@
           "markdownDescription": "%cfg.battery.low.interval%",
           "order": 11
         },
-        "pushpal.battery.lowPowerMode.enabled": {
+        "pushpug.battery.lowPowerMode.enabled": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "%cfg.battery.lpm.enabled%",
           "order": 12
         },
-        "pushpal.battery.lowPowerMode.intervalSeconds": {
+        "pushpug.battery.lowPowerMode.intervalSeconds": {
           "type": "number",
           "default": 60,
           "minimum": 10,
@@ -305,19 +305,19 @@
           "markdownDescription": "%cfg.battery.lpm.interval%",
           "order": 13
         },
-        "pushpal.battery.pluggedInUsesNormal": {
+        "pushpug.battery.pluggedInUsesNormal": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "%cfg.battery.plugged%",
           "order": 14
         },
-        "pushpal.activeHours.enabled": {
+        "pushpug.activeHours.enabled": {
           "type": "boolean",
           "default": false,
           "markdownDescription": "%cfg.hours.enabled%",
           "order": 15
         },
-        "pushpal.activeHours.start": {
+        "pushpug.activeHours.start": {
           "type": "string",
           "default": "08:00",
           "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
@@ -325,7 +325,7 @@
           "markdownDescription": "%cfg.hours.start%",
           "order": 16
         },
-        "pushpal.activeHours.end": {
+        "pushpug.activeHours.end": {
           "type": "string",
           "default": "23:00",
           "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
@@ -333,37 +333,37 @@
           "markdownDescription": "%cfg.hours.end%",
           "order": 17
         },
-        "pushpal.notify.inVSCode": {
+        "pushpug.notify.inVSCode": {
           "type": "boolean",
           "default": true,
           "order": 18,
           "description": "%cfg.notify.inVSCode%"
         },
-        "pushpal.notify.desktop": {
+        "pushpug.notify.desktop": {
           "type": "boolean",
           "default": true,
           "order": 19,
           "description": "%cfg.notify.desktop%"
         },
-        "pushpal.notify.background": {
+        "pushpug.notify.background": {
           "type": "boolean",
           "default": false,
           "order": 20,
           "markdownDescription": "%cfg.notify.background%"
         },
-        "pushpal.notify.sameFileWarning": {
+        "pushpug.notify.sameFileWarning": {
           "type": "boolean",
           "default": true,
           "order": 21,
           "description": "%cfg.notify.sameFile%"
         },
-        "pushpal.actions.enabled": {
+        "pushpug.actions.enabled": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "%cfg.actions.enabled%",
           "order": 22
         },
-        "pushpal.actions.intervalSeconds": {
+        "pushpug.actions.intervalSeconds": {
           "type": "number",
           "default": 20,
           "minimum": 10,
@@ -371,19 +371,19 @@
           "markdownDescription": "%cfg.actions.interval%",
           "order": 23
         },
-        "pushpal.avatars": {
+        "pushpug.avatars": {
           "type": "boolean",
           "default": true,
           "order": 24,
           "markdownDescription": "%cfg.avatars%"
         },
-        "pushpal.actions.notifyOnPass": {
+        "pushpug.actions.notifyOnPass": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "%cfg.actions.onPass%",
           "order": 25
         },
-        "pushpal.actions.notifyFor": {
+        "pushpug.actions.notifyFor": {
           "type": "string",
           "enum": [
             "all",
@@ -399,13 +399,13 @@
           "markdownDescription": "%cfg.actions.for%",
           "order": 26
         },
-        "pushpal.quiet.enabled": {
+        "pushpug.quiet.enabled": {
           "type": "boolean",
           "default": false,
           "markdownDescription": "%cfg.quiet.enabled%",
           "order": 27
         },
-        "pushpal.quiet.start": {
+        "pushpug.quiet.start": {
           "type": "string",
           "default": "22:00",
           "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
@@ -413,7 +413,7 @@
           "markdownDescription": "%cfg.quiet.start%",
           "order": 28
         },
-        "pushpal.quiet.end": {
+        "pushpug.quiet.end": {
           "type": "string",
           "default": "08:00",
           "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",

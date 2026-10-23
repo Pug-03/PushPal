@@ -37,12 +37,12 @@ const COMMANDS: Record<string, string> = {
   clone: 'git.clone',
   publish: 'git.publish',
   switchBranch: 'git.checkout',
-  setup: 'pushpal.setup',
+  setup: 'pushpug.setup',
 };
 
 /** The "ทีมของฉัน / My Team" sidebar view. */
 export class TeamViewProvider implements vscode.WebviewViewProvider {
-  static readonly id = 'pushpal.team';
+  static readonly id = 'pushpug.team';
   private view: vscode.WebviewView | undefined;
   private selected: string | undefined;
   private pending: NodeJS.Timeout | undefined;
@@ -88,7 +88,7 @@ export class TeamViewProvider implements vscode.WebviewViewProvider {
     const lang = currentLang();
     this.view.title = lang === 'th' ? 'ทีมของฉัน' : 'My Team';
     this.view.webview.html = renderPage(this.view.webview, this.context.extensionUri, {
-      title: 'PushPal',
+      title: 'PushPug',
       lang,
       theme: readSettings().theme,
       surface: 'sidebar',

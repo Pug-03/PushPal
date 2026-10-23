@@ -9,7 +9,7 @@ import { sendTestNotification, installAlerter } from './desktopSetup';
 import { frequencyModel, type FrequencyDeps } from './settingsPage';
 import type { Mode } from '../core/frequency';
 
-export const SETUP_SHOWN_KEY = 'pushpal.setupShown';
+export const SETUP_SHOWN_KEY = 'pushpug.setupShown';
 
 type FromWizard =
   | { type: 'setLang'; lang: Lang }
@@ -58,7 +58,7 @@ export class SetupWizard {
     private readonly freq: FrequencyDeps,
   ) {
     const lang = currentLang();
-    this.panel = vscode.window.createWebviewPanel('pushpal.setup', lang === 'th' ? 'ตั้งค่า PushPal' : 'PushPal Setup', vscode.ViewColumn.Active, {
+    this.panel = vscode.window.createWebviewPanel('pushpug.setup', lang === 'th' ? 'ตั้งค่า PushPug' : 'PushPug Setup', vscode.ViewColumn.Active, {
       enableScripts: true,
       retainContextWhenHidden: true,
       localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media')],
@@ -78,7 +78,7 @@ export class SetupWizard {
     const s = readSettings();
     const backend = await this.desktop.backend();
     this.panel.webview.html = renderPage(this.panel.webview, this.context.extensionUri, {
-      title: 'PushPal',
+      title: 'PushPug',
       lang,
       theme: s.theme,
       surface: 'panel',
@@ -103,7 +103,7 @@ export class SetupWizard {
     switch (m.type) {
       case 'setLang':
         await saveSettings({ language: m.lang });
-        this.panel.title = m.lang === 'th' ? 'ตั้งค่า PushPal' : 'PushPal Setup';
+        this.panel.title = m.lang === 'th' ? 'ตั้งค่า PushPug' : 'PushPug Setup';
         return;
       case 'setTheme':
         await saveSettings({ theme: m.theme });
@@ -125,7 +125,7 @@ export class SetupWizard {
         return;
       }
       case 'openSettings':
-        await vscode.commands.executeCommand('pushpal.openSettings', 'frequency');
+        await vscode.commands.executeCommand('pushpug.openSettings', 'frequency');
         return;
       case 'test': {
         const backend = await sendTestNotification(this.desktop);

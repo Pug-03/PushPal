@@ -12,31 +12,31 @@ exports.run = async function () {
   try {
     await steps(log);
   } catch (e) {
-    fs.writeFileSync(process.env.PUSHPAL_SMOKE_RESULT + '.err', String(e && e.stack) + '\nlog: ' + log.join(', '));
+    fs.writeFileSync(process.env.PUSHPUG_SMOKE_RESULT + '.err', String(e && e.stack) + '\nlog: ' + log.join(', '));
     throw e;
   }
 };
 
 async function steps(log) {
-  const ext = vscode.extensions.all.find((e) => e.packageJSON.name === 'pushpal');
+  const ext = vscode.extensions.all.find((e) => e.packageJSON.name === 'pushpug');
   assert(ext, 'extension found');
   await ext.activate();
   log.push('activated');
   const cmds = await vscode.commands.getCommands(true);
-  for (const c of ['pushpal.pull', 'pushpal.checkNow', 'pushpal.setup', 'pushpal.showTeam', 'pushpal.testNotification', 'pushpal.switchMode', 'pushpal.openSettings', 'pushpal.push', 'pushpal.undoMerge', 'pushpal.snooze']) assert(cmds.includes(c), c);
+  for (const c of ['pushpug.pull', 'pushpug.checkNow', 'pushpug.setup', 'pushpug.showTeam', 'pushpug.testNotification', 'pushpug.switchMode', 'pushpug.openSettings', 'pushpug.push', 'pushpug.undoMerge', 'pushpug.snooze']) assert(cmds.includes(c), c);
   log.push('commands ok');
 
   await sleep(1500);
   const tabs = vscode.window.tabGroups.all.flatMap((g) => g.tabs.map((t) => t.label));
-  assert(tabs.some((l) => /PushPal|ตั้งค่า/.test(l)), 'wizard opened on first run: ' + tabs.join(','));
+  assert(tabs.some((l) => /PushPug|ตั้งค่า/.test(l)), 'wizard opened on first run: ' + tabs.join(','));
   log.push('wizard opened');
 
-  await vscode.commands.executeCommand('pushpal.team.focus');
+  await vscode.commands.executeCommand('pushpug.team.focus');
   log.push('team view focused');
   let diag;
   for (let i = 0; i < 50 && !diag; i++) {
     await sleep(200);
-    diag = await vscode.commands.executeCommand('pushpal._diag');
+    diag = await vscode.commands.executeCommand('pushpug._diag');
   }
   assert(diag, 'team view reported back');
   assert(diag.gsap && diag.morph, 'animation library loaded in the webview: ' + JSON.stringify(diag));
@@ -51,30 +51,30 @@ async function steps(log) {
   execFileSync('git', ['push', '-q'], { cwd: alice });
   fs.writeFileSync(path.join(bob, 'bob-wip.txt'), 'uncommitted work');
 
-  await vscode.commands.executeCommand('pushpal.checkNow');
-  await vscode.commands.executeCommand('pushpal.pull', bob);
+  await vscode.commands.executeCommand('pushpug.checkNow');
+  await vscode.commands.executeCommand('pushpug.pull', bob);
   await sleep(500);
   assert(fs.existsSync(path.join(bob, 'from-alice.txt')), 'pulled file present');
   assert(fs.readFileSync(path.join(bob, 'bob-wip.txt'), 'utf8') === 'uncommitted work', 'wip kept');
   log.push('pull ok');
 
   // Undo the merge: back to before, uncommitted work still there; then pull again.
-  await vscode.commands.executeCommand('pushpal.undoMerge', bob);
+  await vscode.commands.executeCommand('pushpug.undoMerge', bob);
   await sleep(300);
   assert(!fs.existsSync(path.join(bob, 'from-alice.txt')), 'undo removed the merged file');
   assert(fs.readFileSync(path.join(bob, 'bob-wip.txt'), 'utf8') === 'uncommitted work', 'wip kept after undo');
-  await vscode.commands.executeCommand('pushpal.pull', bob);
+  await vscode.commands.executeCommand('pushpug.pull', bob);
   await sleep(300);
   assert(fs.existsSync(path.join(bob, 'from-alice.txt')), 'pulled again');
   log.push('undo ok');
 
-  const storage = path.join(process.env.PUSHPAL_SMOKE_USERDIR, 'User', 'globalStorage', ext.id.toLowerCase());
+  const storage = path.join(process.env.PUSHPUG_SMOKE_USERDIR, 'User', 'globalStorage', ext.id.toLowerCase());
   const hb = fs.readdirSync(path.join(storage, 'heartbeats'));
   assert(hb.length > 0, 'heartbeat written');
   log.push('heartbeat ok');
 
   // Modes and values stay in sync both ways, out-of-range values are clamped.
-  const cfg = () => vscode.workspace.getConfiguration('pushpal');
+  const cfg = () => vscode.workspace.getConfiguration('pushpug');
   const waitFor = async (fn, what) => {
     for (let i = 0; i < 40; i++) {
       if (fn()) return;
@@ -97,11 +97,11 @@ async function steps(log) {
   assert(workerCfg.frequency && workerCfg.frequency.backgroundSeconds === 300, 'config.json has the new background interval: ' + JSON.stringify(workerCfg.frequency));
   log.push('worker config ok');
 
-  await vscode.commands.executeCommand('pushpal.openSettings');
+  await vscode.commands.executeCommand('pushpug.openSettings');
   await sleep(800);
   const tabs2 = vscode.window.tabGroups.all.flatMap((g) => g.tabs.map((t) => t.label));
-  assert(tabs2.some((l) => /PushPal Settings|ตั้งค่า PushPal/.test(l)), 'settings page opened: ' + tabs2.join(','));
+  assert(tabs2.some((l) => /PushPug Settings|ตั้งค่า PushPug/.test(l)), 'settings page opened: ' + tabs2.join(','));
   log.push('settings page ok');
 
-  fs.writeFileSync(process.env.PUSHPAL_SMOKE_RESULT, JSON.stringify({ ok: true, log }));
+  fs.writeFileSync(process.env.PUSHPUG_SMOKE_RESULT, JSON.stringify({ ok: true, log }));
 }

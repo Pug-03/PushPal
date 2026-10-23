@@ -6,7 +6,7 @@ import { join, dirname } from 'node:path';
 import { git } from '../src/git/exec';
 
 // Isolate from the developer's ~/.gitconfig (templates, hooks, pull.rebase…).
-const isolatedHome = mkdtempSync(join(tmpdir(), 'pushpal-home-'));
+const isolatedHome = mkdtempSync(join(tmpdir(), 'pushpug-home-'));
 writeFileSync(join(isolatedHome, '.gitconfig'), '');
 process.env.GIT_CONFIG_GLOBAL = join(isolatedHome, '.gitconfig');
 process.env.GIT_CONFIG_NOSYSTEM = '1';
@@ -22,7 +22,7 @@ export interface Team {
 }
 
 export async function makeTeam(): Promise<Team> {
-  const dir = mkdtempSync(join(tmpdir(), 'pushpal-team-'));
+  const dir = mkdtempSync(join(tmpdir(), 'pushpug-team-'));
   const remote = join(dir, 'remote.git');
   const alice = join(dir, 'alice');
   const bob = join(dir, 'bob');

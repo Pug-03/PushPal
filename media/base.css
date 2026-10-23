@@ -1,8 +1,8 @@
-/* PushPal design system — shared by the setup wizard and the My Team view.
+/* PushPug design system — shared by the setup wizard and the My Team view.
  *
  * Three themes, chosen with a class on <html>:
- *   .theme-light   PushPal's own light palette
- *   .theme-dark    PushPal's own dark palette
+ *   .theme-light   PushPug's own light palette
+ *   .theme-dark    PushPug's own dark palette
  *   .theme-system  surfaces and text from VS Code's --vscode-* variables, so it
  *                  follows the current VS Code theme live; brand colours pick
  *                  their light/dark variant from VS Code's body class.

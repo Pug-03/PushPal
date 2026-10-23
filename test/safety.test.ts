@@ -11,7 +11,7 @@ import { explainGitError } from '../src/core/gitErrors';
 const head = async (repo: string) => (await git(repo, ['rev-parse', 'HEAD'])).trim();
 const status = async (repo: string) => (await git(repo, ['status', '--porcelain=v1'])).trim();
 
-/** Pull the way PushPal does, keeping an undo record. */
+/** Pull the way PushPug does, keeping an undo record. */
 async function pullWithUndo(repo: string): Promise<UndoRecord> {
   const before = await captureBeforePull(repo);
   const r = await pull(repo);
@@ -38,7 +38,7 @@ describe('undo the last merge', () => {
     assert.equal(await head(t.bob), before);
     assert.equal(existsSync(join(t.bob, 'alice.txt')), false);
     assert.equal(await status(t.bob), '');
-    const ref = await runGit(t.bob, ['show-ref', '--verify', '--quiet', 'refs/pushpal/undo-stash']);
+    const ref = await runGit(t.bob, ['show-ref', '--verify', '--quiet', 'refs/pushpug/undo-stash']);
     assert.notEqual(ref.code, 0, 'no leftover undo ref in the user repo');
   });
 
