@@ -487,3 +487,16 @@ Newest sections are appended at the bottom of each topic.
   it means and what to do. Getting started keeps Step 1 install → 2 computer setup → 3 wizard → 4 open project.
 - The GitHub repository is now `Pug-03/PushPug`; links in README and `package.json` point there.
 
+
+## 19. The name is PushPug, the mascot is Pug (2026-10-23)
+
+- **Product renamed PushPal → PushPug** (user decision), matching the repository. Everything was renamed, internal
+  ids included: publisher, command and setting ids (`pushpug.*`), LaunchAgent label `com.pushpug.watcher`, the
+  Windows task, git ref `refs/pushpug/undo-stash`. Nothing had been published yet, so no migration of settings;
+  only the old background job (`com.pushpal.watcher` / *PushPal Watcher*) is removed once on activation, because
+  it would otherwise keep running a worker nobody updates.
+- **Mascot renamed Pal → Pug** (user decision). Older sections above keep the name Pal as history.
+- **README installation guide** is split into parts (before you start, A GitHub `.vsix`, B Marketplace, C build,
+  D macOS, E Windows, F Linux, G wizard, H open project, update / uninstall) with no emoji. Its pictures are
+  drawings, not screenshots, so Windows can be shown from a Mac and they can be redrawn when the UI changes
+  (`node scripts/guide-illustrations.mjs` → `docs/guide/`); red numbered call-outs match the numbered steps.

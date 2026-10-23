@@ -180,7 +180,7 @@
     app.innerHTML =
       '<div class="st">' +
         '<header class="st-top">' +
-          '<div class="st-brand">' + M.svg({ pose: 'sit', size: 68, label: 'Pal' }) +
+          '<div class="st-brand">' + M.svg({ pose: 'sit', size: 68, label: 'Pug' }) +
             '<div><h1 class="st-title">' + esc(s('set.title')) + '</h1><p class="st-sub">' + esc(s('set.sub')) + '</p></div></div>' +
           '<button class="btn btn-ghost st-reset" data-act="reset">' + I('reset') + '<span>' + esc(s('set.reset')) + '</span></button>' +
         '</header>' +

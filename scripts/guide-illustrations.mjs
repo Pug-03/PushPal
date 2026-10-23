@@ -264,14 +264,14 @@ const ILLUSTRATIONS = {
     </div>`;
   } },
 
-  // VS Code after installing: the toast and Pal in the Activity Bar.
+  // VS Code after installing: the toast and Pug in the Activity Bar.
   'vsc-installed': { width: 920, height: 530, body: (p) => {
     const v = p.vsc;
     const toast = `<div style="position:absolute;right:18px;bottom:40px">${mark(9, `<div class="row" style="gap:10px;width:400px;padding:12px 14px;background:${v.menu};border:1px solid ${p.border};border-radius:6px;box-shadow:${p.shadow}"><span style="color:${p.accent}">${icon('info', 18)}</span><span style="flex:1">Completed installing extension PushPug from VSIX.</span><span class="muted">${icon('close', 14)}</span></div>`, { pos: 'tl' })}</div>`;
     const side = `${sideHeader(p, 'EXTENSIONS')}${searchBox(p, '')}
       <div style="padding:4px 18px;font-size:11px;font-weight:600;color:${p.muted}">INSTALLED</div>
       ${extensionCard(p, { name: 'PushPug', desc: 'Know the moment a teammate pushes', publisher: 'pushpug', iconHtml: palTile(p) })}`;
-    const editor = `<div style="padding:30px;display:flex;gap:18px;align-items:center"><img src="${mascot('welcome')}" width="96"><div><b style="font-size:20px">Hi! I'm Pal from PushPug</b><div class="muted" style="margin-top:6px">The setup wizard opens on its own.</div></div></div>`;
+    const editor = `<div style="padding:30px;display:flex;gap:18px;align-items:center"><img src="${mascot('welcome')}" width="96"><div><b style="font-size:20px">Hi! I'm Pug from PushPug</b><div class="muted" style="margin-top:6px">The setup wizard opens on its own.</div></div></div>`;
     return vscWindow(p, { activity: activityBar(p, 'ext', { showPal: true, pal: 8 }), side, editor, height: 490, overlay: toast });
   } },
 
@@ -284,7 +284,7 @@ const ILLUSTRATIONS = {
     return vscWindow(p, { activity: activityBar(p, 'ext', { ext: 1 }), side, editor: editorPlaceholder(p), height: 370, sideWidth: 330 });
   } },
 
-  // VS Code with a project open: Pal in the Activity Bar and the status bar item.
+  // VS Code with a project open: Pug in the Activity Bar and the status bar item.
   'vsc-first-run': { width: 920, height: 520, body: (p) => {
     const side = `${sideHeader(p, 'PUSHPUG: MY TEAM')}
       <div style="padding:20px;text-align:center"><img src="${mascot('sleep')}" width="110"><div style="font-size:15px;font-weight:600;margin-top:8px">You're up to date</div><div class="muted" style="margin-top:4px">I'll tell you when a teammate pushes.</div></div>`;

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Renamed to PushPug (was PushPal); the mascot is now called Pug. The old background job is removed on first run;
+  settings saved under `pushpal.*` need to be set again
 - GitHub checks: after your pushes and your teammates', PushPug follows the commit's check runs and statuses
   and tells you how it went ("✅ All checks passed (4/4)" / "❌ Checks failed: 1 of 4 — Test (ubuntu-latest)").
   A teammate's failing push says "maybe don't pull it yet" (See what broke / Pull anyway / Later); you're told

@@ -12,7 +12,7 @@ function loadMascot() {
   return window;
 }
 
-test('Pal is drawn only with paths, as separate animatable layers', () => {
+test('Pug is drawn only with paths, as separate animatable layers', () => {
   const w = loadMascot();
   const svg: string = w.PushPugMascot.svg({ pose: 'sit', size: 120 });
   assert.doesNotMatch(svg, /<(circle|ellipse|rect)\b/, 'no stock shapes: everything is a bezier path');

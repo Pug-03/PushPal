@@ -1,4 +1,4 @@
-// "Pal", PushPug's pug — a flat-style head whose expressions tell the story.
+// "Pug", PushPug's mascot — a flat-style head whose expressions tell the story.
 // Every part is its own layer (ears, brows, eyes, eyelids, mouth shapes,
 // blush, props), animated with GSAP from its real pivot. Without GSAP, or
 // with reduced motion, each expression is still drawn correctly.
@@ -231,7 +231,7 @@
 
   function rnd(a, b) { return a + Math.random() * (b - a); }
 
-  function Pal(svg) {
+  function Pug(svg) {
     this.svg = svg;
     var q = (this.parts = {});
     ['root', 'poke', 'spin', 'tilt', 'earL', 'earR', 'browL', 'browR', 'openL', 'openR', 'lookL', 'lookR', 'lidL', 'lidR', 'closedL', 'closedR', 'happyL', 'happyR', 'heartL', 'heartR',
@@ -251,18 +251,18 @@
     svg.addEventListener('pointerenter', function () { self.perk(); });
   }
 
-  Pal.prototype.clear = function () {
+  Pug.prototype.clear = function () {
     if (this.tl) this.tl.kill();
     this.loops.forEach(function (t) { t.kill(); });
     this.timers.forEach(function (t) { t.kill(); });
     this.loops = [];
     this.timers = [];
   };
-  Pal.prototype.later = function (sec, fn) { this.timers.push(gsap.delayedCall(sec, fn)); };
-  Pal.prototype.keep = function (t) { this.loops.push(t); return t; };
+  Pug.prototype.later = function (sec, fn) { this.timers.push(gsap.delayedCall(sec, fn)); };
+  Pug.prototype.keep = function (t) { this.loops.push(t); return t; };
 
   /** Tween (or set, when dur is 0) every feature to an expression. */
-  Pal.prototype.face = function (f, tl, at, dur) {
+  Pug.prototype.face = function (f, tl, at, dur) {
     var q = this.parts;
     var to = function (el, vars) {
       if (!el) return;
@@ -306,7 +306,7 @@
     to(q.tear, { opacity: f.tear ? 1 : 0 });
   };
 
-  Pal.prototype.play = function (pose) {
+  Pug.prototype.play = function (pose) {
     pose = ALIASES[pose] || pose;
     if (!FACES[pose]) pose = 'sit';
     if (pose === this.pose && pose !== 'love') return;
@@ -341,7 +341,7 @@
   };
 
   /** Mouse over: a little ear perk and a glance up, without changing the pose. */
-  Pal.prototype.perk = function () {
+  Pug.prototype.perk = function () {
     if (!gsap || reduceMQ.matches || this.pokeTl) return;
     var q = this.parts;
     gsap.timeline()
@@ -363,7 +363,7 @@
    * Poke: squash while the button is held, then a springy jiggle with ears and
    * muzzle wobbling and a quick funny face. Five quick pokes = heart eyes.
    */
-  Pal.prototype.press = function (e) {
+  Pug.prototype.press = function (e) {
     if (!gsap) return;
     if (e && e.button !== undefined && e.button !== 0) return;
     var self = this;
@@ -413,7 +413,7 @@
   };
 
   /** Five quick pokes: love-struck for a moment, then back to what it was doing. */
-  Pal.prototype.tickle = function () {
+  Pug.prototype.tickle = function () {
     if (!gsap || this.pose === 'love') return;
     var back = this.pose || 'sit';
     this.play('love');
@@ -663,11 +663,11 @@
   // ---------- public API ----------
   function controller(svg) {
     if (!svg) return null;
-    if (!svg.__pal) {
-      svg.__pal = new Pal(svg);
-      svg.__pal.play(svg.getAttribute('data-pose') || 'sit');
+    if (!svg.__pug) {
+      svg.__pug = new Pug(svg);
+      svg.__pug.play(svg.getAttribute('data-pose') || 'sit');
     }
-    return svg.__pal;
+    return svg.__pug;
   }
 
   function setPose(svg, pose) {

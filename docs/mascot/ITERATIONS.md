@@ -1,4 +1,4 @@
-# Pal the pug — design iterations
+# Pug the mascot — design iterations
 
 Each round: render `docs/mascot/sheet.html` with `node scripts/mascot-render.mjs sheet`, look at
 `sheet.png` / `sheet-dark.png`, write down what's wrong, fix, render again.

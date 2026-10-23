@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/mascot/still/success.png" width="150" alt="Pal the pug, smiling">
+  <img src="docs/mascot/still/success.png" width="150" alt="Pug, the PushPug mascot, smiling">
 </p>
 
 <h1 align="center">PushPug</h1>
@@ -367,7 +367,7 @@ Reload Window**. The background task (if you turned it on) is removed with it.
 
 ## What you'll see, and what to do
 
-Every situation has its own screen in **My Team**, and Pal's face matches it.
+Every situation has its own screen in **My Team**, and Pug's face matches it.
 
 <table>
 <tr><td colspan="2"><h3>You're up to date</h3></td></tr>
@@ -694,7 +694,7 @@ They appear for github.com projects that have checks (e.g. GitHub Actions), afte
 </details>
 
 <details>
-<summary><b>Pal doesn't move after an update</b></summary>
+<summary><b>Pug doesn't move after an update</b></summary>
 <br>
 
 Run **Developer: Reload Window** once — open panels keep the old version until they're reloaded.
@@ -713,7 +713,7 @@ npm run smoke       # runs the extension in your local VS Code with an isolated 
 npm run screenshots # renders every screen into docs/screenshots/
 node scripts/guide-illustrations.mjs # draws the installation guide pictures into docs/guide/
 npm run package     # builds pushpug-<version>.vsix
-node scripts/mascot-render.mjs stills # Pal's faces for this README (docs/mascot/still/)
+node scripts/mascot-render.mjs stills # Pug's faces for this README (docs/mascot/still/)
 ```
 
 Design decisions: [DECISIONS.md](DECISIONS.md) · Publishing: [PUBLISHING.md](PUBLISHING.md) ·
@@ -721,4 +721,4 @@ Releasing: `npm run release` (bumps the version and pushes a tag; CI tests, pack
 
 ## License
 
-[MIT](LICENSE) · Pal the pug is an original drawing made for PushPug.
+[MIT](LICENSE) · Pug, the mascot, is an original drawing made for PushPug.
