@@ -4,7 +4,7 @@
 import { mkdirSync, writeFileSync, readFileSync, mkdtempSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, resolve, dirname } from 'node:path';
 import { findChrome } from './chrome.mjs';
 import { scenarios } from './scenarios.mjs';
 
@@ -77,9 +77,10 @@ setTimeout(() => {
 let count = 0;
 for (const sc of scenarios) {
   if (filter && !sc.name.includes(filter)) continue;
-  const html = join(tmp, `${sc.name}.html`);
+  const html = join(tmp, `${sc.name.replace('/', '_')}.html`);
   writeFileSync(html, page(sc));
   const out = join(outDir, `${sc.name}.png`);
+  mkdirSync(dirname(out), { recursive: true });
   execFileSync(findChrome(), [
     '--headless=new', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files', '--force-device-scale-factor=2',
     `--window-size=${sc.width},${sc.height}`, `--virtual-time-budget=${sc.budget ?? 5000}`, `--screenshot=${out}`, `file://${html}`,

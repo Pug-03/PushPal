@@ -21,7 +21,7 @@ npm run package   # ได้ไฟล์ pushpal-1.0.0.vsix
 | ช่อง | ตอนนี้ | ต้องเป็น |
 |---|---|---|
 | `publisher` | `pushpal` | **Publisher ID ของคุณ** ที่จะสร้างในส่วนที่ 2 |
-| `repository.url`, `bugs.url`, `homepage` | `github.com/Pug-03/pushpal` | URL repo จริงของคุณ |
+| `repository.url`, `bugs.url`, `homepage` | `github.com/Pug-03/PushPug` | URL repo จริงของคุณ |
 
 และแก้ชื่อใน `LICENSE` ถ้าต้องการ (ตอนนี้ใส่ `Pug-03`)
 

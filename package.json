@@ -12,12 +12,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Pug-03/pushpal.git"
+    "url": "https://github.com/Pug-03/PushPug.git"
   },
   "bugs": {
-    "url": "https://github.com/Pug-03/pushpal/issues"
+    "url": "https://github.com/Pug-03/PushPug/issues"
   },
-  "homepage": "https://github.com/Pug-03/pushpal#readme",
+  "homepage": "https://github.com/Pug-03/PushPug#readme",
   "keywords": [
     "git",
     "pull",

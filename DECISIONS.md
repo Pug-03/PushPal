@@ -474,4 +474,13 @@ Newest sections are appended at the bottom of each topic.
 - English only, as asked (the bilingual README is gone; the extension itself stays Thai/English). Structure:
   value in one line → features with screenshots → Pal → install (Marketplace / Open VSX / .vsix) with macOS,
   Windows and Linux setup → quick start → how-to for every everyday task → settings → privacy → troubleshooting.
+- **README images are English and follow the reader's theme** (user feedback: Thai UI in the pictures, and
+  pictures with their own background colour). `npm run screenshots` also renders English copies of the
+  README screens into `docs/screenshots/en/`, with English sample data. Every screenshot and the demo GIF has
+  a light and a dark version, picked with `<picture>` + `prefers-color-scheme`, so the page stays one colour
+  in GitHub's light and dark themes. Pal's animations for the README are transparent animated PNGs
+  (`docs/mascot/anim/*.png`, APNG — GIF has no real transparency and this ffmpeg has no WebP encoder).
+  Steps are grouped as Getting started (Step 1 install → Step 2 set up the computer → Step 3 wizard →
+  Step 4 open the project) and Everyday use.
+- The GitHub repository is now `Pug-03/PushPug`; links in README and `package.json` point there.
 

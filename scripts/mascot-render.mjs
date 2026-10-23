@@ -2,7 +2,7 @@
 //   node scripts/mascot-render.mjs sheet            → docs/mascot/sheet.png (+ sheet-dark.png)
 //   node scripts/mascot-render.mjs gifs [pose…]     → docs/mascot/<pose>.gif from playground.html
 import { chromium } from 'playwright-core';
-import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -26,7 +26,7 @@ async function sheet() {
 
 /** Record each pose as frames (stepping GSAP's clock exactly), then encode a GIF with ffmpeg. */
 async function gifs(poses) {
-  const page = await browser.newPage({ viewport: { width: 360, height: 360 }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({ viewport: { width: 320, height: 320 }, deviceScaleFactor: 1 });
   await page.goto(pathToFileURL(resolve('docs/mascot/playground.html')).href + '#record');
   await page.waitForFunction(() => window.__record);
   const all = poses.length ? poses : await page.evaluate(() => window.__record.poses);
@@ -37,13 +37,17 @@ async function gifs(poses) {
     const frames = Math.round(seconds * fps);
     for (let i = 0; i < frames; i++) {
       await page.evaluate((t) => window.__record.seek(t), (i + 1) / fps);
-      await page.locator('#stage').screenshot({ path: join(dir, `f${String(i).padStart(4, '0')}.png`) });
+      await page.locator('#stage').screenshot({ path: join(dir, `f${String(i).padStart(4, '0')}.png`), omitBackground: true });
     }
     const out = `docs/mascot/${pose}.gif`;
     execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(fps), '-i', join(dir, 'f%04d.png'),
-      '-vf', 'scale=240:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96:reserve_transparent=0[p];[b][p]paletteuse=dither=sierra2_4a', out]);
+      '-vf', 'format=rgba,colorkey=0x000000:0.0001,scale=240:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96:reserve_transparent=1[p];[b][p]paletteuse=dither=sierra2_4a:alpha_threshold=128', out]);
+    // Transparent animated PNG for the README: blends into GitHub's light and dark pages.
+    mkdirSync('docs/mascot/anim', { recursive: true });
+    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(fps), '-i', join(dir, 'f%04d.png'),
+      '-vf', 'fps=15,scale=200:-1:flags=lanczos', '-plays', '0', '-pred', 'mixed', '-f', 'apng', `docs/mascot/anim/${pose}.png`]);
     rmSync(dir, { recursive: true, force: true });
-    console.log(`${out} (${frames} frames${from ? `, from ${from}` : ''})`);
+    console.log(`${out} + anim/${pose}.png (${frames} frames${from ? `, from ${from}` : ''})`);
   }
   await page.close();
 }

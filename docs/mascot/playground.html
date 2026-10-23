@@ -14,7 +14,8 @@
   #stage { width: 320px; height: 320px; display: grid; place-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 24px; overflow: hidden; }
   body.record { padding: 0; }
   body.record h1, body.record .bar, body.record p { display: none; }
-  body.record #stage { width: 360px; height: 360px; border: 0; border-radius: 0; }
+  body.record, body.record #stage { background: transparent; }
+  body.record #stage { width: 320px; height: 320px; border: 0; border-radius: 0; }
   p { color: var(--muted); }
 </style>
 <script src="../../media/vendor/gsap.min.js"></script>
@@ -36,7 +37,7 @@
   var stage = document.getElementById('stage');
   var current = 'sit';
   function fresh(pose) {
-    stage.innerHTML = M.svg({ pose: pose, size: 260 });
+    stage.innerHTML = M.svg({ pose: pose, size: location.hash === '#record' ? 290 : 260 });
     return stage.firstChild;
   }
   var svg = fresh('sit');

@@ -163,4 +163,27 @@ for (const [theme, vscode] of [['light', 'light'], ['dark', 'dark']]) {
 team.push({ name: 'team-behind-en-system-dark', kind: 'team', lang: 'en', theme: 'system', vscode: 'dark', view: views.behind, ...S });
 team.push({ name: 'team-conflictMerge-en-system-light', kind: 'team', lang: 'en', theme: 'system', vscode: 'light', view: views.conflictMerge, ...S });
 
-export const scenarios = [...wizard, ...settingsPage, ...team];
+// English copies of the screens the README shows (docs/screenshots/en/), sample data in English too.
+const EN = {
+  'แก้ปุ่ม login ให้กดได้บนมือถือ': 'Fix the login button on mobile',
+  'เพิ่มหน้า "ตะกร้าสินค้า" + เทสต์': 'Add the shopping cart page + tests',
+  'อัปเดต README วิธีรันโปรเจกต์': 'Update README: how to run the project',
+  'ตั้งค่า ESLint + Prettier': 'Set up ESLint + Prettier',
+  'นก ศรีสุข': 'Nok Srisuk',
+  'ตอนนี้เช็กทุก 1 นาที เพราะแบตเหลือ 15%': 'Checking every 1 min right now because the battery is at 15%',
+  'เช็กทุก 30 วิ': 'Checking every 30 s',
+};
+const english = (sc) => {
+  let json = JSON.stringify(sc);
+  for (const [th, en] of Object.entries(EN)) json = json.split(JSON.stringify(th).slice(1, -1)).join(JSON.stringify(en).slice(1, -1));
+  const out = JSON.parse(json);
+  out.lang = 'en';
+  if (out.view) out.view = JSON.parse(JSON.stringify(out.view));
+  return out;
+};
+const README_SHOTS = ['team-behind', 'team-checks', 'team-conflictMerge', 'team-undo', 'team-success', 'team-pulling', 'team-upToDate', 'wizard-1-welcome', 'wizard-6-github', 'wizard-5-frequency', 'settings-frequency', 'settings-notify'];
+const readme = [...wizard, ...settingsPage, ...team]
+  .filter((sc) => sc.lang === 'th' && README_SHOTS.some((n) => sc.name === `${n}-light` || sc.name === `${n}-dark`))
+  .map((sc) => ({ ...english(sc), name: `en/${sc.name}` }));
+
+export const scenarios = [...wizard, ...settingsPage, ...team, ...readme];
