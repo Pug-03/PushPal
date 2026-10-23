@@ -196,10 +196,21 @@ describe('protected branches', () => {
     assert.equal(explainGitError(GITHUB), 'protectedBranch');
   });
 
+  test('other repository rules (a secret in the code) are not "only accepts pull requests"', () => {
+    const secret = [
+      'remote: error: GH013: Repository rule violations found for refs/heads/main.',
+      'remote: - GITHUB PUSH PROTECTION',
+      'remote:   Push cannot contain secrets',
+      ' ! [remote rejected] main -> main (push declined due to repository rule violations)',
+    ].join('\n');
+    assert.equal(isProtectedRejection(secret), false);
+    assert.equal(explainGitError(secret), 'ruleViolation');
+  });
+
   test('safePush reports a protected branch (pre-receive hook)', async () => {
     const t = await makeTeam();
     try {
-      write(t.remote, 'hooks/pre-receive', '#!/bin/sh\necho "remote: error: GH013: Repository rule violations found for refs/heads/main." >&2\nexit 1\n');
+      write(t.remote, 'hooks/pre-receive', '#!/bin/sh\necho "remote: error: GH013: Repository rule violations found for refs/heads/main." >&2\necho "remote: - Changes must be made through a pull request." >&2\nexit 1\n');
       await git(t.remote, ['config', 'core.hooksPath', 'hooks']);
       const { chmodSync } = await import('node:fs');
       chmodSync(`${t.remote}/hooks/pre-receive`, 0o755);

@@ -445,7 +445,16 @@
       if (mode === 'success') setTimeout(function () { M.confetti(hero, 40); }, 260);
     }
     if (r) undoUntil = r.undoLeft ? Date.now() + r.undoLeft * 1000 : 0;
-    document.getElementById('alerts').innerHTML = undoHtml(r) + prHtml(r, mode) + sameFileHtml(r) + conflictHtml(r, mode);
+    // Only replace the cards when they changed: new elements replay their slide-in, so
+    // re-rendering identical cards on every check made them jump. The undo countdown
+    // ticks on its own (see the interval below), so its text doesn't count as a change.
+    var alerts = document.getElementById('alerts');
+    var alertsHtml = undoHtml(r) + prHtml(r, mode) + sameFileHtml(r) + conflictHtml(r, mode);
+    var alertsKey = alertsHtml.replace(/<span id="undoLeft">[^<]*<\/span>/, '');
+    if (alerts.getAttribute('data-key') !== alertsKey) {
+      alerts.setAttribute('data-key', alertsKey);
+      alerts.innerHTML = alertsHtml;
+    }
     renderTimeline(r, mode);
     document.getElementById('foot').innerHTML = footerHtml(r);
     applyHues(app);
@@ -547,6 +556,8 @@
     if (undoUntil <= Date.now()) {
       var card = el.closest('.undo-card');
       if (card) card.remove();
+      // The cards on screen no longer match the last render: redraw on the next update.
+      document.getElementById('alerts').removeAttribute('data-key');
       return;
     }
     el.textContent = s('team.undoHint', mmss(undoUntil - Date.now()));

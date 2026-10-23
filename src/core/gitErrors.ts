@@ -4,6 +4,7 @@
 
 export type GitErrorKey =
   | 'protectedBranch'
+  | 'ruleViolation'
   | 'rejected'
   | 'auth'
   | 'repoNotFound'
@@ -23,7 +24,8 @@ export type GitErrorKey =
 
 /** First match wins, so the more specific patterns come first. */
 const RULES: Array<[GitErrorKey, RegExp]> = [
-  ['protectedBranch', /GH006|GH013|protected branch|repository rule violations|Changes must be made through a pull request|not allowed to push code to protected branches/i],
+  ['protectedBranch', /GH006|protected branch|Changes must be made through a pull request|not allowed to push code to protected branches/i],
+  ['ruleViolation', /GH013|GH009|repository rule violations|push declined due to|cannot contain secrets/i],
   ['rejected', /\[rejected\]|non-fast-forward|fetch first|Updates were rejected because/i],
   ['repoNotFound', /repository ['"]?.*['"]? not found|Repository not found|does not appear to be a git repository/i],
   ['auth', /Authentication failed|could not read Username|Permission denied \(publickey|terminal prompts disabled|HTTP Basic: Access denied|invalid username or password|returned error: 40[13]/i],

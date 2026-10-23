@@ -53,7 +53,9 @@ interface RepoPr {
   pr: PullRequest | null;
   /** Branch the pull request above belongs to. */
   prBranch: string | null;
-  lookedAt: number;
+  /** Branch last looked up, and when the next lookup is allowed. */
+  lookedBranch: string | null;
+  nextLookAt: number;
 }
 
 /** What the team view shows about the current task. */
@@ -75,9 +77,12 @@ export interface PrView {
 export class PullRequests implements vscode.Disposable {
   private readonly state = new Map<string, RepoPr>();
   private readonly teamLookedAt = new Map<string, number>();
+  /** Repos whose check is running: checks can overlap now that they don't hold the repo lock. */
+  private readonly busy = new Set<string>();
   private readonly emitter = new vscode.EventEmitter<void>();
   readonly onDidChange = this.emitter.event;
-  private login: string | null | undefined;
+  /** Signed-in GitHub login; only a successful answer is kept. */
+  private login: string | undefined;
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -87,7 +92,7 @@ export class PullRequests implements vscode.Disposable {
     private readonly ci: ChecksWatcher,
     private readonly log: vscode.OutputChannel,
   ) {
-    repos.onDidCheck((entry) => this.onCheck(entry));
+    repos.onDidCheck((entry) => void this.onCheck(entry));
   }
 
   get enabled(): boolean {
@@ -109,23 +114,48 @@ export class PullRequests implements vscode.Disposable {
   private async onCheck(entry: RepoEntry, force = false): Promise<void> {
     if (!this.enabled) return;
     const key = repoKey(entry.root);
+    if (this.busy.has(key)) return;
+    this.busy.add(key);
+    try {
+      await this.check(entry, key, force);
+    } finally {
+      this.busy.delete(key);
+    }
+  }
+
+  private async check(entry: RepoEntry, key: string, force: boolean): Promise<void> {
     const base = await taskBase(entry.root).catch(() => null);
     const slug = await this.slugOf(entry.root, base);
     const branch = entry.snapshot?.branch ?? null;
     const unpushed = base ? (await commitsNotOnBase(entry.root, base.baseRef)).length : 0;
     const prev = this.state.get(key);
-    const s: RepoPr = { base, slug, branch, unpushed, pr: null, prBranch: null, lookedAt: 0, ...(prev && prev.prBranch === branch ? { pr: prev.pr, prBranch: prev.prBranch, lookedAt: prev.lookedAt } : {}) };
+    const sameBranch = prev?.lookedBranch === branch;
+    const s: RepoPr = {
+      base,
+      slug,
+      branch,
+      unpushed,
+      pr: prev && prev.prBranch === branch ? prev.pr : null,
+      prBranch: prev && prev.prBranch === branch ? prev.prBranch : null,
+      lookedBranch: sameBranch ? prev!.lookedBranch : null,
+      nextLookAt: sameBranch ? prev!.nextLookAt : 0,
+    };
     this.state.set(key, s);
     const request = slug ? await this.request() : null;
-    if (request && slug && base && branch && branch !== base.base && (force || Date.now() - s.lookedAt >= OWN_PR_GAP_MS)) {
-      s.lookedAt = Date.now();
+    if (request && slug && base && branch && branch !== base.base && (force || Date.now() >= s.nextLookAt)) {
+      s.lookedBranch = branch;
+      s.nextLookAt = Date.now() + OWN_PR_GAP_MS;
       const found = await findPullRequest(request, slug, branch);
       if (found.kind === 'ok') {
         const before = s.pr;
         s.pr = found.pr;
         s.prBranch = branch;
         if (found.pr) void this.onOwnPr(entry, slug, before, found.pr);
-      } else this.log.appendLine(`[pr] ${entry.name}: lookup ${found.kind}`);
+      } else {
+        // Rate limited: wait for GitHub's reset instead of asking again every minute.
+        if (found.kind === 'rateLimited') s.nextLookAt = Math.max(s.nextLookAt, found.resetAt ?? Date.now() + 15 * 60_000);
+        this.log.appendLine(`[pr] ${entry.name}: lookup ${found.kind}`);
+      }
     }
     this.emitter.fire();
     if (request && slug && readSettings().prNotifyTeam && Date.now() - (this.teamLookedAt.get(slug) ?? 0) >= TEAM_PR_GAP_MS) {
@@ -167,7 +197,9 @@ export class PullRequests implements vscode.Disposable {
   private async checkTeamPrs(entry: RepoEntry, request: Requester, slug: string): Promise<void> {
     const open = await listOpenPullRequests(request, slug);
     if (!open) return;
-    if (this.login === undefined) this.login = await currentLogin(request);
+    // Without knowing who "me" is, my own pull requests would look like a teammate's.
+    this.login ??= (await currentLogin(request)) ?? undefined;
+    if (!this.login) return;
     const all = this.context.globalState.get<Record<string, number[]>>(SEEN_KEY, {});
     const firstLook = !all[slug];
     const seen = new Set(all[slug] ?? []);
@@ -288,7 +320,7 @@ export class PullRequests implements vscode.Disposable {
       if (choice === commit) await vscode.commands.executeCommand('workbench.view.scm');
       if (choice !== anyway) return;
     }
-    await fetchBase(entry.root, base);
+    await this.repos.withLock(entry.root, () => fetchBase(entry.root, base));
     let commits = await commitsNotOnBase(entry.root, base.baseRef);
     if (!commits.length) {
       const start = t('pr.btn.startTask');
@@ -353,7 +385,8 @@ export class PullRequests implements vscode.Disposable {
     if (s) {
       s.pr = pr;
       s.prBranch = pr.head;
-      s.lookedAt = Date.now();
+      s.lookedBranch = pr.head;
+      s.nextLookAt = Date.now() + OWN_PR_GAP_MS;
     }
     this.emitter.fire();
     const open = t('pr.btn.open');
@@ -367,7 +400,7 @@ export class PullRequests implements vscode.Disposable {
     if (!ctx) return;
     const { entry, base } = ctx;
     if (entry.snapshot?.branch === base.base) return void this.actions.pull(entry.root);
-    const f = await fetchBase(entry.root, base);
+    const f = await this.repos.withLock(entry.root, () => fetchBase(entry.root, base));
     if (!f.ok) return showGitError(f.message, f.code);
     const r = await this.actions.mergeFrom(entry.root, base.baseRef);
     if (r?.kind !== 'ok') return;

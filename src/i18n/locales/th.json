@@ -463,5 +463,7 @@
   "wv.team.pr.sendAgain": "ส่ง commit ใหม่",
   "wv.team.pr.openPr": "เปิดดู",
   "wv.team.pr.update": "ดึง {0} ล่าสุดเข้ามา",
-  "wv.team.pr.back": "กลับไป {0}"
+  "wv.team.pr.back": "กลับไป {0}",
+  "gerr.ruleViolation.title": "GitHub ไม่รับ push เพราะติดกฎของ repo นี้ เช่น เจอรหัสผ่านหรือ API key อยู่ในโค้ด",
+  "gerr.ruleViolation.fix": "กด \"ดูข้อความเต็ม\" เพื่อดูว่าติดกฎอะไร ไฟล์ไหน ถ้าเป็นรหัสลับ ให้ลบออกจากโค้ดและจาก commit (แล้วเปลี่ยนรหัสหรือ key นั้นด้วย) แล้วค่อย push ใหม่"
 }

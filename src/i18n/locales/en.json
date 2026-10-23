@@ -463,5 +463,7 @@
   "wv.team.pr.sendAgain": "Send new commits",
   "wv.team.pr.openPr": "Open",
   "wv.team.pr.update": "Get the latest {0}",
-  "wv.team.pr.back": "Back to {0}"
+  "wv.team.pr.back": "Back to {0}",
+  "gerr.ruleViolation.title": "GitHub refused the push because of a rule on this repository, for example a password or API key found in your code.",
+  "gerr.ruleViolation.fix": "Press \"Show full message\" to see which rule and which file. If it's a secret, remove it from the code and the commit (and change that password or key), then push again."
 }
