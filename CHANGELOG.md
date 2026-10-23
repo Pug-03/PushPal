@@ -2,6 +2,7 @@
 
 ## 1.0.2 — 2026-10-23
 
+- My Team cards no longer jump or fade in again on every check (they're only redrawn when something changed)
 - Activity Bar icon is now a paw print (clearer at small sizes than the pug head)
 - Pull requests: **Start New Task** makes a branch from the latest main (uncommitted work comes along);
   **Send for Review** pushes it and opens the pull request on GitHub (or sends new commits to the open one).
