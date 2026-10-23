@@ -436,7 +436,6 @@
     "screenshots": "node scripts/screenshots.mjs",
     "package": "vsce package --no-dependencies",
     "smoke": "npm run build && node scripts/smoke/run.mjs",
-    "demo-gif": "node scripts/demo-gif.mjs",
     "release": "npm version patch && git push --follow-tags"
   },
   "devDependencies": {

@@ -478,9 +478,12 @@ Newest sections are appended at the bottom of each topic.
   pictures with their own background colour). `npm run screenshots` also renders English copies of the
   README screens into `docs/screenshots/en/`, with English sample data. Every screenshot and the demo GIF has
   a light and a dark version, picked with `<picture>` + `prefers-color-scheme`, so the page stays one colour
-  in GitHub's light and dark themes. Pal's animations for the README are transparent animated PNGs
-  (`docs/mascot/anim/*.png`, APNG — GIF has no real transparency and this ffmpeg has no WebP encoder).
-  Steps are grouped as Getting started (Step 1 install → Step 2 set up the computer → Step 3 wizard →
-  Step 4 open the project) and Everyday use.
+  in GitHub's light and dark themes.
+- **No video or animation in the README** (user feedback): the demo GIF and Pal's animated images were
+  removed. Pal appears as transparent stills (`node scripts/mascot-render.mjs stills` → `docs/mascot/still/`).
+  The README is organised by situation — "What you'll see, and what to do": one block per My Team screen
+  (up to date, teammate pushed, pulling, merged + undo, the two kinds of conflict, all fixed, test results,
+  couldn't check, branch not published, no project, push turned away), each with a cropped screenshot, what
+  it means and what to do. Getting started keeps Step 1 install → 2 computer setup → 3 wizard → 4 open project.
 - The GitHub repository is now `Pug-03/PushPug`; links in README and `package.json` point there.
 

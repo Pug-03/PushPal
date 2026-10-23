@@ -172,6 +172,7 @@ const EN = {
   'นก ศรีสุข': 'Nok Srisuk',
   'ตอนนี้เช็กทุก 1 นาที เพราะแบตเหลือ 15%': 'Checking every 1 min right now because the battery is at 15%',
   'เช็กทุก 30 วิ': 'Checking every 30 s',
+  'ตอนนี้ติดต่อ remote ไม่ได้ (เน็ตหลุดหรือเปล่า?) เดี๋ยว PushPal ลองใหม่ให้เอง': "Can't reach the remote right now. Check your internet connection; PushPal will retry by itself.",
 };
 const english = (sc) => {
   let json = JSON.stringify(sc);
@@ -181,9 +182,18 @@ const english = (sc) => {
   if (out.view) out.view = JSON.parse(JSON.stringify(out.view));
   return out;
 };
-const README_SHOTS = ['team-behind', 'team-checks', 'team-conflictMerge', 'team-undo', 'team-success', 'team-pulling', 'team-upToDate', 'wizard-1-welcome', 'wizard-6-github', 'wizard-5-frequency', 'settings-frequency', 'settings-notify'];
+const README_SHOTS = ['team-upToDate', 'team-behind', 'team-pulling', 'team-success', 'team-undo', 'team-conflictMerge', 'team-conflictAutostash', 'team-mergeReady', 'team-checks', 'team-error', 'team-noUpstream', 'team-noRepo', 'wizard-1-welcome', 'wizard-5-frequency', 'wizard-6-github', 'settings-frequency', 'settings-notify'];
 const readme = [...wizard, ...settingsPage, ...team]
   .filter((sc) => sc.lang === 'th' && README_SHOTS.some((n) => sc.name === `${n}-light` || sc.name === `${n}-dark`))
-  .map((sc) => ({ ...english(sc), name: `en/${sc.name}` }));
+  .map((sc) => ({ ...english(sc), name: `en/${sc.name}` }))
+  .map((sc) => {
+    // README crops: just the part of My Team that matters for that situation.
+    const crop = { upToDate: 470, behind: 860, pulling: 470, success: 470, undo: 640, conflictMerge: 1000, conflictAutostash: 980, mergeReady: 440, checks: 760, error: 500, noUpstream: 470, noRepo: 560 };
+    const key = sc.name.replace(/^en\/team-/, '').replace(/-(light|dark)$/, '');
+    if (sc.kind !== 'team' || !crop[key]) return sc;
+    const out = { ...sc, height: crop[key] };
+    if (key === 'checks') out.script = (sc.script || '') + `setTimeout(() => { document.getElementById('hero').style.display = 'none'; }, 50);`;
+    return out;
+  });
 
 export const scenarios = [...wizard, ...settingsPage, ...team, ...readme];

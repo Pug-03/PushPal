@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/mascot/anim/success.png" width="170" alt="Pal the pug doing a happy spin">
+  <img src="docs/mascot/still/success.png" width="150" alt="Pal the pug, smiling">
 </p>
 
 <h1 align="center">PushPal</h1>
@@ -16,16 +16,9 @@
 </p>
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/demo-dark.gif">
-    <img src="docs/demo-light.gif" width="330" alt="A teammate pushes, PushPal pulls their code in, everything merged">
-  </picture>
-</p>
-
-<p align="center">
   <a href="#what-it-does">What it does</a> ·
   <a href="#getting-started">Getting started</a> ·
-  <a href="#everyday-use">Everyday use</a> ·
+  <a href="#what-youll-see-and-what-to-do">What you'll see</a> ·
   <a href="#settings">Settings</a> ·
   <a href="#privacy">Privacy</a> ·
   <a href="#troubleshooting">Troubleshooting</a>
@@ -43,67 +36,12 @@ if they touched a file you're editing, and pulls their code in with one click �
 aside and put back afterwards. When something does go wrong, it explains it in plain words and shows you how
 to fix it. It's made for people who are new to Git, and for everyone who'd rather not think about it.
 
-<table>
-<tr>
-<td width="50%" valign="top">
-
-**🔔 Know the moment they push**<br>
-One alert per push: who, how many commits, the latest message — in VS Code or as a desktop notification,
-even when VS Code is closed.
-
-**⬇️ Pull in one click, lose nothing**<br>
-Your uncommitted work is parked and restored. Changed your mind? **Undo** the merge for 10 minutes.
-
-**🧭 Conflicts and errors, explained**<br>
-The conflicted files open in the Merge Editor with a guide. Git errors become a sentence and the fix.
-
-</td>
-<td width="50%" valign="top">
-
-**✅ GitHub checks for every commit**<br>
-After every push — yours or a teammate's — you're told whether the tests passed, and what broke when they
-didn't.
-
-**🛡️ Push without surprises**<br>
-PushPal checks the remote before pushing and offers **Merge, then push for me** instead of a rejected push.
-
-**🔋 Fast or frugal**<br>
-From ⚡ every 10 s to 🔋 battery saver, plus checking hours, do-not-disturb and **Mute 1 hour**.
-
-</td>
-</tr>
-</table>
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-behind-dark.png">
-    <img src="docs/screenshots/en/team-behind-light.png" width="250" alt="A teammate pushed 3 commits">
-  </picture>
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-checks-dark.png">
-    <img src="docs/screenshots/en/team-checks-light.png" width="250" alt="GitHub checks of each commit, with the failing step and its log">
-  </picture>
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-conflictMerge-dark.png">
-    <img src="docs/screenshots/en/team-conflictMerge-light.png" width="250" alt="Conflict guide">
-  </picture>
-</p>
-
-### Meet Pal
-
-Pal is the pug who lives in the **My Team** view. Its face tells you what's going on — and it wiggles when
-you poke it.
-
-<table align="center">
-<tr>
-<td align="center"><img src="docs/mascot/anim/sleep.png" width="110" alt=""><br><sub>Up to date</sub></td>
-<td align="center"><img src="docs/mascot/anim/alert.png" width="110" alt=""><br><sub>Teammate pushed</sub></td>
-<td align="center"><img src="docs/mascot/anim/merge.png" width="110" alt=""><br><sub>Pulling</sub></td>
-<td align="center"><img src="docs/mascot/anim/conflict.png" width="110" alt=""><br><sub>Conflict</sub></td>
-<td align="center"><img src="docs/mascot/anim/pass.png" width="110" alt=""><br><sub>Checks passed</sub></td>
-<td align="center"><img src="docs/mascot/anim/fail.png" width="110" alt=""><br><sub>Checks failed</sub></td>
-</tr>
-</table>
+- 🔔 **Know the moment they push** — in VS Code or as a desktop notification, even when VS Code is closed
+- ⬇️ **Pull in one click, lose nothing** — and **undo** the merge for 10 minutes if you change your mind
+- 🧭 **Conflicts and Git errors explained** — in plain words, with the fix
+- ✅ **GitHub test results for every commit** — yours and your teammates'
+- 🛡️ **Push without surprises** — PushPal checks the remote first
+- 🔋 **Fast or frugal** — from every 10 s to battery saver, plus do-not-disturb hours
 
 ---
 
@@ -139,7 +77,7 @@ A `.vsix` install doesn't update itself — install the newer file over it when 
    You can also do this from the setup wizard's *Test* step.
 2. Open **System Settings → Notifications → alerter** (or **Visual Studio Code**) → set the alert style to
    **Persistent**.
-3. *(Optional)* **GitHub checks while VS Code is closed** — install the GitHub CLI and sign in once:
+3. *(Optional)* **GitHub test results while VS Code is closed** — install the GitHub CLI and sign in once:
    ```bash
    brew install gh && gh auth login
    ```
@@ -156,7 +94,7 @@ that's PushPal's small LaunchAgent. Turning the option off removes it.
 1. **Notifications** work out of the box (Windows toasts with **Pull in changes** / **Later** buttons).
 2. If you don't see them: **Settings → System → Notifications** → turn notifications on for
    **Visual Studio Code** (or **Windows PowerShell**), and turn off **Do not disturb / Focus**.
-3. *(Optional)* **GitHub checks while VS Code is closed** — install the GitHub CLI and sign in once:
+3. *(Optional)* **GitHub test results while VS Code is closed** — install the GitHub CLI and sign in once:
    ```powershell
    winget install --id GitHub.cli
    gh auth login
@@ -179,9 +117,9 @@ closed aren't available on Linux; everything else works.
 ### Step 3 — Run the setup wizard
 
 The wizard opens by itself after installing (run it again any time with **PushPal: Run Setup Again**).
-Eight short steps, all skippable:
+Every step can be skipped and changed later.
 
-| | |
+| Step | You choose |
 |---|---|
 | **Language & theme** | Thai or English; light, dark or match VS Code |
 | **Notifications** | in VS Code, on your desktop, even when VS Code is closed; do-not-disturb hours |
@@ -196,62 +134,260 @@ Eight short steps, all skippable:
   </picture>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/wizard-6-github-dark.png">
-    <img src="docs/screenshots/en/wizard-6-github-light.png" width="400" alt="Setup wizard: GitHub checks">
+    <img src="docs/screenshots/en/wizard-6-github-light.png" width="400" alt="Setup wizard: GitHub test results">
   </picture>
 </p>
 
 ### Step 4 — Open your project
 
 Open a folder that's a git repository (cloned from GitHub or any remote). Look at the **status bar**, bottom
-left: **✓ Up to date**, or **⬇ 3 new from your team** in yellow. Click Pal in the **Activity Bar** for
-**My Team**: the timeline, conflicts and checks. That's all — PushPal takes it from here.
+left, and click Pal in the **Activity Bar** to open **My Team**. That's all — the next section shows every
+screen you'll meet there and what to do.
 
 ---
 
-## Everyday use
+## What you'll see, and what to do
 
-### Pull in your teammates' code
+Every situation has its own screen in **My Team**, and Pal's face matches it.
 
-Press **Pull in changes** in the alert, the yellow status bar item, or **My Team**. PushPal merges their
-commits while your uncommitted work is set aside and put back: *“Merged! Got 3 commits — your own work is all
-still here.”*
+<table>
+<tr><td colspan="2"><h3>😴 You're up to date</h3></td></tr>
+<tr>
+<td width="240" valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-upToDate-dark.png">
+  <img src="docs/screenshots/en/team-upToDate-light.png" width="230" alt="Up to date">
+</picture>
+</td>
+<td valign="top">
 
-### Undo a merge you didn't want
+**What it means:** you have everything your teammates pushed. The status bar shows **✓ Up to date**.
 
-Press **Undo this merge** (in the message or the card in **My Team**), or run **PushPal: Undo Last Merge**.
-For 10 minutes it restores everything exactly as before — commits, staged and unstaged changes, new files.
-If you've committed or edited since, PushPal doesn't undo and tells you why, so nothing of yours is lost.
+**What to do:** nothing — keep coding. PushPal keeps checking in the background.
 
-### Fix a conflict
+</td>
+</tr>
 
-PushPal opens the conflicted files and the Merge Editor, and **My Team** explains what *Accept Current /
-Incoming / Both* mean for your situation. Fix each file and save, then:
+<tr><td colspan="2"><h3>🐶 A teammate pushed</h3></td></tr>
+<tr>
+<td valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-behind-dark.png">
+  <img src="docs/screenshots/en/team-behind-light.png" width="230" alt="A teammate pushed 3 commits">
+</picture>
+</td>
+<td valign="top">
 
-- conflict with your **commits** → press **Finish merge**;
-- conflict with your **uncommitted work** → stage the files (＋ in Source Control).
+**What it means:** there are new commits on the remote. You get an alert, the status bar turns yellow
+(**⬇ 3 new from your team**), and new commits are marked **New** in the timeline. **Same file as you** means
+they changed a file you're editing too.
 
-### Push without getting rejected
+**What to do:** press **Pull in changes** (in the alert, the status bar or here). The sooner you pull, the
+smaller any conflict will be.
 
-Run **PushPal: Push (Check First)** — also in the Source Control title bar and in **My Team**. If a teammate
-pushed in the meantime you get **Merge, then push for me**. VS Code's own **Push** / **Sync** get the same
-explanation and fix when they're rejected.
+</td>
+</tr>
 
-### See whether the tests passed
+<tr><td colspan="2"><h3>🪢 Pulling in their code</h3></td></tr>
+<tr>
+<td valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-pulling-dark.png">
+  <img src="docs/screenshots/en/team-pulling-light.png" width="230" alt="Pulling">
+</picture>
+</td>
+<td valign="top">
 
-Sign in to GitHub once (wizard, **PushPal Settings → GitHub**, or when PushPal asks). Then:
+**What it means:** PushPal is merging their commits. Your uncommitted work is set aside safely while it runs.
 
-- after **your** push: *✅ All checks passed (4/4)* or *❌ Checks failed: 1 of 4 — Test (ubuntu-latest)*;
-- a **teammate's** failing push: *“maybe don't pull it yet”* with **See what broke · Pull anyway · Later** —
-  and a heads-up when it's fixed;
-- the status bar shows ✓ / ✗ / ⏳ for the latest commit;
-- in **My Team**, click a commit's badge for every check; **Why did it fail?** shows the failing step, the last
-  30 lines of its log and a plain-language hint.
+**What to do:** wait a second.
 
-Skipped, neutral and cancelled checks don't count as failures.
+</td>
+</tr>
 
-### Choose how often PushPal checks
+<tr><td colspan="2"><h3>🎉 Merged</h3></td></tr>
+<tr>
+<td valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-success-dark.png">
+  <img src="docs/screenshots/en/team-success-light.png" width="230" alt="Merged">
+</picture>
+<br>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-undo-dark.png">
+  <img src="docs/screenshots/en/team-undo-light.png" width="230" alt="Undo the last merge">
+</picture>
+</td>
+<td valign="top">
 
-**PushPal Settings → Frequency & battery**, or **PushPal: Switch Check Mode**:
+**What it means:** their commits are in, and your own work is all still there.
+
+**What to do:** carry on. Changed your mind? Press **Undo** on the card (or run **PushPal: Undo Last Merge**)
+within 10 minutes: everything goes back exactly as it was — commits, staged and unstaged changes, new files.
+If you've committed or edited since, PushPal won't undo and tells you why, so nothing of yours is lost.
+
+</td>
+</tr>
+
+<tr><td colspan="2"><h3>❓ Conflict: your commits and theirs changed the same lines</h3></td></tr>
+<tr>
+<td valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-conflictMerge-dark.png">
+  <img src="docs/screenshots/en/team-conflictMerge-light.png" width="230" alt="Merge conflict">
+</picture>
+</td>
+<td valign="top">
+
+**What it means:** Git can't decide which version to keep. The status bar turns red (**Conflicts to fix**).
+
+**What to do:**
+1. Press **Fix** next to a file (or **Open Merge Editor**).
+2. In each conflict choose **Accept Current** (*your* version), **Accept Incoming** (*your teammate's*) or
+   **Accept Both** — the card under the files explains them.
+3. Save every file, then press **Finish merge**.
+
+</td>
+</tr>
+
+<tr><td colspan="2"><h3>❓ Conflict: their code overlaps work you haven't committed</h3></td></tr>
+<tr>
+<td valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-conflictAutostash-dark.png">
+  <img src="docs/screenshots/en/team-conflictAutostash-light.png" width="230" alt="Conflict with uncommitted work">
+</picture>
+</td>
+<td valign="top">
+
+**What it means:** their code is already in; putting your uncommitted work back on top of it clashed. A backup
+of your work is kept until you're done.
+
+**What to do:** fix each file the same way — but here **Current** is your teammate's code and **Incoming** is
+*your* uncommitted work (PushPal's help card says so). Then **stage** the files (＋ in Source Control).
+PushPal removes the backup by itself.
+
+</td>
+</tr>
+
+<tr><td colspan="2"><h3>✅ Every conflict fixed</h3></td></tr>
+<tr>
+<td valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-mergeReady-dark.png">
+  <img src="docs/screenshots/en/team-mergeReady-light.png" width="230" alt="All conflicts fixed">
+</picture>
+</td>
+<td valign="top">
+
+**What it means:** all files are resolved, but the merge isn't saved yet.
+
+**What to do:** press **Finish merge**.
+
+</td>
+</tr>
+
+<tr><td colspan="2"><h3>🧪 Test results on GitHub</h3></td></tr>
+<tr>
+<td valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-checks-dark.png">
+  <img src="docs/screenshots/en/team-checks-light.png" width="230" alt="GitHub checks with the failing step and its log">
+</picture>
+</td>
+<td valign="top">
+
+**What it means:** each commit has a badge — **⏳** tests running, **✓ 4/4** all passed, **✗ 3/4** something
+failed. The status bar shows the same for the latest commit. You're told when your push passes or fails, and
+when a teammate's push fails you get *“maybe don't pull it yet”* with **See what broke · Pull anyway · Later**
+(and a heads-up once it's fixed). Skipped, neutral and cancelled checks don't count as failures.
+
+**What to do:** click a badge to see every check. On a failed one press **Why did it fail?** for the failing
+step, the last 30 lines of its log, a hint in plain words (failing tests, install, lint, timeout, build) and
+**Open on GitHub**.
+
+*Needs a one-time sign-in to GitHub (wizard or **PushPal Settings → GitHub**). Only for github.com projects.*
+
+</td>
+</tr>
+
+<tr><td colspan="2"><h3>📡 I couldn't check</h3></td></tr>
+<tr>
+<td valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-error-dark.png">
+  <img src="docs/screenshots/en/team-error-light.png" width="230" alt="Couldn't check">
+</picture>
+</td>
+<td valign="top">
+
+**What it means:** Git reported a problem — no internet, not signed in to the remote, another git command
+running… PushPal says which in plain words and how to fix it.
+
+**What to do:** follow the hint, then press **Try again**. *Show full message* shows Git's original text.
+
+</td>
+</tr>
+
+<tr><td colspan="2"><h3>☁️ This branch isn't on GitHub yet</h3></td></tr>
+<tr>
+<td valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-noUpstream-dark.png">
+  <img src="docs/screenshots/en/team-noUpstream-light.png" width="230" alt="Branch not published">
+</picture>
+</td>
+<td valign="top">
+
+**What it means:** your branch only exists on your computer, so there's nothing to watch yet.
+
+**What to do:** press **Publish branch** once. PushPal starts watching it right away.
+
+</td>
+</tr>
+
+<tr><td colspan="2"><h3>📂 No project open</h3></td></tr>
+<tr>
+<td valign="top">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-noRepo-dark.png">
+  <img src="docs/screenshots/en/team-noRepo-light.png" width="230" alt="No project open">
+</picture>
+</td>
+<td valign="top">
+
+**What it means:** the open folder isn't a git repository.
+
+**What to do:** press **Open folder** for a project that uses git, or **Clone from GitHub**.
+
+</td>
+</tr>
+
+<tr><td colspan="2"><h3>🚫 Your push was turned away</h3></td></tr>
+<tr>
+<td valign="top" align="center">
+<img src="docs/mascot/still/alert.png" width="120" alt="">
+</td>
+<td valign="top">
+
+**What it means:** someone pushed before you, so Git refuses your push until you have their commits.
+
+**What to do:** press **Merge, then push for me** — PushPal pulls their code in and pushes yours. To avoid it
+altogether, push with **PushPal: Push (Check First)** (also in the Source Control title bar), which checks the
+remote before pushing. VS Code's own **Push** / **Sync** get the same help when they're rejected.
+
+</td>
+</tr>
+</table>
+
+---
+
+## Settings
+
+Everything is in **PushPal Settings** (gear icon in **My Team**, or **PushPal: Open Settings**) and mirrored in
+VS Code's Settings — change either, the other follows instantly.
+
+### How often PushPal checks
 
 | Mode | Checks | Good for |
 |---|---|---|
@@ -261,8 +397,9 @@ Skipped, neutral and cancelled checks don't count as failures.
 | 🛠 Custom | your values | full control |
 
 Each mode shows what it costs, e.g. *120 checks/hour · ≈ 655 KB/hour*, based on measured `git fetch` sizes.
+Switch quickly with **PushPal: Switch Check Mode**.
 
-### Don't be disturbed
+### Not being disturbed
 
 Set **do-not-disturb hours** (e.g. 22:00–08:00) or press **Mute 1 hour** on any alert. No pop-ups or desktop
 notifications meanwhile; the status bar keeps updating and anything you missed is announced afterwards.
@@ -270,20 +407,15 @@ notifications meanwhile; the status bar keeps updating and anything you missed i
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/settings-frequency-dark.png">
-    <img src="docs/screenshots/en/settings-frequency-light.png" width="460" alt="PushPal Settings: frequency and battery">
+    <img src="docs/screenshots/en/settings-frequency-light.png" width="420" alt="PushPal Settings: frequency and battery">
   </picture>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/team-undo-dark.png">
-    <img src="docs/screenshots/en/team-undo-light.png" width="240" alt="Undo the last merge">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/settings-notify-dark.png">
+    <img src="docs/screenshots/en/settings-notify-light.png" width="420" alt="PushPal Settings: notifications and do not disturb">
   </picture>
 </p>
 
----
-
-## Settings
-
-Everything is in **PushPal Settings** (gear icon in **My Team**, or **PushPal: Open Settings**) and mirrored in
-VS Code's Settings — change either, the other follows instantly.
+### All settings
 
 | Setting | Default | |
 |---|---|---|
@@ -296,8 +428,8 @@ VS Code's Settings — change either, the other follows instantly.
 | `pushpal.notify.background` | off | alerts while VS Code is closed (macOS, Windows) |
 | `pushpal.notify.sameFileWarning` | on | extra warning for files you're also editing |
 | `pushpal.quiet.enabled` / `.start` / `.end` | off · 22:00–08:00 | do-not-disturb hours |
-| `pushpal.actions.enabled` | on | GitHub checks |
-| `pushpal.actions.notifyOnPass` | on | also tell me when checks pass |
+| `pushpal.actions.enabled` | on | GitHub test results |
+| `pushpal.actions.notifyOnPass` | on | also tell me when tests pass |
 | `pushpal.actions.notifyFor` | `all` | `all`, `mine`, `team` |
 | `pushpal.avatars` | on | commit authors' GitHub profile pictures |
 | `pushpal.language` / `pushpal.theme` | auto · system | Thai or English; light, dark or match VS Code |
@@ -338,7 +470,7 @@ check again. It never asks for passwords itself.
 <br>
 
 They appear for github.com projects that have checks (e.g. GitHub Actions), after you've signed in under
-**PushPal Settings → GitHub**. If you chose *No thanks* earlier, turn **GitHub checks** back on there.
+**PushPal Settings → GitHub**. If you chose *No thanks* earlier, turn **GitHub test results** back on there.
 
 </details>
 
@@ -369,7 +501,7 @@ npm run build
 npm run smoke       # runs the extension in your local VS Code with an isolated profile (macOS)
 npm run screenshots # renders every screen into docs/screenshots/ (English copies in docs/screenshots/en/)
 npm run package     # builds pushpal-<version>.vsix
-node scripts/mascot-render.mjs gifs   # re-records Pal's animations into docs/mascot/
+node scripts/mascot-render.mjs stills # Pal's faces for this README (docs/mascot/still/)
 ```
 
 Design decisions: [DECISIONS.md](DECISIONS.md) · Publishing: [PUBLISHING.md](PUBLISHING.md) ·

@@ -1,6 +1,7 @@
 // Renders the mascot pages with Playwright (the locally installed Chrome).
 //   node scripts/mascot-render.mjs sheet            → docs/mascot/sheet.png (+ sheet-dark.png)
 //   node scripts/mascot-render.mjs gifs [pose…]     → docs/mascot/<pose>.gif from playground.html
+//   node scripts/mascot-render.mjs stills           → docs/mascot/still/<pose>.png (transparent, for the README)
 import { chromium } from 'playwright-core';
 import { mkdtempSync, mkdirSync, rmSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -42,16 +43,32 @@ async function gifs(poses) {
     const out = `docs/mascot/${pose}.gif`;
     execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(fps), '-i', join(dir, 'f%04d.png'),
       '-vf', 'format=rgba,colorkey=0x000000:0.0001,scale=240:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96:reserve_transparent=1[p];[b][p]paletteuse=dither=sierra2_4a:alpha_threshold=128', out]);
-    // Transparent animated PNG for the README: blends into GitHub's light and dark pages.
-    mkdirSync('docs/mascot/anim', { recursive: true });
-    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(fps), '-i', join(dir, 'f%04d.png'),
-      '-vf', 'fps=15,scale=200:-1:flags=lanczos', '-plays', '0', '-pred', 'mixed', '-f', 'apng', `docs/mascot/anim/${pose}.png`]);
     rmSync(dir, { recursive: true, force: true });
-    console.log(`${out} + anim/${pose}.png (${frames} frames${from ? `, from ${from}` : ''})`);
+    console.log(`${out} (${frames} frames${from ? `, from ${from}` : ''})`);
   }
   await page.close();
 }
 
+/** One transparent still per pose (the held face), for the README. */
+async function stills() {
+  const page = await browser.newPage({ viewport: { width: 320, height: 320 }, deviceScaleFactor: 2 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  mkdirSync('docs/mascot/still', { recursive: true });
+  // Normal page (GSAP's clock running), dressed like the recording page.
+  await page.goto(pathToFileURL(resolve('docs/mascot/playground.html')).href);
+  await page.evaluate(() => document.body.classList.add('record'));
+  for (const pose of await page.evaluate(() => window.PushPalMascot.poses)) {
+    await page.evaluate((p) => {
+      const stage = document.getElementById('stage');
+      stage.innerHTML = window.PushPalMascot.svg({ pose: p, size: 290 });
+    }, pose);
+    await page.waitForTimeout(500);
+    await page.locator('#stage').screenshot({ path: `docs/mascot/still/${pose}.png`, omitBackground: true });
+  }
+  console.log('docs/mascot/still/*.png');
+}
+
 if (what === 'sheet') await sheet();
+else if (what === 'stills') await stills();
 else if (what === 'gifs') await gifs(rest);
 await browser.close();
