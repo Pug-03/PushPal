@@ -2,7 +2,7 @@
   "name": "pushpug",
   "displayName": "PushPug",
   "description": "%ext.description%",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "pushpug",
   "license": "MIT",
   "icon": "media/icon.png",
