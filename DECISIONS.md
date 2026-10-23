@@ -546,3 +546,9 @@ Newest sections are appended at the bottom of each topic.
 - Not done: reviews and comments (approved / changes requested), pull requests from forks, choosing a different base
   branch, draft pull requests from PushPug, and the background worker (pull request alerts need VS Code open).
 
+
+## 21. Activity Bar icon is a paw (2026-10-23)
+
+- The one-colour pug head (section 14) read as a blob at 24 px. A pug head with folded ears and a thin-line version were
+  tried as well; the paw print was picked because it stays clear at Activity Bar size in both themes. The extension
+  icon and the mascot are still the pug.

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Activity Bar icon is now a paw print (clearer at small sizes than the pug head)
 - Pull requests: **Start New Task** makes a branch from the latest main (uncommitted work comes along);
   **Send for Review** pushes it and opens the pull request on GitHub (or sends new commits to the open one).
   Commits made on main by mistake are moved to a task branch, and main is put back in line with the remote.
