@@ -155,7 +155,7 @@ called **Install**.)
 
 **A8. Check it worked.** After a few seconds:
 
-- the pug icon appears in the bar on the left **(8)** — that's PushPug;
+- the paw icon appears in the bar on the left **(8)** — that's PushPug;
 - the message *"Completed installing extension PushPug from VSIX."* shows at the bottom right **(9)**;
 - the setup wizard opens by itself. Go to [G. The setup wizard](#g-the-setup-wizard) — but first do D, E or F for
   your computer if you want desktop notifications.
@@ -163,7 +163,7 @@ called **Install**.)
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/guide/vsc-installed-dark.png">
-    <img src="docs/guide/vsc-installed-light.png" width="760" alt="VS Code after installing: pug icon in the Activity Bar (8) and the completed message (9)">
+    <img src="docs/guide/vsc-installed-light.png" width="760" alt="VS Code after installing: paw icon in the Activity Bar (8) and the completed message (9)">
   </picture>
 </p>
 
@@ -319,14 +319,14 @@ The wizard opens by itself right after installing. To open it again later: press
 
 1. Open a folder that's a git repository: **File → Open Folder…**, or clone one with **Source Control → Clone
    Repository**.
-2. Click the **pug icon** in the bar on the left **(1)** to open **My Team**.
+2. Click the **paw icon** in the bar on the left **(1)** to open **My Team**.
 3. Look at the **status bar** at the bottom left **(2)**. **Up to date** means PushPug is watching and you have
    everything. That's all — the next section shows every screen you'll meet and what to do.
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/guide/vsc-first-run-dark.png">
-    <img src="docs/guide/vsc-first-run-light.png" width="760" alt="VS Code with a project open: pug icon (1) and Up to date in the status bar (2)">
+    <img src="docs/guide/vsc-first-run-light.png" width="760" alt="VS Code with a project open: paw icon (1) and Up to date in the status bar (2)">
   </picture>
 </p>
 
