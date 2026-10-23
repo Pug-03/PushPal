@@ -47,21 +47,50 @@ to fix it. It's made for people who are new to Git, and for everyone who'd rathe
 
 ## Getting started
 
-### Step 1 — Install PushPal
+### Step 1 — Download and install PushPal
 
-**From the Marketplace** *(recommended — updates install automatically)*
+You need **VS Code 1.90 or newer** and **Git** on your computer. Pick one way:
 
-1. Open VS Code → **Extensions** (`⇧⌘X` on macOS, `Ctrl+Shift+X` on Windows / Linux).
-2. Search for **PushPal** → **Install**.
+<details open>
+<summary><b>A. Download the installer file from GitHub</b> <i>(works today)</i></summary>
+<br>
 
-*Cursor, VSCodium or Windsurf?* PushPal is on **Open VSX** too — search the same way in their Extensions view.
+1. Open the **[Releases page](https://github.com/Pug-03/PushPug/releases/latest)**.
+2. Under **Assets**, click **`pushpal-x.y.z.vsix`** to download it (x.y.z is the version, e.g. `1.0.0`).
+3. Open VS Code and go to the **Extensions** view — `⇧⌘X` on macOS, `Ctrl+Shift+X` on Windows / Linux.
+4. Click the **`…`** menu at the top of the Extensions view → **Install from VSIX…**
+   *(or open the Command Palette with `⇧⌘P` / `Ctrl+Shift+P` and run **Extensions: Install from VSIX…**)*.
+5. Choose the file you downloaded. After a few seconds the PushPal setup wizard opens — go to Step 2.
 
-**From a `.vsix` file**
+</details>
 
-1. Download `pushpal-x.y.z.vsix` from [Releases](https://github.com/Pug-03/PushPug/releases).
-2. Command Palette (`⇧⌘P` / `Ctrl+Shift+P`) → **Extensions: Install from VSIX…** → pick the file.
+<details>
+<summary><b>B. From the VS Code Marketplace / Open VSX</b> <i>(once it's published)</i></summary>
+<br>
 
-A `.vsix` install doesn't update itself — install the newer file over it when a new version comes out.
+1. Open the **Extensions** view and search for **PushPal**.
+2. Press **Install**. Updates then install by themselves.
+
+Cursor, VSCodium and Windsurf use **Open VSX** — search the same way in their Extensions view.
+
+</details>
+
+<details>
+<summary><b>C. Build it yourself from the source code</b></summary>
+<br>
+
+Needs [Node.js](https://nodejs.org) 20 or newer.
+
+```bash
+git clone https://github.com/Pug-03/PushPug.git
+cd PushPug
+npm install
+npm run package          # creates pushpal-x.y.z.vsix in this folder
+```
+
+Then install the `.vsix` file as in **A**, steps 3–5.
+
+</details>
 
 ### Step 2 — Set up your computer
 
@@ -143,6 +172,22 @@ Every step can be skipped and changed later.
 Open a folder that's a git repository (cloned from GitHub or any remote). Look at the **status bar**, bottom
 left, and click Pal in the **Activity Bar** to open **My Team**. That's all — the next section shows every
 screen you'll meet there and what to do.
+
+### Keeping PushPal up to date
+
+**Check which version you have:** Extensions view → **PushPal** — the version is next to the name.
+
+| You installed it… | To update |
+|---|---|
+| **from the Marketplace / Open VSX** | Nothing to do — VS Code updates it by itself. |
+| **from a `.vsix` file** (A) | Download the newer `.vsix` from [Releases](https://github.com/Pug-03/PushPug/releases/latest) and install it the same way (**Install from VSIX…**). VS Code replaces the old version; your settings stay. Then run **Developer: Reload Window**. |
+| **by building it** (C) | In the `PushPug` folder: `git pull`, `npm install`, `npm run package`, then install the new `.vsix`. |
+
+**Get told when there's a new version:** on the [GitHub page](https://github.com/Pug-03/PushPug) click
+**Watch → Custom → Releases** — GitHub e-mails you whenever a new release is published.
+
+**Uninstall:** Extensions view → **PushPal** → **Uninstall**. The background task (if you turned it on) is
+removed with it.
 
 ---
 
@@ -482,14 +527,6 @@ Run **Developer: Reload Window** once — open panels keep the old version until
 
 </details>
 
-<details>
-<summary><b>Removing PushPal</b></summary>
-<br>
-
-Uninstall it from the Extensions view. The background task (if you turned it on) is removed with it.
-
-</details>
-
 ---
 
 ## Development
@@ -499,7 +536,7 @@ npm install
 npm test            # real git repos (bare remote + two clones) and a mocked GitHub API
 npm run build
 npm run smoke       # runs the extension in your local VS Code with an isolated profile (macOS)
-npm run screenshots # renders every screen into docs/screenshots/ (English copies in docs/screenshots/en/)
+npm run screenshots # renders every screen into docs/screenshots/
 npm run package     # builds pushpal-<version>.vsix
 node scripts/mascot-render.mjs stills # Pal's faces for this README (docs/mascot/still/)
 ```
